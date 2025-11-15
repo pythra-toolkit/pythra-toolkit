@@ -23,6 +23,7 @@ import base64
 import stat
 import time
 import uuid
+import platform
 
 # --- Typer App Initialization ---
 app = typer.Typer(
@@ -369,6 +370,29 @@ def build(
         env.get("PYTHONPATH", "")
     ]
     env["PYTHONPATH"] = os.pathsep.join(p for p in pythonpath_parts if p)
+
+    # Compiler environment tweaks:
+    # - For MSVC we set CL=/Zm300 to increase preprocessor memory and avoid
+    #   "fatal error C1060: compiler is out of heap space" when building large apps.
+    # - For non-Windows platforms there is no direct CL equivalent; set a
+    #   conservative CFLAGS fallback so build tools have some optimization flags.
+    try:
+        system = platform.system().lower()
+    except Exception:
+        system = ''
+
+    if 'windows' in system:
+        # Only override CL if not already set (allow users to predefine it)
+        if not env.get('CL'):
+            env['CL'] = '/Zm300'
+        print(f"[+] Set environment: CL={env.get('CL')}")
+    else:
+        # Best-effort fallback for non-MSVC toolchains. This is not an exact
+        # equivalent to /Zm300 but helps ensure the compiler has reasonable flags.
+        existing_cflags = env.get('CFLAGS', '').strip()
+        fallback_flags = '-O2'
+        env['CFLAGS'] = (existing_cflags + ' ' + fallback_flags).strip() if existing_cflags else fallback_flags
+        print(f"[+] Non-Windows detected ({system}); set CFLAGS='{env['CFLAGS']}' as a fallback for the build.")
 
     try:
         subprocess.run(nuitka_cmd, check=True, env=env)
