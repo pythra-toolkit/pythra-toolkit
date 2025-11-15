@@ -4,6 +4,8 @@ import http.server
 import socketserver
 import threading
 import os
+import atexit
+import signal
 from pathlib import Path
 from typing import Dict
 
@@ -72,10 +74,14 @@ class AssetServer(threading.Thread):
                                               e.g., {"plugins/editor": "/path/to/editor/public"}
         """
         super().__init__()
+        # Run the server thread as a daemon so it won't block interpreter exit
+        # if everything else has finished. This makes shutdown behavior simpler.
+        self.daemon = True
         self.directory = directory
         self.port = port
         self.extra_serve_dirs = extra_serve_dirs or {}
         self.server = None
+        self._shutdown_registered = False
 
     def run(self):
         """Starts the HTTP server on a separate thread."""
@@ -87,6 +93,8 @@ class AssetServer(threading.Thread):
             extra_directories = self.extra_serve_dirs
 
         # Use a context manager for robust server setup and teardown
+        # Use context manager for robust server setup and teardown
+
         try:
             with socketserver.TCPServer(("", self.port), Handler) as httpd:
                 print(f"✅ Asset server started on http://localhost:{self.port}")
@@ -102,6 +110,17 @@ class AssetServer(threading.Thread):
             # In a real app, you might want a more graceful exit here.
             os._exit(1) # Force exit if server can't start
 
+    def start(self):
+        """Start the thread and ensure shutdown hooks are registered from
+        the thread that calls `start()` (typically the main thread).
+        """
+        try:
+            self.register_shutdown_hooks()
+        except Exception:
+            # Non-fatal: proceed even if hooks can't be registered
+            pass
+        super().start()
+
     def stop(self):
         """Stops the HTTP server if it is running."""
         if self.server:
@@ -109,3 +128,48 @@ class AssetServer(threading.Thread):
             self.server.shutdown()
             self.server.server_close()
             print("[AssetServer] Shutdown complete.")
+
+    def register_shutdown_hooks(self):
+        """Register atexit and signal handlers to ensure the server is shut down
+        when the process exits or receives termination signals.
+
+        This method is safe to call multiple times; handlers will only be
+        registered once per instance.
+        """
+        if self._shutdown_registered:
+            return
+
+        # Ensure the server is stopped at normal interpreter exit
+        try:
+            atexit.register(self.stop)
+            print("[AssetServer] Registered atexit shutdown handler.")
+        except Exception as e:
+            print(f"[AssetServer] Warning: failed to register atexit handler: {e}")
+
+        # Signal handlers: attempt to handle SIGINT and SIGTERM where available
+        def _make_handler(sig_name):
+            def _handler(signum, frame):
+                print(f"[AssetServer] Received {sig_name} ({signum}), shutting down asset server...")
+                try:
+                    self.stop()
+                except Exception as ex:
+                    print(f"[AssetServer] Error during shutdown: {ex}")
+                # Exit the process after cleanup.
+                try:
+                    os._exit(0)
+                except Exception:
+                    pass
+            return _handler
+
+        for sig, name in ((getattr(signal, 'SIGINT', None), 'SIGINT'), (getattr(signal, 'SIGTERM', None), 'SIGTERM')):
+            if sig is None:
+                continue
+            try:
+                signal.signal(sig, _make_handler(name))
+                print(f"[AssetServer] Registered signal handler for {name}.")
+            except Exception as e:
+                # On some platforms (e.g., certain Windows consoles) signal registration
+                # may fail for SIGTERM; ignore non-fatal failures.
+                print(f"[AssetServer] Warning: could not register handler for {name}: {e}")
+
+        self._shutdown_registered = True

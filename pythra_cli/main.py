@@ -326,8 +326,9 @@ def build(
         "--enable-plugin=pyside6",
         f"--output-dir={str(final_build_dir)}",
         f"--file-version={version}",
-        "--windows-disable-console",
+        "--windows-console-mode=disable",
         f"--include-package=pythra",
+        "--nofollow-import-to=pythra.tests",
         "--include-module=_embedded_config",
         *dir_args,
         *file_args,
@@ -346,6 +347,7 @@ def build(
     print("\n" + "="*72)
     print(f"App: {app_name} v{version}")
     print(f"Build will be located in: {final_build_dir}")
+    print(f"PyThra package location: {pythra_package_path}")
     print("Nuitka command to be executed:")
     print(" ".join(nuitka_cmd))
     print("="*72 + "\n")
@@ -356,9 +358,17 @@ def build(
             embedded_module_path.unlink(missing_ok=True)
         return
 
-    # PYTHONPATH needs to include the folder with the generated _embedded_config module.
+    # PYTHONPATH needs to include:
+    # 1. The folder with the generated _embedded_config module
+    # 2. The parent directory of the pythra package (for editable installs)
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(final_build_dir) + os.pathsep + env.get("PYTHONPATH", "")
+    pythra_parent = str(pythra_package_path.parent)
+    pythonpath_parts = [
+        str(final_build_dir),
+        pythra_parent,
+        env.get("PYTHONPATH", "")
+    ]
+    env["PYTHONPATH"] = os.pathsep.join(p for p in pythonpath_parts if p)
 
     try:
         subprocess.run(nuitka_cmd, check=True, env=env)
