@@ -45,6 +45,20 @@ if TYPE_CHECKING:
     from .state import State
 
 
+# Fast JSON dumps: prefer orjson when available for speed-critical paths
+try:
+    import orjson as _orjson  # type: ignore
+
+    def _dumps(obj: Any) -> str:
+        """Fast dumps using orjson, returns str."""
+        # orjson.dumps returns bytes
+        return _orjson.dumps(obj).decode('utf-8')
+except Exception:
+    def _dumps(obj: Any) -> str:
+        """Fallback to stdlib json.dumps with compact separators."""
+        return json.dumps(obj, separators=(',', ':'), ensure_ascii=False)
+
+
 class Framework:
     """
     The main PyThra Framework class - this is the heart of your application!
@@ -190,6 +204,10 @@ class Framework:
         self._js_file_content_cache: Dict[str, str] = {}
 
         self._result = None  # Stores UI update results
+        # Track whether initial files were written and keep their last content
+        self._initial_files_written: bool = False
+        self._cached_initial_html: Optional[str] = None
+        self._cached_initial_css: Optional[str] = None
 
         # STEP 7: Start the asset server and finalize setup
         self.asset_server.start()  # Begin serving static files
@@ -939,7 +957,7 @@ class Framework:
 
     def _generate_css_update_script(self, css_rules: str) -> str:
         """Generates JS to update the <style id="dynamic-styles"> tag."""
-        escaped_css = json.dumps(css_rules).replace("`", "\\`")
+        escaped_css = _dumps(css_rules).replace("`", "\\`")
         return f"""
             var styleSheet = document.getElementById('dynamic-styles');
             var newCss = {escaped_css};
@@ -992,7 +1010,7 @@ class Framework:
             # --- THIS IS THE FIX ---
             # Create a sanitized version of the data for logging.
             sanitized_data_for_log = self._sanitize_for_json(data)
-            loggable_data_str = json.dumps(sanitized_data_for_log)
+            loggable_data_str = _dumps(sanitized_data_for_log)
             # --- END OF FIX ---
 
             command_js = ""
@@ -1008,7 +1026,7 @@ class Framework:
                 )
                 # Escape the HTML for safe injection into a JS template literal
                 final_escaped_html = (
-                    json.dumps(html_stub)[1:-1]
+                    _dumps(html_stub)[1:-1]
                     .replace("`", "\\`")
                     .replace("${", "\\${")
                 )
@@ -1050,7 +1068,7 @@ class Framework:
 
                 # --- ADD THIS BLOCK ---
                 if props.get("init_gradient_clip_border"):
-                    options_json = json.dumps(props.get("gradient_clip_options", {}))
+                    options_json = _dumps(props.get("gradient_clip_options", {}))
                     command_js += f"""
                         setTimeout(() => {{
                             if (typeof PythraGradientClipPath !== 'undefined') {{
@@ -1062,7 +1080,7 @@ class Framework:
 
                 # --- ADD THIS BLOCK ---
                 if props.get("init_gesture_detector"):
-                    options_json = json.dumps(props.get("gesture_options", {}))
+                    options_json = _dumps(props.get("gesture_options", {}))
                     command_js += f"""
                         setTimeout(() => {{
                             if (typeof PythraGestureDetector !== 'undefined') {{
@@ -1075,7 +1093,7 @@ class Framework:
                 # --- ADD THIS BLOCK ---
                 # print("Props: ", props)
                 if props.get("init_dropdown"):
-                    options_json = json.dumps(props.get("dropdown_options", {}))
+                    options_json = _dumps(props.get("dropdown_options", {}))
                     command_js += f"""
                         setTimeout(() => {{
                             console.log("Initializig dropdown");
@@ -1090,7 +1108,7 @@ class Framework:
                 # --- END OF BLOCK ---
 
                 if props.get("init_slider"):
-                    options_json = json.dumps(props.get("slider_options", {}))
+                    options_json = _dumps(props.get("slider_options", {}))
                     command_js += f"""
                         setTimeout(() => {{
                             if (typeof window.PythraSlider !== 'undefined') {{
@@ -1103,7 +1121,7 @@ class Framework:
                     """
                 # --- END ADDITION ---
                 if props.get("init_simplebar"):
-                    options_json = json.dumps(props.get("simplebar_options", {}))
+                    options_json = _dumps(props.get("simplebar_options", {}))
                     command_js += f"""
                     setTimeout(() => {{
                         var el_{target_id} = document.getElementById('{target_id}');
@@ -1118,7 +1136,7 @@ class Framework:
                 # --- ADD THIS BLOCK ---
                 if props.get("init_virtual_list"):
                     options = props.get("virtual_list_options", {})
-                    options_json = json.dumps(options)
+                    options_json = _dumps(options)
                     # We need to wait for SimpleBar to initialize first, so we defer this.
                     js_commands.append(f"""
                     setTimeout(() => {{
@@ -1146,10 +1164,10 @@ class Framework:
                     # print("target id: ", target_id, "Data: ", clip_data, "before_id: ", initializer_data["before_id"] if initializer_data["before_id"] else None)
 
                     # Serialize the Python data into JSON strings for JS
-                    points_json = json.dumps(clip_data["points"])
-                    radius_json = json.dumps(clip_data["radius"])
-                    ref_w_json = json.dumps(clip_data["viewBox"][0])
-                    ref_h_json = json.dumps(clip_data["viewBox"][1])
+                    points_json = _dumps(clip_data["points"])
+                    radius_json = _dumps(clip_data["radius"])
+                    ref_w_json = _dumps(clip_data["viewBox"][0])
+                    ref_h_json = _dumps(clip_data["viewBox"][1])
 
                     # This JS code performs the exact two-step process you described.
                     # commands_js = 
@@ -1181,7 +1199,7 @@ class Framework:
                     engine_name = js_init_data.get("engine")
                     instance_name = js_init_data.get("instance_name")
                     options = js_init_data.get("options", {})
-                    options_json = json.dumps(options)
+                    options_json = _dumps(options)
                     
                     # We use setTimeout to ensure the element is fully in the DOM.
                     command_js += f"""
@@ -1279,7 +1297,7 @@ class Framework:
                 
                 # Use a robust replacement method. `outerHTML` is simple and effective.
                 # It replaces the entire element, including the element itself.
-                escaped_html = json.dumps(new_html_stub)[1:-1].replace("`", "\\`")
+                escaped_html = _dumps(new_html_stub)[1:-1].replace("`", "\\`")
 
                 command_js = f"""
                     var oldEl = document.getElementById('{target_id}');
@@ -1298,7 +1316,7 @@ class Framework:
                 
                 # Check for Dropdown
                 if new_props.get("init_dropdown"):
-                    options_json = json.dumps(new_props.get("dropdown_options", {}))
+                    options_json = _dumps(new_props.get("dropdown_options", {}))
                     # The element ID is the same, but the element itself is new.
                     command_js += f"""
                         setTimeout(() => {{
@@ -1314,7 +1332,7 @@ class Framework:
             elif action == "SVG_INSERT":
                 parent_id = data.get("parent_html_id")  # e.g., 'svg-defs'
                 html_stub = data.get("html")
-                final_escaped_html = json.dumps(html_stub)[1:-1]
+                final_escaped_html = _dumps(html_stub)[1:-1]
 
                 command_js = f"""
                     var svgDefs = document.getElementById('{parent_id}');
@@ -1350,7 +1368,7 @@ class Framework:
                     return obj
 
                 # Create the log-safe string representation of the data.
-                loggable_data_str = json.dumps(make_loggable(data))
+                loggable_data_str = _dumps(make_loggable(data))
 
                 is_textfield_patch = False
                 if "props" in data and isinstance(data["props"], dict):
@@ -1397,19 +1415,19 @@ class Framework:
         # if props.get('onChangedName'): # A good heuristic for input-like elements
         #      new_value = props.get('value', '')
         #      # Only update the value if it's different. This is crucial for focus.
-        #      js_prop_updates.append(f"if ({element_var}.value !== {json.dumps(new_value)}) {{ console.log({element_var}); {element_var}.value = {json.dumps(new_value)}; }};")
+        #      js_prop_updates.append(f"if ({element_var}.value !== {_dumps(new_value)}) {{ console.log({element_var}); {element_var}.value = {_dumps(new_value)}; }};")
         # ---
 
         for key, value in props.items():
             # if key == 'value' and 'onChangedName' in props:
             #     # For TextField, we target the inner <input> element directly.
             #     input_element_selector = f"document.getElementById('{target_id}_input')"
-            #     js_prop_updates.append(f"var inputEl = {input_element_selector}; if(inputEl) inputEl.value = {json.dumps(value)};")
+            #     js_prop_updates.append(f"var inputEl = {input_element_selector}; if(inputEl) inputEl.value = {_dumps(value)};")
             # print("Props:", props)
 
             if key == "data":
                 js_prop_updates.append(
-                    f"{element_var}.textContent = {json.dumps(str(value))};"
+                    f"{element_var}.textContent = {_dumps(str(value))};"
                 )
                 # print("data: ",value)
             # --- THIS IS THE NEW, INTELLIGENT CLASS UPDATE LOGIC ---
@@ -1440,9 +1458,9 @@ class Framework:
                     """)
             # --- END OF NEW LOGIC ---
             elif key == "src":
-                js_prop_updates.append(f"{element_var}.src = {json.dumps(value)};")
+                js_prop_updates.append(f"{element_var}.src = {_dumps(value)};")
             elif key == "tooltip":
-                js_prop_updates.append(f"{element_var}.title = {json.dumps(value)};")
+                js_prop_updates.append(f"{element_var}.title = {_dumps(value)};")
             
             elif key == "value" and "textfield" in props.get(
                 "css_class", ""
@@ -1457,10 +1475,10 @@ class Framework:
                         console.log('--- TextField Update Patch ---');
                         console.log('Target Input ID:', '{input_id}');
                         console.log('Current Browser Value:', inputEl.value);
-                        console.log('New Value from Python:', {json.dumps(str(value))});
-                        if (inputEl.value !== {json.dumps(str(value))}) {{
+                        console.log('New Value from Python:', {_dumps(str(value))});
+                        if (inputEl.value !== {_dumps(str(value))}) {{
                             console.log('Values are different. Applying update.');
-                            inputEl.value = {json.dumps(str(value))};
+                            inputEl.value = {_dumps(str(value))};
                         }} else {{
                             console.log('Values are the same. Skipping update to prevent cursor jump.');
                         }}
@@ -1476,7 +1494,7 @@ class Framework:
                 # This is an errorText update for a TextField. Target the helper div.
                 helper_id = f"{target_id}_helper"
                 js_prop_updates.append(
-                    f"var helperEl = document.getElementById('{helper_id}'); if(helperEl) helperEl.textContent = {json.dumps(str(value))};"
+                    f"var helperEl = document.getElementById('{helper_id}'); if(helperEl) helperEl.textContent = {_dumps(str(value))};"
                 )
 
             # elif key == 'value' and 'onChangedName' in props: # Check if it's a TextField
@@ -1509,17 +1527,17 @@ class Framework:
                 css_prop_kebab = "".join(
                     ["-" + c.lower() if c.isupper() else c for c in style_key]
                 ).lstrip("")
-                # print("css_prop_kebab: ", css_prop_kebab, f"{json.dumps(style_value)}")
+                # print("css_prop_kebab: ", css_prop_kebab, f"{_dumps(style_value)}")
                 if css_prop_kebab == "--slider-percentage" and props.get("isDragEnded"):
                     print("drag css", props["isDragEnded"])
                     js_prop_updates.append(
-                        f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {json.dumps(style_value)}); }} catch (e) {{ console.warn('Failed to set CSS property {css_prop_kebab}:', e); }}"
+                        f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {_dumps(style_value)}); }} catch (e) {{ console.warn('Failed to set CSS property {css_prop_kebab}:', e); }}"
                     )
                 elif css_prop_kebab == "--slider-percentage" and not props.get("isDragEnded"):
                     print("drag css", props.get("isDragEnded"))
                 elif css_prop_kebab != "--slider-percentage" and "isDragEnded" not in props:
                     js_prop_updates.append(
-                        f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {json.dumps(style_value)}); }} catch (e) {{ console.warn('Failed to set CSS property {css_prop_kebab}:', e); }}"
+                        f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {_dumps(style_value)}); }} catch (e) {{ console.warn('Failed to set CSS property {css_prop_kebab}:', e); }}"
                     )
         # --- END OF ADDITION ---
 
@@ -1543,7 +1561,7 @@ class Framework:
                     ["-" + c.lower() if c.isupper() else c for c in prop]
                 ).lstrip("-")
                 js_prop_updates.append(
-                    f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {json.dumps(val)}); }} catch (e) {{ console.warn('Failed to set style property {css_prop_kebab}:', e); }}"
+                    f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {_dumps(val)}); }} catch (e) {{ console.warn('Failed to set style property {css_prop_kebab}:', e); }}"
                 )
 
         return "\n".join(js_prop_updates)
@@ -1584,7 +1602,7 @@ class Framework:
                     path_js = module_path
                     imports.add(f"import {{ {engine_name} }} from '{path_js}';")
                     
-                    options_json = json.dumps(options)
+                    options_json = _dumps(options)
                     js_commands.append(f"""
                     function waitForAndInit(className, initCallback) {{
                             const interval = setInterval(() => {{
@@ -1624,7 +1642,7 @@ class Framework:
                 imports.add("import { PythraGradientClipPath } from './js/gradient_border.js';")
                 imports.add("import { generateRoundedPath } from './js/pathGenerator.js';")
                 options = props.get("gradient_clip_options", {})
-                options_json = json.dumps(options)
+                options_json = _dumps(options)
                 js_commands.append(f"""window._pythra_instances['{html_id}'] = new PythraGradientClipPath('{html_id}', {options_json});""")
             # --- END OF BLOCK ---
 
@@ -1634,7 +1652,7 @@ class Framework:
                 print("Initializing Virtual List...")
                 imports.add("import { PythraVirtualList } from './js/virtual_list.js';")
                 options = props.get("virtual_list_options", {})
-                options_json = json.dumps(options)
+                options_json = _dumps(options)
                 # Use the stable key for the instance name
                 instance_name = f"{widget_key_val}_vlist"
                 # No more checks or timeouts. We just instantiate our engine.
@@ -1665,7 +1683,7 @@ class Framework:
             if props.get("init_gesture_detector"):
                 imports.add("import { PythraGestureDetector } from './js/gesture_detector.js';")
                 options = props.get("gesture_options", {})
-                options_json = json.dumps(options)
+                options_json = _dumps(options)
                 print("options: ", options_json)
                 js_commands.append(f"window._pythra_instances['{html_id}'] = new PythraGestureDetector('{html_id}', {options_json});")
             # --- END OF BLOCK ---
@@ -1674,7 +1692,7 @@ class Framework:
             if props.get("init_dropdown"):
                 imports.add("import { PythraDropdown } from './js/dropdown.js';")
                 options = props.get("dropdown_options", {})
-                options_json = json.dumps(options)
+                options_json = _dumps(options)
                 js_commands.append(f"window._pythra_instances['{html_id}'] = new PythraDropdown('{html_id}', {options_json});")
             # --- END OF BLOCK ---
 
@@ -1683,7 +1701,7 @@ class Framework:
                 # print(">>>init_slider<<<", html_id)
                 imports.add("import { PythraSlider } from './js/slider.js';")
                 options = props.get("slider_options", {})
-                options_json = json.dumps(options)
+                options_json = _dumps(options)
                 
                 # Generate the JS command to instantiate the slider engine
                 js_commands.append(f"""
@@ -1704,7 +1722,7 @@ class Framework:
             if init["type"] == "SimpleBar":
                 target_id = init["target_id"]
                 # We can pass options from Python to the SimpleBar constructor
-                options_json = json.dumps(init.get("options", {}))
+                options_json = _dumps(init.get("options", {}))
                 js_commands.append(
                     f"""
                     const el_{target_id} = document.getElementById('{target_id}');
@@ -1722,7 +1740,7 @@ class Framework:
             if init.get("type") == "_RenderableSlider":
                 
                 target_id = init["target_id"]
-                options_json = json.dumps(init.get("options", {}))
+                options_json = _dumps(init.get("options", {}))
                 # This JS command creates a new instance of our slider engine
                 js_commands.append(f"""
                     if (typeof PythraSlider !== 'undefined') {{
@@ -1771,10 +1789,10 @@ class Framework:
                 # print("target id: ", target_id, "Data: ", clip_data)
 
                 # Serialize the Python data into JSON strings for JS
-                points_json = json.dumps(clip_data["points"])
-                radius_json = json.dumps(clip_data["radius"])
-                ref_w_json = json.dumps(clip_data["viewBox"][0])
-                ref_h_json = json.dumps(clip_data["viewBox"][1])
+                points_json = _dumps(clip_data["points"])
+                radius_json = _dumps(clip_data["radius"])
+                ref_w_json = _dumps(clip_data["viewBox"][0])
+                ref_h_json = _dumps(clip_data["viewBox"][1])
 
                 # This JS code performs the exact two-step process you described.
                 js_commands.append(
@@ -1924,37 +1942,74 @@ class Framework:
              /* Add position-area equivalent if needed */
          }
          """
-        try:
-            with open(self.css_file_path, "w", encoding="utf-8") as c:
-                c.write(base_css + font_face_rules)
-            with open(self.html_file_path, "w", encoding="utf-8") as f:
-                f.write(
-                    f"""<!DOCTYPE html>
-<html lang="en">
+        # Prepare the strings we may write
+        css_output = base_css + font_face_rules
+
+        # Note: remove the timestamp query param to keep the generated HTML stable
+        # so we don't rewrite files every run. Dynamic updates are handled via
+        # the <style id="dynamic-styles"> tag and JS patches.
+        html_output = (
+            f"""<!DOCTYPE html>
+<html lang=\"en\">
 <head>
-    <meta charset="UTF-8">
+    <meta charset=\"UTF-8\">
     <title>{html.escape(title)}</title>
     <!-- ADD SIMPLEBAR CSS -->
-    <link rel="stylesheet" href="./js/scroll-bar/simplebar.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link id="base-stylesheet" type="text/css" rel="stylesheet" href="styles.css?v={int(time.time())}">
-    <style id="dynamic-styles">{initial_css_rules}</style>
-    {self._get_js_includes()}
-    {plugin_css_str}
-</head>
-<body>
-    <div id="root-container">{html_content}</div>
-    <div id="overlay-container"></div>
+    <link rel=\"stylesheet\" href=\"./js/scroll-bar/simplebar.min.css\" />
+    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n
+                <link id=\"base-stylesheet\" type=\"text/css\" rel=\"stylesheet\" href=\"styles.css\">\n
+                <style id=\"dynamic-styles\">{initial_css_rules}</style>\n
+                {self._get_js_includes()}\n
+                {plugin_css_str}\n
+            </head>\n<body>\n    <div id=\"root-container\">{html_content}</div>\n    <div id=\"overlay-container\"></div>\n\n    <!-- ADD SIMPLEBAR JS -->\n    <script src=\"./js/scroll-bar/simplebar.min.js\"></script>\n    <!-- ADD THE NEW SLIDER JS ENGINE -->\n    {initial_js}\n</body>\n</html>"""
+        )
 
-    <!-- ADD SIMPLEBAR JS -->
-    <script src="./js/scroll-bar/simplebar.min.js"></script>
-    <!-- ADD THE NEW SLIDER JS ENGINE -->
-    {initial_js}
-</body>
-</html>"""
-                )
-        except IOError as e:
-            print(f"Error writing initial files: {e}")
+        try:
+            # If we've written initial files before and cached content matches, skip writes
+            if self._initial_files_written:
+                css_same = (self._cached_initial_css == css_output)
+                html_same = (self._cached_initial_html == html_output)
+                if css_same and html_same:
+                    print("✅ Initial files unchanged — skipping disk write")
+                    return
+
+            # Write CSS if different
+            try:
+                existing_css = None
+                if self.css_file_path.exists():
+                    with open(self.css_file_path, 'r', encoding='utf-8') as rc:
+                        existing_css = rc.read()
+                if existing_css != css_output:
+                    with open(self.css_file_path, 'w', encoding='utf-8') as c:
+                        c.write(css_output)
+                    print(f"📝 Wrote styles to {self.css_file_path}")
+                else:
+                    print("✅ styles.css already up-to-date")
+            except IOError as e:
+                print(f"Error writing CSS file: {e}")
+
+            # Write HTML if different
+            try:
+                existing_html = None
+                if self.html_file_path.exists():
+                    with open(self.html_file_path, 'r', encoding='utf-8') as rh:
+                        existing_html = rh.read()
+                if existing_html != html_output:
+                    with open(self.html_file_path, 'w', encoding='utf-8') as f:
+                        f.write(html_output)
+                    print(f"📝 Wrote HTML to {self.html_file_path}")
+                else:
+                    print("✅ index.html already up-to-date")
+            except IOError as e:
+                print(f"Error writing HTML file: {e}")
+
+            # Cache the written content so subsequent calls can skip I/O
+            self._cached_initial_css = css_output
+            self._cached_initial_html = html_output
+            self._initial_files_written = True
+
+        except Exception as e:
+            print(f"Error preparing initial files: {e}")
 
     def _get_js_includes(self):
         """Generates standard script includes for QWebChannel and event handling."""

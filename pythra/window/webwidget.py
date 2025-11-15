@@ -633,8 +633,14 @@ class WebWindow(QWidget):
         if window_id in window_manager.windows:
             window = window_manager.windows[window_id]
             if hasattr(window, "webview") and window.webview:
-                for script in scripts:
-                    window.webview.page().runJavaScript(script, dummy_callback)
+                # Batch all script fragments into a single script to reduce
+                # overhead from multiple runJavaScript calls.
+                try:
+                    combined = "\n".join(s for s in scripts if s)
+                    if combined:
+                        window.webview.page().runJavaScript(combined, dummy_callback)
+                except Exception as e:
+                    debug_print("evaluate_js: failed to run combined script:", e)
             else:
                 #print(f"Window {window_id} does not have a webview.")
                 debug_print(f"Window {window_id} does not have a webview.")
