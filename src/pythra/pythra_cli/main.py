@@ -283,7 +283,7 @@ def build(
     print("--- Starting Pythra Build Process ---")
     
     # Set default include directories, and add 'plugins' if it exists.
-    default_includes = ["assets", "web"]
+    default_includes = ["assets", "render"]
     if (project_root / "plugins").is_dir():
         default_includes.append("plugins")
     include_dir = include_dir or default_includes

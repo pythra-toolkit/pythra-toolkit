@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "build"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pythra"            # choose your real package name
+version = "0.1.2"
+description = "PyThra — a Flutter-like GUI framework in Python. a declarative Python UI framework for desktop apps with a webview renderer."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name="Ahmad Muhammad Bashir", email="ambashir02@gmail.com" }]
+requires-python = ">=3.9"
+dependencies = []
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+
+[project.scripts]
+pythra = "pythra.pythra_cli.main:app"

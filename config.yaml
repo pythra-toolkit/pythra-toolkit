@@ -1,42 +1,10 @@
-# App configrations
-version: "0.0.1"
-
-app_name: 
-  "Music Player"
-
-
-# Assets configrations
-assets_dir: 
-  "assets"
-
-assets_server_port: 
-  8007
-
-font_dir: 
-  "fonts"
-
-
-# Window configrations
-Debug: 
-  True
-
-frameless: 
-  True
-
-maximixed: 
-  True
-
-fixed_size: 
-  True
-
-win_height: 
-  600
-
-win_width: 
-  800
-
-
-# Dependencies
-dependencies: 
-  "yaml"
-
+app_name: My Pythra App
+win_width: 1280
+win_height: 720
+frameless: false
+maximixed: false
+fixed_size: false
+Debug: true
+render_dir: render
+assets_dir: assets
+assets_server_port: 8008

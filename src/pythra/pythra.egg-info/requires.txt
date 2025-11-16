@@ -1,0 +1,8 @@
+PySide6
+typer[all]
+
+[dev]
+Cython>=0.29.30
+
+[fast]
+Cython>=0.29.30

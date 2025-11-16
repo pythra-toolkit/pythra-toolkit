@@ -7,10 +7,10 @@ import json
 # Add the project root directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pythra.styles import *
-from pythra.widgets import *
-from pythra.state import *
-from pythra import Framework 
+from pythra.pythra.styles import *
+from pythra.pythra.widgets import *
+from pythra.pythra.state import *
+from pythra.pythra import Framework 
 from .controller import DerivedDropdownController
 from .style import DerivedDropdownTheme
 from typing import Callable, List, Optional

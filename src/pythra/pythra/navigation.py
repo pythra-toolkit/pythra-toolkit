@@ -1,5 +1,5 @@
 # In a new file: pythra/navigation.py
-from pythra.styles import Colors
+from pythra.pythra.styles import Colors
 from .state import StatefulWidget, State
 from .widgets import Container, Key, Text
 from .base import Widget

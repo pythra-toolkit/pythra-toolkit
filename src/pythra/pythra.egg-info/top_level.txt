@@ -1,2 +1,3 @@
+project_template
 pythra
 pythra_cli

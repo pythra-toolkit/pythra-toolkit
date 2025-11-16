@@ -1,4 +1,4 @@
-from pythra.styles import *
+from pythra.pythra.styles import *
 
 # ==============================================================================
 # 1. THEME (The Data and Style Models)
