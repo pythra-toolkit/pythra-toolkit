@@ -9,6 +9,7 @@ src/pythra.egg-info/PKG-INFO
 src/pythra.egg-info/SOURCES.txt
 src/pythra.egg-info/dependency_links.txt
 src/pythra.egg-info/entry_points.txt
+src/pythra.egg-info/requires.txt
 src/pythra.egg-info/top_level.txt
 src/pythra/perv_tests/main.py
 src/pythra/perv_tests/main_bottomNavBar_pageChang.py
