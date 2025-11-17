@@ -1,4 +1,7 @@
+CHANGELOG.md
 LICENSE
+MANIFEST.in
+PACKAGE_SYSTEM_README.md
 README.md
 pyproject.toml
 src/pythra/__init__.py
@@ -77,9 +80,11 @@ src/pythra/pythra/icons/icons_sharp_1.py
 src/pythra/pythra/tests/__init__.py
 src/pythra/pythra/tests/test_rust_adapter.py
 src/pythra/pythra/utils/__init__.py
+src/pythra/pythra/window/__init__.py
 src/pythra/pythra/window/main.py
 src/pythra/pythra/window/max.py
 src/pythra/pythra/window/webwidget.py
+src/pythra/pythra/window/window_manager.py
 src/pythra/pythra_cli/__init__.py
 src/pythra/pythra_cli/main.py
 src/pythra/pythra_cli/package_commands.py

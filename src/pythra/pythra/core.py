@@ -524,18 +524,21 @@ class Framework:
                 cleaned = content.replace('export class', 'class').replace('export function', 'function')
                 cleaned = re.sub(r'import\s+.*\s+from\s+.*?;?\n?', '', cleaned)
 
+                filename = os.path.basename(file_path)
+
                 wrapped_content = (
-                    f"try {{\n{cleaned}\n"
-                    "// Make common names available on window if defined\n"
-                    "if (typeof ResponsiveClipPath !== 'undefined') window.ResponsiveClipPath = ResponsiveClipPath;\n"
-                    "if (typeof PythraSlider !== 'undefined') window.PythraSlider = PythraSlider;\n"
-                    "if (typeof PythraDropdown !== 'undefined') window.PythraDropdown = PythraDropdown;\n"
-                    "if (typeof PythraGestureDetector !== 'undefined') window.PythraGestureDetector = PythraGestureDetector;\n"
-                    "if (typeof PythraGradientClipPath !== 'undefined') window.PythraGradientClipPath = PythraGradientClipPath;\n"
-                    "if (typeof PythraVirtualList !== 'undefined') window.PythraVirtualList = PythraVirtualList;\n"
-                    "if (typeof generateRoundedPath !== 'undefined') window.generateRoundedPath = generateRoundedPath;\n"
-                    "if (typeof scalePathAbsoluteMLA !== 'undefined') window.scalePathAbsoluteMLA = scalePathAbsoluteMLA;\n"
-                    "} catch (e) { console.error('Error loading %s:', e); }" % os.path.basename(file_path)
+                    f"""try {{
+                        \n{cleaned}\n
+                        // Make common names available on window if defined\n
+                        if (typeof ResponsiveClipPath !== 'undefined') window.ResponsiveClipPath = ResponsiveClipPath;\n
+                        if (typeof PythraSlider !== 'undefined') window.PythraSlider = PythraSlider;\n
+                        if (typeof PythraDropdown !== 'undefined') window.PythraDropdown = PythraDropdown;\n
+                        if (typeof PythraGestureDetector !== 'undefined') window.PythraGestureDetector = PythraGestureDetector;\n
+                        if (typeof PythraGradientClipPath !== 'undefined') window.PythraGradientClipPath = PythraGradientClipPath;\n
+                        if (typeof PythraVirtualList !== 'undefined') window.PythraVirtualList = PythraVirtualList;\n
+                        if (typeof generateRoundedPath !== 'undefined') window.generateRoundedPath = generateRoundedPath;\n
+                        if (typeof scalePathAbsoluteMLA !== 'undefined') window.scalePathAbsoluteMLA = scalePathAbsoluteMLA;\n
+                    }} catch (e) {{ console.error('Error loading {filename}:', e); }}"""
                 )
 
                 all_js_code.append(f"// --- Injected from {os.path.basename(file_path)} ---\n{wrapped_content}")

@@ -53,6 +53,7 @@ pythra doctor
 
 # create a pythra project
 pyhtra create-project new-app
+
 ```
 
 ## 💡 Example Usage
@@ -323,7 +324,10 @@ if __name__ == "__main__":
     app.run(title="My New Pythra App")
 
 
+
 ```
+
+## Demo
 
 ## 📜 Philosophy
 

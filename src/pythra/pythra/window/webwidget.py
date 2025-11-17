@@ -91,7 +91,7 @@ import threading
 import wmi
 import platform
 
-from window_manager import SystemSleepManager 
+from .window_manager import SystemSleepManager 
 
 # =============================================================================
 # PYTHRA FRAMEWORK IMPORTS
