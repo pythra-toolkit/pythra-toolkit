@@ -11,3 +11,7 @@ build/
 /dist/
 /__pycache__/
 /.vscode/
+/src/pythra.egg-info
+/src/pythra/pythra.egg-info
+/.pytest_cache
+/config.yaml
