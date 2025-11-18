@@ -53,24 +53,32 @@ jobs:
           path: dist/*.tar.gz
 
   upload_pypi:
-    # 1. Make sure to wait for BOTH jobs
-    needs: [build_wheels, build_sdist] 
+    needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
+    
+    # 1. Only run this job when a Release is published
     if: github.event_name == 'release' && github.event.action == 'published' || github.event_name == 'workflow_dispatch'
+
+    # 2. IMPORTANT: This permission is required for Trusted Publishing
+    permissions:
+      id-token: write  # This allows GitHub to sign the OIDC token
+      contents: read
+
+    # 3. (Optional) Match the environment name you set in PyPI (if you did)
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pythra
+
     steps:
       - uses: actions/download-artifact@v4
         with:
-          # 2. Change pattern to 'cibw-*' to match:
-          #    - cibw-wheels-windows...
-          #    - cibw-wheels-ubuntu...
-          #    - cibw-sdist  <-- Catches the source tarball too
           pattern: cibw-*
           path: dist
           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@v1.10.3
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          # 'user' is actually not strictly required anymore if you have password, 
-          # but keeping it is fine for compatibility.
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          # 4. We NO LONGER need 'user' or 'password' inputs. 
+          # The action detects the OIDC token automatically.
+          verbose: true
