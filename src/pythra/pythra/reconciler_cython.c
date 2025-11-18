@@ -4,14 +4,14 @@
 {
     "distutils": {
         "extra_compile_args": [
-            "-O3"
+            "/Ox"
         ],
-        "name": "pythra.reconciler_cython",
+        "name": "pythra.pythra.reconciler_cython",
         "sources": [
-            "pythra/reconciler_cython.pyx"
+            "src/pythra/pythra/reconciler_cython.pyx"
         ]
     },
-    "module_name": "pythra.reconciler_cython"
+    "module_name": "pythra.pythra.reconciler_cython"
 }
 END: Cython Metadata */
 
@@ -1129,8 +1129,8 @@ static int __Pyx_init_co_variables(void) {
   #endif
 #endif
 
-#define __PYX_HAVE__pythra__reconciler_cython
-#define __PYX_HAVE_API__pythra__reconciler_cython
+#define __PYX_HAVE__pythra__pythra__reconciler_cython
+#define __PYX_HAVE_API__pythra__pythra__reconciler_cython
 /* Early includes */
 #ifdef _OPENMP
 #include <omp.h>
@@ -1339,7 +1339,7 @@ static const char *__pyx_filename;
 /* #### Code section: filename_table ### */
 
 static const char* const __pyx_f[] = {
-  "pythra/reconciler_cython.pyx",
+  "src/pythra/pythra/reconciler_cython.pyx",
 };
 /* #### Code section: utility_code_proto_before_types ### */
 /* Atomics.proto (used by UnpackUnboundCMethod) */
@@ -2397,22 +2397,22 @@ static int __Pyx_State_RemoveModule(void*);
 #define __PYX_TYPE_MODULE_PREFIX __PYX_ABI_MODULE_NAME "."
 
 
-/* Module declarations from "pythra.reconciler_cython" */
+/* Module declarations from "pythra.pythra.reconciler_cython" */
 /* #### Code section: typeinfo ### */
 /* #### Code section: before_global_var ### */
-#define __Pyx_MODULE_NAME "pythra.reconciler_cython"
-extern int __pyx_module_is_main_pythra__reconciler_cython;
-int __pyx_module_is_main_pythra__reconciler_cython = 0;
+#define __Pyx_MODULE_NAME "pythra.pythra.reconciler_cython"
+extern int __pyx_module_is_main_pythra__pythra__reconciler_cython;
+int __pyx_module_is_main_pythra__pythra__reconciler_cython = 0;
 
-/* Implementation of "pythra.reconciler_cython" */
+/* Implementation of "pythra.pythra.reconciler_cython" */
 /* #### Code section: global_var ### */
 static PyObject *__pyx_builtin_enumerate;
 /* #### Code section: string_decls ### */
 static const char __pyx_k_High_performance_Cython_impleme[] = "\nHigh-performance Cython implementations of PyThra reconciler hot functions.\nThese functions are called from reconciler.py when available, with automatic\nfallback to Python implementations if Cython compilation fails.\n\nThis module compiles to C for 5-20x speedup on reconciliation operations.\n";
 /* #### Code section: decls ### */
-static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_props, PyObject *__pyx_v_new_props); /* proto */
-static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursive(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_node_key, PyObject *__pyx_v_new_widget, PyObject *__pyx_v_parent_html_id, PyObject *__pyx_v_parent_key, PyObject *__pyx_v_result, PyObject *__pyx_v_previous_map, PyObject *__pyx_v_reconciler); /* proto */
-static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recursive(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_children_keys, PyObject *__pyx_v_new_children_widgets, PyObject *__pyx_v_parent_html_id, PyObject *__pyx_v_parent_key, PyObject *__pyx_v_result, PyObject *__pyx_v_previous_map, PyObject *__pyx_v_reconciler); /* proto */
+static PyObject *__pyx_pf_6pythra_6pythra_17reconciler_cython_cython_diff_props(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_props, PyObject *__pyx_v_new_props); /* proto */
+static PyObject *__pyx_pf_6pythra_6pythra_17reconciler_cython_2cython_diff_node_recursive(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_node_key, PyObject *__pyx_v_new_widget, PyObject *__pyx_v_parent_html_id, PyObject *__pyx_v_parent_key, PyObject *__pyx_v_result, PyObject *__pyx_v_previous_map, PyObject *__pyx_v_reconciler); /* proto */
+static PyObject *__pyx_pf_6pythra_6pythra_17reconciler_cython_4cython_diff_children_recursive(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_children_keys, PyObject *__pyx_v_new_children_widgets, PyObject *__pyx_v_parent_html_id, PyObject *__pyx_v_parent_key, PyObject *__pyx_v_result, PyObject *__pyx_v_previous_map, PyObject *__pyx_v_reconciler); /* proto */
 /* #### Code section: late_includes ### */
 /* #### Code section: module_state ### */
 /* SmallCodeConfig */
@@ -2485,7 +2485,7 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_kp_u_Optional_Dict __pyx_string_tab[2]
 #define __pyx_kp_u__2 __pyx_string_tab[3]
 #define __pyx_kp_u_add_note __pyx_string_tab[4]
-#define __pyx_kp_u_pythra_reconciler_cython_pyx __pyx_string_tab[5]
+#define __pyx_kp_u_src_pythra_pythra_reconciler_cyt __pyx_string_tab[5]
 #define __pyx_n_u_Any __pyx_string_tab[6]
 #define __pyx_n_u_Dict __pyx_string_tab[7]
 #define __pyx_n_u_List __pyx_string_tab[8]
@@ -2578,8 +2578,8 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_n_u_previous_map __pyx_string_tab[95]
 #define __pyx_n_u_prop_changes __pyx_string_tab[96]
 #define __pyx_n_u_props __pyx_string_tab[97]
-#define __pyx_n_u_pythra_reconciler __pyx_string_tab[98]
-#define __pyx_n_u_pythra_reconciler_cython __pyx_string_tab[99]
+#define __pyx_n_u_pythra_pythra_reconciler_cython __pyx_string_tab[98]
+#define __pyx_n_u_pythra_reconciler __pyx_string_tab[99]
 #define __pyx_n_u_pythra_state __pyx_string_tab[100]
 #define __pyx_n_u_qualname __pyx_string_tab[101]
 #define __pyx_n_u_reconciler __pyx_string_tab[102]
@@ -2651,7 +2651,7 @@ return 0;
 #endif
 /* #### Code section: module_code ### */
 
-/* "pythra/reconciler_cython.pyx":16
+/* "pythra/pythra/reconciler_cython.pyx":16
  * 
  * 
  * def cython_diff_props(dict old_props, dict new_props) -> Optional[Dict]:             # <<<<<<<<<<<<<<
@@ -2660,16 +2660,16 @@ return 0;
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6pythra_17reconciler_cython_1cython_diff_props(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_6pythra_6pythra_17reconciler_cython_1cython_diff_props(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_6pythra_17reconciler_cython_cython_diff_props, "\n    Cython-optimized property diff that identifies changes between old and new props.\n    \n    This is the hot path called on every widget update. Cython type annotations\n    and optimizations yield 3-5x speedup vs. pure Python.\n    ");
-static PyMethodDef __pyx_mdef_6pythra_17reconciler_cython_1cython_diff_props = {"cython_diff_props", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pythra_17reconciler_cython_1cython_diff_props, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6pythra_17reconciler_cython_cython_diff_props};
-static PyObject *__pyx_pw_6pythra_17reconciler_cython_1cython_diff_props(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_6pythra_6pythra_17reconciler_cython_cython_diff_props, "\n    Cython-optimized property diff that identifies changes between old and new props.\n    \n    This is the hot path called on every widget update. Cython type annotations\n    and optimizations yield 3-5x speedup vs. pure Python.\n    ");
+static PyMethodDef __pyx_mdef_6pythra_6pythra_17reconciler_cython_1cython_diff_props = {"cython_diff_props", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pythra_6pythra_17reconciler_cython_1cython_diff_props, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6pythra_6pythra_17reconciler_cython_cython_diff_props};
+static PyObject *__pyx_pw_6pythra_6pythra_17reconciler_cython_1cython_diff_props(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -2739,13 +2739,13 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
     Py_XDECREF(values[__pyx_temp]);
   }
-  __Pyx_AddTraceback("pythra.reconciler_cython.cython_diff_props", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pythra.pythra.reconciler_cython.cython_diff_props", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_old_props), (&PyDict_Type), 1, "old_props", 1))) __PYX_ERR(0, 16, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_new_props), (&PyDict_Type), 1, "new_props", 1))) __PYX_ERR(0, 16, __pyx_L1_error)
-  __pyx_r = __pyx_pf_6pythra_17reconciler_cython_cython_diff_props(__pyx_self, __pyx_v_old_props, __pyx_v_new_props);
+  __pyx_r = __pyx_pf_6pythra_6pythra_17reconciler_cython_cython_diff_props(__pyx_self, __pyx_v_old_props, __pyx_v_new_props);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2764,7 +2764,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_props, PyObject *__pyx_v_new_props) {
+static PyObject *__pyx_pf_6pythra_6pythra_17reconciler_cython_cython_diff_props(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_props, PyObject *__pyx_v_new_props) {
   PyObject *__pyx_v_changes = 0;
   PyObject *__pyx_v_ignored_keys = 0;
   PyObject *__pyx_v_all_keys = 0;
@@ -2788,7 +2788,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("cython_diff_props", 0);
 
-  /* "pythra/reconciler_cython.pyx":23
+  /* "pythra/pythra/reconciler_cython.pyx":23
  *     and optimizations yield 3-5x speedup vs. pure Python.
  *     """
  *     cdef dict changes = {}             # <<<<<<<<<<<<<<
@@ -2800,7 +2800,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   __pyx_v_changes = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pythra/reconciler_cython.pyx":24
+  /* "pythra/pythra/reconciler_cython.pyx":24
  *     """
  *     cdef dict changes = {}
  *     cdef set ignored_keys = {'widget_instance', 'itemBuilder', 'onChanged', 'onPressed', 'onTap', 'onDrag'}             # <<<<<<<<<<<<<<
@@ -2818,7 +2818,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   __pyx_v_ignored_keys = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pythra/reconciler_cython.pyx":27
+  /* "pythra/pythra/reconciler_cython.pyx":27
  * 
  *     # Fast path: if old and new are identical objects, no changes
  *     if old_props is new_props:             # <<<<<<<<<<<<<<
@@ -2828,7 +2828,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   __pyx_t_2 = (__pyx_v_old_props == __pyx_v_new_props);
   if (__pyx_t_2) {
 
-    /* "pythra/reconciler_cython.pyx":28
+    /* "pythra/pythra/reconciler_cython.pyx":28
  *     # Fast path: if old and new are identical objects, no changes
  *     if old_props is new_props:
  *         return None             # <<<<<<<<<<<<<<
@@ -2839,7 +2839,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
     __pyx_r = ((PyObject*)Py_None); __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "pythra/reconciler_cython.pyx":27
+    /* "pythra/pythra/reconciler_cython.pyx":27
  * 
  *     # Fast path: if old and new are identical objects, no changes
  *     if old_props is new_props:             # <<<<<<<<<<<<<<
@@ -2848,7 +2848,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
 */
   }
 
-  /* "pythra/reconciler_cython.pyx":30
+  /* "pythra/pythra/reconciler_cython.pyx":30
  *         return None
  * 
  *     cdef set all_keys = (set(old_props.keys()) | set(new_props.keys())) - ignored_keys             # <<<<<<<<<<<<<<
@@ -2884,7 +2884,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   __pyx_v_all_keys = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":35
+  /* "pythra/pythra/reconciler_cython.pyx":35
  *     cdef str key
  * 
  *     for key in all_keys:             # <<<<<<<<<<<<<<
@@ -2906,7 +2906,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
     __Pyx_XDECREF_SET(__pyx_v_key, ((PyObject*)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "pythra/reconciler_cython.pyx":36
+    /* "pythra/pythra/reconciler_cython.pyx":36
  * 
  *     for key in all_keys:
  *         old_val = old_props.get(key)             # <<<<<<<<<<<<<<
@@ -2922,7 +2922,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
     __Pyx_XDECREF_SET(__pyx_v_old_val, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "pythra/reconciler_cython.pyx":37
+    /* "pythra/pythra/reconciler_cython.pyx":37
  *     for key in all_keys:
  *         old_val = old_props.get(key)
  *         new_val = new_props.get(key)             # <<<<<<<<<<<<<<
@@ -2938,7 +2938,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
     __Pyx_XDECREF_SET(__pyx_v_new_val, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "pythra/reconciler_cython.pyx":40
+    /* "pythra/pythra/reconciler_cython.pyx":40
  * 
  *         # Fast path: identity check (common case for object references)
  *         if old_val is new_val:             # <<<<<<<<<<<<<<
@@ -2948,7 +2948,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
     __pyx_t_2 = (__pyx_v_old_val == __pyx_v_new_val);
     if (__pyx_t_2) {
 
-      /* "pythra/reconciler_cython.pyx":41
+      /* "pythra/pythra/reconciler_cython.pyx":41
  *         # Fast path: identity check (common case for object references)
  *         if old_val is new_val:
  *             continue             # <<<<<<<<<<<<<<
@@ -2957,7 +2957,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
 */
       goto __pyx_L4_continue;
 
-      /* "pythra/reconciler_cython.pyx":40
+      /* "pythra/pythra/reconciler_cython.pyx":40
  * 
  *         # Fast path: identity check (common case for object references)
  *         if old_val is new_val:             # <<<<<<<<<<<<<<
@@ -2966,7 +2966,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
 */
     }
 
-    /* "pythra/reconciler_cython.pyx":44
+    /* "pythra/pythra/reconciler_cython.pyx":44
  * 
  *         # Check for equality
  *         if old_val != new_val:             # <<<<<<<<<<<<<<
@@ -2978,7 +2978,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     if (__pyx_t_2) {
 
-      /* "pythra/reconciler_cython.pyx":46
+      /* "pythra/pythra/reconciler_cython.pyx":46
  *         if old_val != new_val:
  *             # For lists/dicts, do explicit equality check to catch mutable identity issues
  *             if isinstance(old_val, (list, dict)) and old_val == new_val:             # <<<<<<<<<<<<<<
@@ -3006,7 +3006,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
       __pyx_L9_bool_binop_done:;
       if (__pyx_t_2) {
 
-        /* "pythra/reconciler_cython.pyx":47
+        /* "pythra/pythra/reconciler_cython.pyx":47
  *             # For lists/dicts, do explicit equality check to catch mutable identity issues
  *             if isinstance(old_val, (list, dict)) and old_val == new_val:
  *                 continue             # <<<<<<<<<<<<<<
@@ -3015,7 +3015,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
 */
         goto __pyx_L4_continue;
 
-        /* "pythra/reconciler_cython.pyx":46
+        /* "pythra/pythra/reconciler_cython.pyx":46
  *         if old_val != new_val:
  *             # For lists/dicts, do explicit equality check to catch mutable identity issues
  *             if isinstance(old_val, (list, dict)) and old_val == new_val:             # <<<<<<<<<<<<<<
@@ -3024,7 +3024,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
 */
       }
 
-      /* "pythra/reconciler_cython.pyx":48
+      /* "pythra/pythra/reconciler_cython.pyx":48
  *             if isinstance(old_val, (list, dict)) and old_val == new_val:
  *                 continue
  *             changes[key] = new_val             # <<<<<<<<<<<<<<
@@ -3033,7 +3033,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
 */
       if (unlikely((PyDict_SetItem(__pyx_v_changes, __pyx_v_key, __pyx_v_new_val) < 0))) __PYX_ERR(0, 48, __pyx_L1_error)
 
-      /* "pythra/reconciler_cython.pyx":44
+      /* "pythra/pythra/reconciler_cython.pyx":44
  * 
  *         # Check for equality
  *         if old_val != new_val:             # <<<<<<<<<<<<<<
@@ -3045,7 +3045,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":50
+  /* "pythra/pythra/reconciler_cython.pyx":50
  *             changes[key] = new_val
  * 
  *     return changes if changes else None             # <<<<<<<<<<<<<<
@@ -3066,7 +3066,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "pythra/reconciler_cython.pyx":16
+  /* "pythra/pythra/reconciler_cython.pyx":16
  * 
  * 
  * def cython_diff_props(dict old_props, dict new_props) -> Optional[Dict]:             # <<<<<<<<<<<<<<
@@ -3079,7 +3079,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("pythra.reconciler_cython.cython_diff_props", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pythra.pythra.reconciler_cython.cython_diff_props", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_changes);
@@ -3093,7 +3093,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
   return __pyx_r;
 }
 
-/* "pythra/reconciler_cython.pyx":53
+/* "pythra/pythra/reconciler_cython.pyx":53
  * 
  * 
  * def cython_diff_node_recursive(             # <<<<<<<<<<<<<<
@@ -3102,16 +3102,16 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_cython_diff_props(CYTHON_U
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6pythra_17reconciler_cython_3cython_diff_node_recursive(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_6pythra_6pythra_17reconciler_cython_3cython_diff_node_recursive(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_6pythra_17reconciler_cython_2cython_diff_node_recursive, "\n    Cython-optimized recursive node diffing.\n    \n    This function compares a new widget with its old version and generates patches.\n    It's called for every widget in the tree on each update, so optimization here\n    has high ROI.\n    ");
-static PyMethodDef __pyx_mdef_6pythra_17reconciler_cython_3cython_diff_node_recursive = {"cython_diff_node_recursive", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pythra_17reconciler_cython_3cython_diff_node_recursive, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6pythra_17reconciler_cython_2cython_diff_node_recursive};
-static PyObject *__pyx_pw_6pythra_17reconciler_cython_3cython_diff_node_recursive(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_6pythra_6pythra_17reconciler_cython_2cython_diff_node_recursive, "\n    Cython-optimized recursive node diffing.\n    \n    This function compares a new widget with its old version and generates patches.\n    It's called for every widget in the tree on each update, so optimization here\n    has high ROI.\n    ");
+static PyMethodDef __pyx_mdef_6pythra_6pythra_17reconciler_cython_3cython_diff_node_recursive = {"cython_diff_node_recursive", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pythra_6pythra_17reconciler_cython_3cython_diff_node_recursive, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6pythra_6pythra_17reconciler_cython_2cython_diff_node_recursive};
+static PyObject *__pyx_pw_6pythra_6pythra_17reconciler_cython_3cython_diff_node_recursive(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -3221,13 +3221,13 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
     Py_XDECREF(values[__pyx_temp]);
   }
-  __Pyx_AddTraceback("pythra.reconciler_cython.cython_diff_node_recursive", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pythra.pythra.reconciler_cython.cython_diff_node_recursive", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_parent_html_id), (&PyUnicode_Type), 1, "parent_html_id", 1))) __PYX_ERR(0, 56, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_previous_map), (&PyDict_Type), 1, "previous_map", 1))) __PYX_ERR(0, 59, __pyx_L1_error)
-  __pyx_r = __pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursive(__pyx_self, __pyx_v_old_node_key, __pyx_v_new_widget, __pyx_v_parent_html_id, __pyx_v_parent_key, __pyx_v_result, __pyx_v_previous_map, __pyx_v_reconciler);
+  __pyx_r = __pyx_pf_6pythra_6pythra_17reconciler_cython_2cython_diff_node_recursive(__pyx_self, __pyx_v_old_node_key, __pyx_v_new_widget, __pyx_v_parent_html_id, __pyx_v_parent_key, __pyx_v_result, __pyx_v_previous_map, __pyx_v_reconciler);
 
   /* function exit code */
   goto __pyx_L0;
@@ -3246,7 +3246,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursive(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_node_key, PyObject *__pyx_v_new_widget, PyObject *__pyx_v_parent_html_id, PyObject *__pyx_v_parent_key, PyObject *__pyx_v_result, PyObject *__pyx_v_previous_map, PyObject *__pyx_v_reconciler) {
+static PyObject *__pyx_pf_6pythra_6pythra_17reconciler_cython_2cython_diff_node_recursive(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_node_key, PyObject *__pyx_v_new_widget, PyObject *__pyx_v_parent_html_id, PyObject *__pyx_v_parent_key, PyObject *__pyx_v_result, PyObject *__pyx_v_previous_map, PyObject *__pyx_v_reconciler) {
   PyObject *__pyx_v_old_data = 0;
   PyObject *__pyx_v_new_type = 0;
   PyObject *__pyx_v_old_type = 0;
@@ -3282,7 +3282,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("cython_diff_node_recursive", 0);
 
-  /* "pythra/reconciler_cython.pyx":70
+  /* "pythra/pythra/reconciler_cython.pyx":70
  *     """
  *     # Fast path: if new_widget is None, no work needed
  *     if new_widget is None:             # <<<<<<<<<<<<<<
@@ -3292,7 +3292,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_t_1 = (__pyx_v_new_widget == Py_None);
   if (__pyx_t_1) {
 
-    /* "pythra/reconciler_cython.pyx":71
+    /* "pythra/pythra/reconciler_cython.pyx":71
  *     # Fast path: if new_widget is None, no work needed
  *     if new_widget is None:
  *         return             # <<<<<<<<<<<<<<
@@ -3303,7 +3303,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "pythra/reconciler_cython.pyx":70
+    /* "pythra/pythra/reconciler_cython.pyx":70
  *     """
  *     # Fast path: if new_widget is None, no work needed
  *     if new_widget is None:             # <<<<<<<<<<<<<<
@@ -3312,7 +3312,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
   }
 
-  /* "pythra/reconciler_cython.pyx":73
+  /* "pythra/pythra/reconciler_cython.pyx":73
  *         return
  * 
  *     cdef dict old_data = previous_map.get(old_node_key)             # <<<<<<<<<<<<<<
@@ -3329,7 +3329,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_old_data = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "pythra/reconciler_cython.pyx":76
+  /* "pythra/pythra/reconciler_cython.pyx":76
  * 
  *     # If no old data, this is a new widget - delegate to insert handler
  *     if old_data is None:             # <<<<<<<<<<<<<<
@@ -3339,7 +3339,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_t_1 = (__pyx_v_old_data == ((PyObject*)Py_None));
   if (__pyx_t_1) {
 
-    /* "pythra/reconciler_cython.pyx":77
+    /* "pythra/pythra/reconciler_cython.pyx":77
  *     # If no old data, this is a new widget - delegate to insert handler
  *     if old_data is None:
  *         reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)             # <<<<<<<<<<<<<<
@@ -3358,7 +3358,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "pythra/reconciler_cython.pyx":78
+    /* "pythra/pythra/reconciler_cython.pyx":78
  *     if old_data is None:
  *         reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
  *         return             # <<<<<<<<<<<<<<
@@ -3369,7 +3369,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "pythra/reconciler_cython.pyx":76
+    /* "pythra/pythra/reconciler_cython.pyx":76
  * 
  *     # If no old data, this is a new widget - delegate to insert handler
  *     if old_data is None:             # <<<<<<<<<<<<<<
@@ -3378,7 +3378,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
   }
 
-  /* "pythra/reconciler_cython.pyx":81
+  /* "pythra/pythra/reconciler_cython.pyx":81
  * 
  *     # Extract type names early for fast comparison
  *     cdef str new_type = type(new_widget).__name__             # <<<<<<<<<<<<<<
@@ -3391,7 +3391,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_new_type = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "pythra/reconciler_cython.pyx":82
+  /* "pythra/pythra/reconciler_cython.pyx":82
  *     # Extract type names early for fast comparison
  *     cdef str new_type = type(new_widget).__name__
  *     cdef str old_type = old_data.get("widget_type")             # <<<<<<<<<<<<<<
@@ -3408,7 +3408,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_old_type = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "pythra/reconciler_cython.pyx":85
+  /* "pythra/pythra/reconciler_cython.pyx":85
  * 
  *     # If types differ, it's a replacement (delegate to Python for complex logic)
  *     if old_type != new_type or new_widget.key != old_data.get("key"):             # <<<<<<<<<<<<<<
@@ -3438,7 +3438,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_L6_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "pythra/reconciler_cython.pyx":87
+    /* "pythra/pythra/reconciler_cython.pyx":87
  *     if old_type != new_type or new_widget.key != old_data.get("key"):
  *         # This is complex replacement logic; delegate to Python implementation
  *         reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)             # <<<<<<<<<<<<<<
@@ -3457,7 +3457,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     }
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":88
+    /* "pythra/pythra/reconciler_cython.pyx":88
  *         # This is complex replacement logic; delegate to Python implementation
  *         reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
  *         new_props = new_widget.render_props()             # <<<<<<<<<<<<<<
@@ -3477,7 +3477,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __pyx_v_new_props = __pyx_t_6;
     __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":89
+    /* "pythra/pythra/reconciler_cython.pyx":89
  *         reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
  *         new_props = new_widget.render_props()
  *         new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)             # <<<<<<<<<<<<<<
@@ -3504,7 +3504,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __pyx_v_new_html_stub = __pyx_t_6;
     __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":90
+    /* "pythra/pythra/reconciler_cython.pyx":90
  *         new_props = new_widget.render_props()
  *         new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)
  *         from pythra.reconciler import Patch             # <<<<<<<<<<<<<<
@@ -3534,7 +3534,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     }
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":91
+    /* "pythra/pythra/reconciler_cython.pyx":91
  *         new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)
  *         from pythra.reconciler import Patch
  *         result.patches.append(             # <<<<<<<<<<<<<<
@@ -3544,7 +3544,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_result, __pyx_mstate_global->__pyx_n_u_patches); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
 
-    /* "pythra/reconciler_cython.pyx":92
+    /* "pythra/pythra/reconciler_cython.pyx":92
  *         from pythra.reconciler import Patch
  *         result.patches.append(
  *             Patch(action="REPLACE", html_id=old_data["html_id"], data={             # <<<<<<<<<<<<<<
@@ -3561,7 +3561,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __pyx_t_10 = __Pyx_PyDict_GetItem(__pyx_v_old_data, __pyx_mstate_global->__pyx_n_u_html_id); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 92, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
 
-    /* "pythra/reconciler_cython.pyx":93
+    /* "pythra/pythra/reconciler_cython.pyx":93
  *         result.patches.append(
  *             Patch(action="REPLACE", html_id=old_data["html_id"], data={
  *                 "new_html": new_html_stub,             # <<<<<<<<<<<<<<
@@ -3572,7 +3572,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __Pyx_GOTREF(__pyx_t_11);
     if (PyDict_SetItem(__pyx_t_11, __pyx_mstate_global->__pyx_n_u_new_html, __pyx_v_new_html_stub) < (0)) __PYX_ERR(0, 93, __pyx_L1_error)
 
-    /* "pythra/reconciler_cython.pyx":94
+    /* "pythra/pythra/reconciler_cython.pyx":94
  *             Patch(action="REPLACE", html_id=old_data["html_id"], data={
  *                 "new_html": new_html_stub,
  *                 "new_props": new_props             # <<<<<<<<<<<<<<
@@ -3609,7 +3609,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
       __Pyx_GOTREF(__pyx_t_2);
     }
 
-    /* "pythra/reconciler_cython.pyx":91
+    /* "pythra/pythra/reconciler_cython.pyx":91
  *         new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)
  *         from pythra.reconciler import Patch
  *         result.patches.append(             # <<<<<<<<<<<<<<
@@ -3620,7 +3620,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "pythra/reconciler_cython.pyx":97
+    /* "pythra/pythra/reconciler_cython.pyx":97
  *             })
  *         )
  *         return             # <<<<<<<<<<<<<<
@@ -3631,7 +3631,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "pythra/reconciler_cython.pyx":85
+    /* "pythra/pythra/reconciler_cython.pyx":85
  * 
  *     # If types differ, it's a replacement (delegate to Python for complex logic)
  *     if old_type != new_type or new_widget.key != old_data.get("key"):             # <<<<<<<<<<<<<<
@@ -3640,7 +3640,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
   }
 
-  /* "pythra/reconciler_cython.pyx":100
+  /* "pythra/pythra/reconciler_cython.pyx":100
  * 
  *     # UPDATE path: types match, so check for prop changes
  *     cdef str html_id = old_data["html_id"]             # <<<<<<<<<<<<<<
@@ -3657,7 +3657,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_html_id = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "pythra/reconciler_cython.pyx":101
+  /* "pythra/pythra/reconciler_cython.pyx":101
  *     # UPDATE path: types match, so check for prop changes
  *     cdef str html_id = old_data["html_id"]
  *     new_props = new_widget.render_props()             # <<<<<<<<<<<<<<
@@ -3677,7 +3677,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_new_props = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "pythra/reconciler_cython.pyx":102
+  /* "pythra/pythra/reconciler_cython.pyx":102
  *     cdef str html_id = old_data["html_id"]
  *     new_props = new_widget.render_props()
  *     old_props_from_map = old_data.get("props", {})             # <<<<<<<<<<<<<<
@@ -3696,7 +3696,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_old_props_from_map = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "pythra/reconciler_cython.pyx":105
+  /* "pythra/pythra/reconciler_cython.pyx":105
  * 
  *     # Use cython_diff_props for fast prop diffing
  *     prop_changes = cython_diff_props(old_props_from_map, new_props)             # <<<<<<<<<<<<<<
@@ -3729,7 +3729,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_prop_changes = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "pythra/reconciler_cython.pyx":108
+  /* "pythra/pythra/reconciler_cython.pyx":108
  * 
  *     # For non-renderable widgets, create UPDATE patch if props changed
  *     if new_type not in ["StatefulWidget", "StatelessWidget"]:             # <<<<<<<<<<<<<<
@@ -3751,7 +3751,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_t_5 = __pyx_t_1;
   if (__pyx_t_5) {
 
-    /* "pythra/reconciler_cython.pyx":109
+    /* "pythra/pythra/reconciler_cython.pyx":109
  *     # For non-renderable widgets, create UPDATE patch if props changed
  *     if new_type not in ["StatefulWidget", "StatelessWidget"]:
  *         if prop_changes:             # <<<<<<<<<<<<<<
@@ -3761,7 +3761,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_v_prop_changes); if (unlikely((__pyx_t_5 < 0))) __PYX_ERR(0, 109, __pyx_L1_error)
     if (__pyx_t_5) {
 
-      /* "pythra/reconciler_cython.pyx":110
+      /* "pythra/pythra/reconciler_cython.pyx":110
  *     if new_type not in ["StatefulWidget", "StatelessWidget"]:
  *         if prop_changes:
  *             patch_data = {"props": new_props, "old_props": old_props_from_map}             # <<<<<<<<<<<<<<
@@ -3775,7 +3775,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
       __pyx_v_patch_data = ((PyObject*)__pyx_t_6);
       __pyx_t_6 = 0;
 
-      /* "pythra/reconciler_cython.pyx":111
+      /* "pythra/pythra/reconciler_cython.pyx":111
  *         if prop_changes:
  *             patch_data = {"props": new_props, "old_props": old_props_from_map}
  *             if 'css_class' in prop_changes:             # <<<<<<<<<<<<<<
@@ -3785,7 +3785,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
       __pyx_t_5 = (__Pyx_PySequence_ContainsTF(__pyx_mstate_global->__pyx_n_u_css_class, __pyx_v_prop_changes, Py_EQ)); if (unlikely((__pyx_t_5 < 0))) __PYX_ERR(0, 111, __pyx_L1_error)
       if (__pyx_t_5) {
 
-        /* "pythra/reconciler_cython.pyx":112
+        /* "pythra/pythra/reconciler_cython.pyx":112
  *             patch_data = {"props": new_props, "old_props": old_props_from_map}
  *             if 'css_class' in prop_changes:
  *                 patch_data["props"]["old_shared_class"] = old_props_from_map.get("css_class")             # <<<<<<<<<<<<<<
@@ -3808,7 +3808,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-        /* "pythra/reconciler_cython.pyx":111
+        /* "pythra/pythra/reconciler_cython.pyx":111
  *         if prop_changes:
  *             patch_data = {"props": new_props, "old_props": old_props_from_map}
  *             if 'css_class' in prop_changes:             # <<<<<<<<<<<<<<
@@ -3817,7 +3817,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
       }
 
-      /* "pythra/reconciler_cython.pyx":113
+      /* "pythra/pythra/reconciler_cython.pyx":113
  *             if 'css_class' in prop_changes:
  *                 patch_data["props"]["old_shared_class"] = old_props_from_map.get("css_class")
  *             from pythra.reconciler import Patch             # <<<<<<<<<<<<<<
@@ -3847,7 +3847,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
       }
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "pythra/reconciler_cython.pyx":114
+      /* "pythra/pythra/reconciler_cython.pyx":114
  *                 patch_data["props"]["old_shared_class"] = old_props_from_map.get("css_class")
  *             from pythra.reconciler import Patch
  *             result.patches.append(Patch(action="UPDATE", html_id=html_id, data=patch_data))             # <<<<<<<<<<<<<<
@@ -3889,7 +3889,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-      /* "pythra/reconciler_cython.pyx":109
+      /* "pythra/pythra/reconciler_cython.pyx":109
  *     # For non-renderable widgets, create UPDATE patch if props changed
  *     if new_type not in ["StatefulWidget", "StatelessWidget"]:
  *         if prop_changes:             # <<<<<<<<<<<<<<
@@ -3898,7 +3898,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
     }
 
-    /* "pythra/reconciler_cython.pyx":108
+    /* "pythra/pythra/reconciler_cython.pyx":108
  * 
  *     # For non-renderable widgets, create UPDATE patch if props changed
  *     if new_type not in ["StatefulWidget", "StatelessWidget"]:             # <<<<<<<<<<<<<<
@@ -3907,7 +3907,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
   }
 
-  /* "pythra/reconciler_cython.pyx":117
+  /* "pythra/pythra/reconciler_cython.pyx":117
  * 
  *     # Update the rendered map
  *     new_widget_key = new_widget.get_unique_id()             # <<<<<<<<<<<<<<
@@ -3927,7 +3927,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_new_widget_key = __pyx_t_9;
   __pyx_t_9 = 0;
 
-  /* "pythra/reconciler_cython.pyx":119
+  /* "pythra/pythra/reconciler_cython.pyx":119
  *     new_widget_key = new_widget.get_unique_id()
  *     result.new_rendered_map[new_widget_key] = {
  *         "html_id": html_id,             # <<<<<<<<<<<<<<
@@ -3938,7 +3938,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __Pyx_GOTREF(__pyx_t_9);
   if (PyDict_SetItem(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_html_id, __pyx_v_html_id) < (0)) __PYX_ERR(0, 119, __pyx_L1_error)
 
-  /* "pythra/reconciler_cython.pyx":120
+  /* "pythra/pythra/reconciler_cython.pyx":120
  *     result.new_rendered_map[new_widget_key] = {
  *         "html_id": html_id,
  *         "widget_type": new_type,             # <<<<<<<<<<<<<<
@@ -3947,7 +3947,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
   if (PyDict_SetItem(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_widget_type, __pyx_v_new_type) < (0)) __PYX_ERR(0, 119, __pyx_L1_error)
 
-  /* "pythra/reconciler_cython.pyx":121
+  /* "pythra/pythra/reconciler_cython.pyx":121
  *         "html_id": html_id,
  *         "widget_type": new_type,
  *         "key": new_widget.key,             # <<<<<<<<<<<<<<
@@ -3959,7 +3959,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   if (PyDict_SetItem(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_key, __pyx_t_6) < (0)) __PYX_ERR(0, 119, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "pythra/reconciler_cython.pyx":122
+  /* "pythra/pythra/reconciler_cython.pyx":122
  *         "widget_type": new_type,
  *         "key": new_widget.key,
  *         "widget_instance": new_widget,             # <<<<<<<<<<<<<<
@@ -3968,7 +3968,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
   if (PyDict_SetItem(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_widget_instance, __pyx_v_new_widget) < (0)) __PYX_ERR(0, 119, __pyx_L1_error)
 
-  /* "pythra/reconciler_cython.pyx":123
+  /* "pythra/pythra/reconciler_cython.pyx":123
  *         "key": new_widget.key,
  *         "widget_instance": new_widget,
  *         "props": new_props,             # <<<<<<<<<<<<<<
@@ -3977,7 +3977,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
   if (PyDict_SetItem(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_props, __pyx_v_new_props) < (0)) __PYX_ERR(0, 119, __pyx_L1_error)
 
-  /* "pythra/reconciler_cython.pyx":124
+  /* "pythra/pythra/reconciler_cython.pyx":124
  *         "widget_instance": new_widget,
  *         "props": new_props,
  *         "parent_html_id": parent_html_id,             # <<<<<<<<<<<<<<
@@ -3986,7 +3986,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
   if (PyDict_SetItem(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_parent_html_id, __pyx_v_parent_html_id) < (0)) __PYX_ERR(0, 119, __pyx_L1_error)
 
-  /* "pythra/reconciler_cython.pyx":125
+  /* "pythra/pythra/reconciler_cython.pyx":125
  *         "props": new_props,
  *         "parent_html_id": parent_html_id,
  *         "parent_key": parent_key,             # <<<<<<<<<<<<<<
@@ -3996,7 +3996,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   if (PyDict_SetItem(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_parent_key, __pyx_v_parent_key) < (0)) __PYX_ERR(0, 119, __pyx_L1_error)
   { /* enter inner scope */
 
-    /* "pythra/reconciler_cython.pyx":126
+    /* "pythra/pythra/reconciler_cython.pyx":126
  *         "parent_html_id": parent_html_id,
  *         "parent_key": parent_key,
  *         "children_keys": [c.get_unique_id() for c in new_widget.get_children()],             # <<<<<<<<<<<<<<
@@ -4091,7 +4091,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   if (PyDict_SetItem(__pyx_t_9, __pyx_mstate_global->__pyx_n_u_children_keys, __pyx_t_6) < (0)) __PYX_ERR(0, 119, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-  /* "pythra/reconciler_cython.pyx":118
+  /* "pythra/pythra/reconciler_cython.pyx":118
  *     # Update the rendered map
  *     new_widget_key = new_widget.get_unique_id()
  *     result.new_rendered_map[new_widget_key] = {             # <<<<<<<<<<<<<<
@@ -4104,7 +4104,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "pythra/reconciler_cython.pyx":130
+  /* "pythra/pythra/reconciler_cython.pyx":130
  * 
  *     # Recurse on children
  *     child_parent_html_id = html_id if new_type not in ["StatefulWidget", "StatelessWidget"] else parent_html_id             # <<<<<<<<<<<<<<
@@ -4134,7 +4134,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_v_child_parent_html_id = ((PyObject*)__pyx_t_9);
   __pyx_t_9 = 0;
 
-  /* "pythra/reconciler_cython.pyx":131
+  /* "pythra/pythra/reconciler_cython.pyx":131
  *     # Recurse on children
  *     child_parent_html_id = html_id if new_type not in ["StatefulWidget", "StatelessWidget"] else parent_html_id
  *     reconciler._diff_children_recursive(             # <<<<<<<<<<<<<<
@@ -4144,7 +4144,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __pyx_t_6 = __pyx_v_reconciler;
   __Pyx_INCREF(__pyx_t_6);
 
-  /* "pythra/reconciler_cython.pyx":132
+  /* "pythra/pythra/reconciler_cython.pyx":132
  *     child_parent_html_id = html_id if new_type not in ["StatefulWidget", "StatelessWidget"] else parent_html_id
  *     reconciler._diff_children_recursive(
  *         old_data.get("children_keys", []),             # <<<<<<<<<<<<<<
@@ -4161,7 +4161,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __Pyx_GOTREF(__pyx_t_12);
   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-  /* "pythra/reconciler_cython.pyx":133
+  /* "pythra/pythra/reconciler_cython.pyx":133
  *     reconciler._diff_children_recursive(
  *         old_data.get("children_keys", []),
  *         new_widget.get_children(),             # <<<<<<<<<<<<<<
@@ -4179,7 +4179,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __Pyx_GOTREF(__pyx_t_11);
   }
 
-  /* "pythra/reconciler_cython.pyx":135
+  /* "pythra/pythra/reconciler_cython.pyx":135
  *         new_widget.get_children(),
  *         child_parent_html_id,
  *         new_widget.get_unique_id(),             # <<<<<<<<<<<<<<
@@ -4197,7 +4197,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
     __Pyx_GOTREF(__pyx_t_2);
   }
 
-  /* "pythra/reconciler_cython.pyx":137
+  /* "pythra/pythra/reconciler_cython.pyx":137
  *         new_widget.get_unique_id(),
  *         result,
  *         previous_map,             # <<<<<<<<<<<<<<
@@ -4217,7 +4217,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   }
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-  /* "pythra/reconciler_cython.pyx":53
+  /* "pythra/pythra/reconciler_cython.pyx":53
  * 
  * 
  * def cython_diff_node_recursive(             # <<<<<<<<<<<<<<
@@ -4237,7 +4237,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   __Pyx_XDECREF(__pyx_t_11);
   __Pyx_XDECREF(__pyx_t_12);
   __Pyx_XDECREF(__pyx_t_14);
-  __Pyx_AddTraceback("pythra.reconciler_cython.cython_diff_node_recursive", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pythra.pythra.reconciler_cython.cython_diff_node_recursive", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_old_data);
@@ -4258,7 +4258,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
   return __pyx_r;
 }
 
-/* "pythra/reconciler_cython.pyx":141
+/* "pythra/pythra/reconciler_cython.pyx":141
  * 
  * 
  * def cython_diff_children_recursive(             # <<<<<<<<<<<<<<
@@ -4267,16 +4267,16 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_2cython_diff_node_recursiv
 */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6pythra_17reconciler_cython_5cython_diff_children_recursive(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_6pythra_6pythra_17reconciler_cython_5cython_diff_children_recursive(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_6pythra_17reconciler_cython_4cython_diff_children_recursive, "\n    Cython-optimized recursive children diffing.\n    \n    This function handles insertions, removals, updates, and moves of child widgets.\n    It's called for every node with children, so optimization is important.\n    ");
-static PyMethodDef __pyx_mdef_6pythra_17reconciler_cython_5cython_diff_children_recursive = {"cython_diff_children_recursive", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pythra_17reconciler_cython_5cython_diff_children_recursive, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6pythra_17reconciler_cython_4cython_diff_children_recursive};
-static PyObject *__pyx_pw_6pythra_17reconciler_cython_5cython_diff_children_recursive(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_6pythra_6pythra_17reconciler_cython_4cython_diff_children_recursive, "\n    Cython-optimized recursive children diffing.\n    \n    This function handles insertions, removals, updates, and moves of child widgets.\n    It's called for every node with children, so optimization is important.\n    ");
+static PyMethodDef __pyx_mdef_6pythra_6pythra_17reconciler_cython_5cython_diff_children_recursive = {"cython_diff_children_recursive", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pythra_6pythra_17reconciler_cython_5cython_diff_children_recursive, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6pythra_6pythra_17reconciler_cython_4cython_diff_children_recursive};
+static PyObject *__pyx_pw_6pythra_6pythra_17reconciler_cython_5cython_diff_children_recursive(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -4386,7 +4386,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
     Py_XDECREF(values[__pyx_temp]);
   }
-  __Pyx_AddTraceback("pythra.reconciler_cython.cython_diff_children_recursive", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pythra.pythra.reconciler_cython.cython_diff_children_recursive", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
@@ -4394,7 +4394,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_new_children_widgets), (&PyList_Type), 0, "new_children_widgets", 2))) __PYX_ERR(0, 143, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_parent_html_id), (&PyUnicode_Type), 1, "parent_html_id", 1))) __PYX_ERR(0, 144, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_previous_map), (&PyDict_Type), 1, "previous_map", 1))) __PYX_ERR(0, 147, __pyx_L1_error)
-  __pyx_r = __pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recursive(__pyx_self, __pyx_v_old_children_keys, __pyx_v_new_children_widgets, __pyx_v_parent_html_id, __pyx_v_parent_key, __pyx_v_result, __pyx_v_previous_map, __pyx_v_reconciler);
+  __pyx_r = __pyx_pf_6pythra_6pythra_17reconciler_cython_4cython_diff_children_recursive(__pyx_self, __pyx_v_old_children_keys, __pyx_v_new_children_widgets, __pyx_v_parent_html_id, __pyx_v_parent_key, __pyx_v_result, __pyx_v_previous_map, __pyx_v_reconciler);
 
   /* function exit code */
   goto __pyx_L0;
@@ -4413,7 +4413,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recursive(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_children_keys, PyObject *__pyx_v_new_children_widgets, PyObject *__pyx_v_parent_html_id, PyObject *__pyx_v_parent_key, PyObject *__pyx_v_result, PyObject *__pyx_v_previous_map, PyObject *__pyx_v_reconciler) {
+static PyObject *__pyx_pf_6pythra_6pythra_17reconciler_cython_4cython_diff_children_recursive(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_old_children_keys, PyObject *__pyx_v_new_children_widgets, PyObject *__pyx_v_parent_html_id, PyObject *__pyx_v_parent_key, PyObject *__pyx_v_result, PyObject *__pyx_v_previous_map, PyObject *__pyx_v_reconciler) {
   PyObject *__pyx_v_old_key_to_data = 0;
   PyObject *__pyx_v_new_key_to_widget = 0;
   PyObject *__pyx_v_old_keys_set = 0;
@@ -4463,7 +4463,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("cython_diff_children_recursive", 0);
 
-  /* "pythra/reconciler_cython.pyx":157
+  /* "pythra/pythra/reconciler_cython.pyx":157
  *     """
  *     # Fast path: empty children
  *     if not old_children_keys and not new_children_widgets:             # <<<<<<<<<<<<<<
@@ -4493,7 +4493,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "pythra/reconciler_cython.pyx":158
+    /* "pythra/pythra/reconciler_cython.pyx":158
  *     # Fast path: empty children
  *     if not old_children_keys and not new_children_widgets:
  *         return             # <<<<<<<<<<<<<<
@@ -4504,7 +4504,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "pythra/reconciler_cython.pyx":157
+    /* "pythra/pythra/reconciler_cython.pyx":157
  *     """
  *     # Fast path: empty children
  *     if not old_children_keys and not new_children_widgets:             # <<<<<<<<<<<<<<
@@ -4513,7 +4513,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
 */
   }
 
-  /* "pythra/reconciler_cython.pyx":160
+  /* "pythra/pythra/reconciler_cython.pyx":160
  *         return
  * 
  *     cdef dict old_key_to_data = {}             # <<<<<<<<<<<<<<
@@ -4525,7 +4525,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   __pyx_v_old_key_to_data = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":161
+  /* "pythra/pythra/reconciler_cython.pyx":161
  * 
  *     cdef dict old_key_to_data = {}
  *     cdef dict new_key_to_widget = {}             # <<<<<<<<<<<<<<
@@ -4537,7 +4537,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   __pyx_v_new_key_to_widget = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":166
+  /* "pythra/pythra/reconciler_cython.pyx":166
  * 
  *     # Build lookup dictionaries efficiently
  *     for key in old_children_keys:             # <<<<<<<<<<<<<<
@@ -4561,7 +4561,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __Pyx_XDECREF_SET(__pyx_v_key, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":167
+    /* "pythra/pythra/reconciler_cython.pyx":167
  *     # Build lookup dictionaries efficiently
  *     for key in old_children_keys:
  *         if key in previous_map:             # <<<<<<<<<<<<<<
@@ -4575,7 +4575,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __pyx_t_1 = (__Pyx_PyDict_ContainsTF(__pyx_v_key, __pyx_v_previous_map, Py_EQ)); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 167, __pyx_L1_error)
     if (__pyx_t_1) {
 
-      /* "pythra/reconciler_cython.pyx":168
+      /* "pythra/pythra/reconciler_cython.pyx":168
  *     for key in old_children_keys:
  *         if key in previous_map:
  *             old_key_to_data[key] = previous_map[key]             # <<<<<<<<<<<<<<
@@ -4591,7 +4591,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       if (unlikely((PyDict_SetItem(__pyx_v_old_key_to_data, __pyx_v_key, __pyx_t_6) < 0))) __PYX_ERR(0, 168, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "pythra/reconciler_cython.pyx":167
+      /* "pythra/pythra/reconciler_cython.pyx":167
  *     # Build lookup dictionaries efficiently
  *     for key in old_children_keys:
  *         if key in previous_map:             # <<<<<<<<<<<<<<
@@ -4600,7 +4600,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
 */
     }
 
-    /* "pythra/reconciler_cython.pyx":166
+    /* "pythra/pythra/reconciler_cython.pyx":166
  * 
  *     # Build lookup dictionaries efficiently
  *     for key in old_children_keys:             # <<<<<<<<<<<<<<
@@ -4610,7 +4610,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":170
+  /* "pythra/pythra/reconciler_cython.pyx":170
  *             old_key_to_data[key] = previous_map[key]
  * 
  *     for widget in new_children_widgets:             # <<<<<<<<<<<<<<
@@ -4634,7 +4634,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __Pyx_XDECREF_SET(__pyx_v_widget, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":171
+    /* "pythra/pythra/reconciler_cython.pyx":171
  * 
  *     for widget in new_children_widgets:
  *         new_key_to_widget[widget.get_unique_id()] = widget             # <<<<<<<<<<<<<<
@@ -4654,7 +4654,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     if (unlikely((PyDict_SetItem(__pyx_v_new_key_to_widget, __pyx_t_6, __pyx_v_widget) < 0))) __PYX_ERR(0, 171, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":170
+    /* "pythra/pythra/reconciler_cython.pyx":170
  *             old_key_to_data[key] = previous_map[key]
  * 
  *     for widget in new_children_widgets:             # <<<<<<<<<<<<<<
@@ -4664,7 +4664,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":173
+  /* "pythra/pythra/reconciler_cython.pyx":173
  *         new_key_to_widget[widget.get_unique_id()] = widget
  * 
  *     old_keys_set = set(old_key_to_data.keys())             # <<<<<<<<<<<<<<
@@ -4679,7 +4679,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   __pyx_v_old_keys_set = ((PyObject*)__pyx_t_6);
   __pyx_t_6 = 0;
 
-  /* "pythra/reconciler_cython.pyx":174
+  /* "pythra/pythra/reconciler_cython.pyx":174
  * 
  *     old_keys_set = set(old_key_to_data.keys())
  *     new_keys_set = set(new_key_to_widget.keys())             # <<<<<<<<<<<<<<
@@ -4694,7 +4694,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   __pyx_v_new_keys_set = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":177
+  /* "pythra/pythra/reconciler_cython.pyx":177
  * 
  *     # Handle removals
  *     cdef set keys_to_remove = old_keys_set - new_keys_set             # <<<<<<<<<<<<<<
@@ -4707,7 +4707,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   __pyx_v_keys_to_remove = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":178
+  /* "pythra/pythra/reconciler_cython.pyx":178
  *     # Handle removals
  *     cdef set keys_to_remove = old_keys_set - new_keys_set
  *     from pythra.reconciler import Patch             # <<<<<<<<<<<<<<
@@ -4737,7 +4737,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":179
+  /* "pythra/pythra/reconciler_cython.pyx":179
  *     cdef set keys_to_remove = old_keys_set - new_keys_set
  *     from pythra.reconciler import Patch
  *     from pythra.state import StatefulWidget             # <<<<<<<<<<<<<<
@@ -4767,7 +4767,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":180
+  /* "pythra/pythra/reconciler_cython.pyx":180
  *     from pythra.reconciler import Patch
  *     from pythra.state import StatefulWidget
  *     for key in keys_to_remove:             # <<<<<<<<<<<<<<
@@ -4788,7 +4788,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __Pyx_XDECREF_SET(__pyx_v_key, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":181
+    /* "pythra/pythra/reconciler_cython.pyx":181
  *     from pythra.state import StatefulWidget
  *     for key in keys_to_remove:
  *         old_data = old_key_to_data[key]             # <<<<<<<<<<<<<<
@@ -4800,7 +4800,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __Pyx_XDECREF_SET(__pyx_v_old_data, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "pythra/reconciler_cython.pyx":182
+    /* "pythra/pythra/reconciler_cython.pyx":182
  *     for key in keys_to_remove:
  *         old_data = old_key_to_data[key]
  *         result.patches.append(Patch(action="REMOVE", html_id=old_data["html_id"], data={}))             # <<<<<<<<<<<<<<
@@ -4848,7 +4848,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "pythra/reconciler_cython.pyx":183
+    /* "pythra/pythra/reconciler_cython.pyx":183
  *         old_data = old_key_to_data[key]
  *         result.patches.append(Patch(action="REMOVE", html_id=old_data["html_id"], data={}))
  *         widget_instance = old_data.get("widget_instance")             # <<<<<<<<<<<<<<
@@ -4868,7 +4868,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __Pyx_XDECREF_SET(__pyx_v_widget_instance, __pyx_t_7);
     __pyx_t_7 = 0;
 
-    /* "pythra/reconciler_cython.pyx":184
+    /* "pythra/pythra/reconciler_cython.pyx":184
  *         result.patches.append(Patch(action="REMOVE", html_id=old_data["html_id"], data={}))
  *         widget_instance = old_data.get("widget_instance")
  *         if isinstance(widget_instance, StatefulWidget):             # <<<<<<<<<<<<<<
@@ -4878,7 +4878,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __pyx_t_1 = PyObject_IsInstance(__pyx_v_widget_instance, __pyx_v_StatefulWidget); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(0, 184, __pyx_L1_error)
     if (__pyx_t_1) {
 
-      /* "pythra/reconciler_cython.pyx":185
+      /* "pythra/pythra/reconciler_cython.pyx":185
  *         widget_instance = old_data.get("widget_instance")
  *         if isinstance(widget_instance, StatefulWidget):
  *             state = widget_instance.get_state()             # <<<<<<<<<<<<<<
@@ -4898,7 +4898,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       __Pyx_XDECREF_SET(__pyx_v_state, __pyx_t_7);
       __pyx_t_7 = 0;
 
-      /* "pythra/reconciler_cython.pyx":186
+      /* "pythra/pythra/reconciler_cython.pyx":186
  *         if isinstance(widget_instance, StatefulWidget):
  *             state = widget_instance.get_state()
  *             if state:             # <<<<<<<<<<<<<<
@@ -4908,7 +4908,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_state); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 186, __pyx_L1_error)
       if (__pyx_t_1) {
 
-        /* "pythra/reconciler_cython.pyx":187
+        /* "pythra/pythra/reconciler_cython.pyx":187
  *             state = widget_instance.get_state()
  *             if state:
  *                 state.dispose()             # <<<<<<<<<<<<<<
@@ -4927,7 +4927,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
         }
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-        /* "pythra/reconciler_cython.pyx":186
+        /* "pythra/pythra/reconciler_cython.pyx":186
  *         if isinstance(widget_instance, StatefulWidget):
  *             state = widget_instance.get_state()
  *             if state:             # <<<<<<<<<<<<<<
@@ -4936,7 +4936,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
 */
       }
 
-      /* "pythra/reconciler_cython.pyx":184
+      /* "pythra/pythra/reconciler_cython.pyx":184
  *         result.patches.append(Patch(action="REMOVE", html_id=old_data["html_id"], data={}))
  *         widget_instance = old_data.get("widget_instance")
  *         if isinstance(widget_instance, StatefulWidget):             # <<<<<<<<<<<<<<
@@ -4947,7 +4947,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":190
+  /* "pythra/pythra/reconciler_cython.pyx":190
  * 
  *     # Handle updates, inserts, and moves
  *     cdef int last_placed_old_idx = -1             # <<<<<<<<<<<<<<
@@ -4956,7 +4956,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
 */
   __pyx_v_last_placed_old_idx = -1;
 
-  /* "pythra/reconciler_cython.pyx":191
+  /* "pythra/pythra/reconciler_cython.pyx":191
  *     # Handle updates, inserts, and moves
  *     cdef int last_placed_old_idx = -1
  *     cdef dict old_key_to_index = {key: i for i, key in enumerate(old_children_keys)}             # <<<<<<<<<<<<<<
@@ -5001,7 +5001,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   __pyx_v_old_key_to_index = ((PyObject*)__pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":193
+  /* "pythra/pythra/reconciler_cython.pyx":193
  *     cdef dict old_key_to_index = {key: i for i, key in enumerate(old_children_keys)}
  *     cdef int old_idx
  *     cdef int i = 0             # <<<<<<<<<<<<<<
@@ -5010,7 +5010,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
 */
   __pyx_v_i = 0;
 
-  /* "pythra/reconciler_cython.pyx":196
+  /* "pythra/pythra/reconciler_cython.pyx":196
  *     cdef new_key
  * 
  *     for i, new_widget in enumerate(new_children_widgets):             # <<<<<<<<<<<<<<
@@ -5037,7 +5037,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __pyx_v_i = __pyx_t_11;
     __pyx_t_11 = (__pyx_t_11 + 1);
 
-    /* "pythra/reconciler_cython.pyx":197
+    /* "pythra/pythra/reconciler_cython.pyx":197
  * 
  *     for i, new_widget in enumerate(new_children_widgets):
  *         new_key = new_widget.get_unique_id()             # <<<<<<<<<<<<<<
@@ -5057,7 +5057,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __Pyx_XDECREF_SET(__pyx_v_new_key, __pyx_t_7);
     __pyx_t_7 = 0;
 
-    /* "pythra/reconciler_cython.pyx":199
+    /* "pythra/pythra/reconciler_cython.pyx":199
  *         new_key = new_widget.get_unique_id()
  * 
  *         if new_key in old_keys_set:             # <<<<<<<<<<<<<<
@@ -5067,7 +5067,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     __pyx_t_1 = (__Pyx_PySet_ContainsTF(__pyx_v_new_key, __pyx_v_old_keys_set, Py_EQ)); if (unlikely((__pyx_t_1 < 0))) __PYX_ERR(0, 199, __pyx_L1_error)
     if (__pyx_t_1) {
 
-      /* "pythra/reconciler_cython.pyx":201
+      /* "pythra/pythra/reconciler_cython.pyx":201
  *         if new_key in old_keys_set:
  *             # Existing widget: diff it
  *             reconciler._diff_node_recursive(             # <<<<<<<<<<<<<<
@@ -5077,7 +5077,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       __pyx_t_6 = __pyx_v_reconciler;
       __Pyx_INCREF(__pyx_t_6);
 
-      /* "pythra/reconciler_cython.pyx":202
+      /* "pythra/pythra/reconciler_cython.pyx":202
  *             # Existing widget: diff it
  *             reconciler._diff_node_recursive(
  *                 new_key, new_widget, parent_html_id, parent_key, result, previous_map             # <<<<<<<<<<<<<<
@@ -5094,7 +5094,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       }
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "pythra/reconciler_cython.pyx":206
+      /* "pythra/pythra/reconciler_cython.pyx":206
  * 
  *             # Check for moves (out-of-order children)
  *             old_idx = old_key_to_index[new_key]             # <<<<<<<<<<<<<<
@@ -5107,7 +5107,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __pyx_v_old_idx = __pyx_t_12;
 
-      /* "pythra/reconciler_cython.pyx":207
+      /* "pythra/pythra/reconciler_cython.pyx":207
  *             # Check for moves (out-of-order children)
  *             old_idx = old_key_to_index[new_key]
  *             if old_idx < last_placed_old_idx:             # <<<<<<<<<<<<<<
@@ -5117,7 +5117,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       __pyx_t_1 = (__pyx_v_old_idx < __pyx_v_last_placed_old_idx);
       if (__pyx_t_1) {
 
-        /* "pythra/reconciler_cython.pyx":208
+        /* "pythra/pythra/reconciler_cython.pyx":208
  *             old_idx = old_key_to_index[new_key]
  *             if old_idx < last_placed_old_idx:
  *                 moved_html_id = result.new_rendered_map[new_key]["html_id"]             # <<<<<<<<<<<<<<
@@ -5135,7 +5135,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
         __Pyx_XDECREF_SET(__pyx_v_moved_html_id, __pyx_t_7);
         __pyx_t_7 = 0;
 
-        /* "pythra/reconciler_cython.pyx":209
+        /* "pythra/pythra/reconciler_cython.pyx":209
  *             if old_idx < last_placed_old_idx:
  *                 moved_html_id = result.new_rendered_map[new_key]["html_id"]
  *                 before_id = reconciler._find_next_stable_html_id(             # <<<<<<<<<<<<<<
@@ -5145,7 +5145,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
         __pyx_t_6 = __pyx_v_reconciler;
         __Pyx_INCREF(__pyx_t_6);
 
-        /* "pythra/reconciler_cython.pyx":210
+        /* "pythra/pythra/reconciler_cython.pyx":210
  *                 moved_html_id = result.new_rendered_map[new_key]["html_id"]
  *                 before_id = reconciler._find_next_stable_html_id(
  *                     i + 1, new_children_widgets, old_key_to_index, result.new_rendered_map             # <<<<<<<<<<<<<<
@@ -5169,7 +5169,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
         __Pyx_XDECREF_SET(__pyx_v_before_id, __pyx_t_7);
         __pyx_t_7 = 0;
 
-        /* "pythra/reconciler_cython.pyx":212
+        /* "pythra/pythra/reconciler_cython.pyx":212
  *                     i + 1, new_children_widgets, old_key_to_index, result.new_rendered_map
  *                 )
  *                 result.patches.append(Patch(             # <<<<<<<<<<<<<<
@@ -5182,7 +5182,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
         __Pyx_INCREF(__pyx_v_Patch);
         __pyx_t_6 = __pyx_v_Patch; 
 
-        /* "pythra/reconciler_cython.pyx":214
+        /* "pythra/pythra/reconciler_cython.pyx":214
  *                 result.patches.append(Patch(
  *                     "MOVE", moved_html_id,
  *                     {"parent_html_id": parent_html_id, "before_id": before_id}             # <<<<<<<<<<<<<<
@@ -5215,7 +5215,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
           __Pyx_GOTREF(__pyx_t_17);
         }
 
-        /* "pythra/reconciler_cython.pyx":212
+        /* "pythra/pythra/reconciler_cython.pyx":212
  *                     i + 1, new_children_widgets, old_key_to_index, result.new_rendered_map
  *                 )
  *                 result.patches.append(Patch(             # <<<<<<<<<<<<<<
@@ -5226,7 +5226,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
 
-        /* "pythra/reconciler_cython.pyx":207
+        /* "pythra/pythra/reconciler_cython.pyx":207
  *             # Check for moves (out-of-order children)
  *             old_idx = old_key_to_index[new_key]
  *             if old_idx < last_placed_old_idx:             # <<<<<<<<<<<<<<
@@ -5235,7 +5235,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
 */
       }
 
-      /* "pythra/reconciler_cython.pyx":216
+      /* "pythra/pythra/reconciler_cython.pyx":216
  *                     {"parent_html_id": parent_html_id, "before_id": before_id}
  *                 ))
  *             last_placed_old_idx = max(last_placed_old_idx, old_idx)             # <<<<<<<<<<<<<<
@@ -5252,7 +5252,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       }
       __pyx_v_last_placed_old_idx = __pyx_t_20;
 
-      /* "pythra/reconciler_cython.pyx":199
+      /* "pythra/pythra/reconciler_cython.pyx":199
  *         new_key = new_widget.get_unique_id()
  * 
  *         if new_key in old_keys_set:             # <<<<<<<<<<<<<<
@@ -5262,7 +5262,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       goto __pyx_L26;
     }
 
-    /* "pythra/reconciler_cython.pyx":219
+    /* "pythra/pythra/reconciler_cython.pyx":219
  *         else:
  *             # New widget: insert it
  *             before_id = reconciler._find_next_stable_html_id(             # <<<<<<<<<<<<<<
@@ -5273,7 +5273,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       __pyx_t_7 = __pyx_v_reconciler;
       __Pyx_INCREF(__pyx_t_7);
 
-      /* "pythra/reconciler_cython.pyx":220
+      /* "pythra/pythra/reconciler_cython.pyx":220
  *             # New widget: insert it
  *             before_id = reconciler._find_next_stable_html_id(
  *                 i + 1, new_children_widgets, old_key_to_index, result.new_rendered_map             # <<<<<<<<<<<<<<
@@ -5297,7 +5297,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       __Pyx_XDECREF_SET(__pyx_v_before_id, __pyx_t_17);
       __pyx_t_17 = 0;
 
-      /* "pythra/reconciler_cython.pyx":222
+      /* "pythra/pythra/reconciler_cython.pyx":222
  *                 i + 1, new_children_widgets, old_key_to_index, result.new_rendered_map
  *             )
  *             reconciler._insert_node_recursive(             # <<<<<<<<<<<<<<
@@ -5307,7 +5307,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
       __pyx_t_16 = __pyx_v_reconciler;
       __Pyx_INCREF(__pyx_t_16);
 
-      /* "pythra/reconciler_cython.pyx":223
+      /* "pythra/pythra/reconciler_cython.pyx":223
  *             )
  *             reconciler._insert_node_recursive(
  *                 new_widget, parent_html_id, parent_key, result, previous_map, before_id=before_id             # <<<<<<<<<<<<<<
@@ -5329,7 +5329,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
     }
     __pyx_L26:;
 
-    /* "pythra/reconciler_cython.pyx":196
+    /* "pythra/pythra/reconciler_cython.pyx":196
  *     cdef new_key
  * 
  *     for i, new_widget in enumerate(new_children_widgets):             # <<<<<<<<<<<<<<
@@ -5339,7 +5339,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":141
+  /* "pythra/pythra/reconciler_cython.pyx":141
  * 
  * 
  * def cython_diff_children_recursive(             # <<<<<<<<<<<<<<
@@ -5359,7 +5359,7 @@ static PyObject *__pyx_pf_6pythra_17reconciler_cython_4cython_diff_children_recu
   __Pyx_XDECREF(__pyx_t_15);
   __Pyx_XDECREF(__pyx_t_16);
   __Pyx_XDECREF(__pyx_t_17);
-  __Pyx_AddTraceback("pythra.reconciler_cython.cython_diff_children_recursive", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pythra.pythra.reconciler_cython.cython_diff_children_recursive", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_old_key_to_data);
@@ -5711,13 +5711,13 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   if (__Pyx_InitConstants(__pyx_mstate) < (0)) __PYX_ERR(0, 1, __pyx_L1_error)
   stringtab_initialized = 1;
   if (__Pyx_InitGlobals() < (0)) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__pyx_module_is_main_pythra__reconciler_cython) {
+  if (__pyx_module_is_main_pythra__pythra__reconciler_cython) {
     if (PyObject_SetAttr(__pyx_m, __pyx_mstate_global->__pyx_n_u_name, __pyx_mstate_global->__pyx_n_u_main) < (0)) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "pythra.reconciler_cython")) {
-      if (unlikely((PyDict_SetItemString(modules, "pythra.reconciler_cython", __pyx_m) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "pythra.pythra.reconciler_cython")) {
+      if (unlikely((PyDict_SetItemString(modules, "pythra.pythra.reconciler_cython", __pyx_m) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   /*--- Builtin init code ---*/
@@ -5735,7 +5735,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   (void)__Pyx_modinit_function_import_code(__pyx_mstate);
   /*--- Execution code ---*/
 
-  /* "pythra/reconciler_cython.pyx":13
+  /* "pythra/pythra/reconciler_cython.pyx":13
  * """
  * 
  * from typing import Dict, Optional, List, Union, Any             # <<<<<<<<<<<<<<
@@ -5759,7 +5759,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pythra/reconciler_cython.pyx":16
+  /* "pythra/pythra/reconciler_cython.pyx":16
  * 
  * 
  * def cython_diff_props(dict old_props, dict new_props) -> Optional[Dict]:             # <<<<<<<<<<<<<<
@@ -5769,7 +5769,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_kp_u_Optional_Dict) < (0)) __PYX_ERR(0, 16, __pyx_L1_error)
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pythra_17reconciler_cython_1cython_diff_props, 0, __pyx_mstate_global->__pyx_n_u_cython_diff_props, NULL, __pyx_mstate_global->__pyx_n_u_pythra_reconciler_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 16, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pythra_6pythra_17reconciler_cython_1cython_diff_props, 0, __pyx_mstate_global->__pyx_n_u_cython_diff_props, NULL, __pyx_mstate_global->__pyx_n_u_pythra_pythra_reconciler_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_4);
@@ -5779,7 +5779,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_diff_props, __pyx_t_4) < (0)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":53
+  /* "pythra/pythra/reconciler_cython.pyx":53
  * 
  * 
  * def cython_diff_node_recursive(             # <<<<<<<<<<<<<<
@@ -5789,7 +5789,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   if (PyDict_SetItem(__pyx_t_4, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_n_u_None) < (0)) __PYX_ERR(0, 53, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_6pythra_17reconciler_cython_3cython_diff_node_recursive, 0, __pyx_mstate_global->__pyx_n_u_cython_diff_node_recursive, NULL, __pyx_mstate_global->__pyx_n_u_pythra_reconciler_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 53, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_New(&__pyx_mdef_6pythra_6pythra_17reconciler_cython_3cython_diff_node_recursive, 0, __pyx_mstate_global->__pyx_n_u_cython_diff_node_recursive, NULL, __pyx_mstate_global->__pyx_n_u_pythra_pythra_reconciler_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_2);
@@ -5799,7 +5799,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_diff_node_recursive, __pyx_t_2) < (0)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "pythra/reconciler_cython.pyx":141
+  /* "pythra/pythra/reconciler_cython.pyx":141
  * 
  * 
  * def cython_diff_children_recursive(             # <<<<<<<<<<<<<<
@@ -5811,7 +5811,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_old_children_keys, __pyx_mstate_global->__pyx_n_u_List) < (0)) __PYX_ERR(0, 141, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_new_children_widgets, __pyx_mstate_global->__pyx_n_u_List) < (0)) __PYX_ERR(0, 141, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_return, __pyx_mstate_global->__pyx_n_u_None) < (0)) __PYX_ERR(0, 141, __pyx_L1_error)
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pythra_17reconciler_cython_5cython_diff_children_recursive, 0, __pyx_mstate_global->__pyx_n_u_cython_diff_children_recursive, NULL, __pyx_mstate_global->__pyx_n_u_pythra_reconciler_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 141, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pythra_6pythra_17reconciler_cython_5cython_diff_children_recursive, 0, __pyx_mstate_global->__pyx_n_u_cython_diff_children_recursive, NULL, __pyx_mstate_global->__pyx_n_u_pythra_pythra_reconciler_cython, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 141, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_4);
@@ -5821,7 +5821,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_cython_diff_children_recursive, __pyx_t_4) < (0)) __PYX_ERR(0, 141, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pythra/reconciler_cython.pyx":1
+  /* "pythra/pythra/reconciler_cython.pyx":1
  * # cython: language_level=3, boundscheck=False, wraparound=False             # <<<<<<<<<<<<<<
  * # =============================================================================
  * # PyThra Reconciler - Cython Accelerated Hot Functions
@@ -5839,7 +5839,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
   __Pyx_XDECREF(__pyx_t_4);
   if (__pyx_m) {
     if (__pyx_mstate->__pyx_d && stringtab_initialized) {
-      __Pyx_AddTraceback("init pythra.reconciler_cython", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init pythra.pythra.reconciler_cython", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     #if !CYTHON_USE_MODULE_STATE
     Py_CLEAR(__pyx_m);
@@ -5853,7 +5853,7 @@ __Pyx_RefNannySetupContext("PyInit_reconciler_cython", 0);
     }
     #endif
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init pythra.reconciler_cython");
+    PyErr_SetString(PyExc_ImportError, "init pythra.pythra.reconciler_cython");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -5899,25 +5899,25 @@ static int __Pyx_InitCachedConstants(__pyx_mstatetype *__pyx_mstate) {
 static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
-    const struct { const unsigned int length: 9; } index[] = {{1},{179},{14},{1},{8},{28},{3},{4},{4},{4},{4},{8},{5},{20},{6},{7},{14},{15},{6},{5},{6},{8},{6},{18},{9},{1},{7},{20},{13},{17},{18},{9},{30},{26},{17},{4},{24},{20},{7},{9},{25},{8},{19},{3},{12},{9},{13},{7},{1},{12},{22},{13},{11},{5},{3},{4},{14},{19},{8},{10},{13},{8},{20},{8},{13},{7},{17},{12},{9},{16},{8},{7},{10},{14},{17},{8},{7},{15},{16},{12},{12},{9},{18},{16},{8},{7},{9},{6},{9},{5},{14},{10},{10},{7},{3},{12},{12},{5},{17},{24},{12},{12},{10},{12},{6},{6},{12},{10},{5},{8},{6},{6},{6},{15},{11},{173},{505},{482}};
-    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (1694 bytes) */
-const char* const cstring = "BZh91AY&SY\3161\"\002\000\000\347\377\377\377\377\377\376\377\377\377\375\377\367\377\376\277\377\377\377\300@@@@@@@@@@@@\000@\000P\005\2577W@v\201\323\265\262\323\207\227\006\247\244\246\231\004\233SF\236\024\333S\312j{*\000\017S\332\247\224\323\324i\352\000\000z\232\017\325\001\243\3114\017MM\006M\251\264\302\217Ph$j\236\302\250\366%?Ri\372\243\365OD\006\201\240\032i\246\232\000\000\000\003\t\210\003CCF\206\200\000ja\031\004EO\332R~\224\317S\022z\206L\232`#@\365\003\324z\203L\200\3200\236\223\001\000z\020i\264\217P\002\251\2224d3j\214\324bf\223F\230M=G\251\204hm!\3524='\250\300\023jm@i\240\300C@\323\020\331M\004\211&\200F\223\021\243T\336\231(\323\324\3654\033H\000h\000\000\000\r\000\000\000\000\006\200\322S e\031 \252Q\222FLTR\316(p\215\273\367\321K\027\260-1`\302\031\376\377\212\211\0041\266\333%*\263\240.\267\240\222\221E\212s\300\244\260\013X\223i\032E\244\273\240b\304\262\231\252U\020\213J1\325;\rS\250(\252\345{\023\030\351.*mMU\023\333t\2540g;C\311\346E$\2635V1'\212\nV2\250\204;t\310\211}\203=\241\0043\260'\245q^\"\327\210\306\330U\355$\001g\251\032\006\220\216\231\265\353\030B}{D\315\027E\t\232\365\220B\025\242\266\376G\267Jr\031\262\355o\242\334\335\035\014]\016Fv\216#6\221\273K\266\243\277k!\312T\277\036\000\364\341\246\233\303\"\t\251\230.f4\342\310\306l\350\035a\036\223\264\277,g\311g\214\324\246\230a\344\t\307\010\220@\325X\302\326CME\217\231n{\263\376\352\214kH\231\022H=\002\325\306jQ\t\303\344\030\212\032\300'\303\312\222\010\372\374{\rc=\177'\2058NV\237\2339b\266\272MlW*\366\353\211\272\333\033l)\350\0070I\270 \2713mlg\337\267\305O\027\223\334&\320\257\335\262\306}_\306\354:\002\354H+\243.\214\245mV\330\304\235s\345\236\263\375\243\204\225\216\315\347\213k5BW \322\321\252a\034\002\251\241E\r\006\265\247\0146P\345]+\347I6\310\246?+E\006=Awo\271\033\242\210$\214'/\310(\273\301-\351\216\351d\356\343\361\371Qm$(1\t\367\327t6\325\351\023>`M[\365l,D\316\010\332`\3500\006DAA\322RE\022\010\204\352\244\310\351\211\3201(;\201\300\310\334\356\210z\021\n\311D""\303LT/\004D\246\314\311#U'(\332\0234E\277\254\376\2720\222\362\377\223\357rY\356\342\205\334\311Vs3\304\367C\001f\223\016U\003C$\025\0231\307\203i\260\260\201\332(\033\226'em-\303-\236\244I\273\264\t\271\024\035I\021V\242h\246\rc1\203\345\363\360\nf\224\354\202:\252\354\242\243\221\r\260m\312.\224\nU\326\251,\344\206-\252\212\335\"*C\242\305\023\025Pj\257\202\353j\32769\271=[\224\317\000\3174s\332(1\3042\210\362\257\255\362\254\317y;+\224\332\223\302\021\300\313b\002\370\231\201VKn\221A\211U;ns\272\327\222\271\241\264\332m\2717P,-\375\345\272\001\277\255k\303F\314\375\032\036\362:(m\352\274\206c3\262\034\364NAV\252v\0313\026\366ph\222\200\030\213U\254;\262\275=\272\336\230q\235JP\212\321h\354\260\301D\004\215\r\250\342\301x\0245m\231\\G\353%L[\306\320u\020\2603\n\023\024\214\006\371ok+\344\243+2\326\213v\001\270\320\322\257~\002\202v\025\265E$O\261L\256\340\241O \035\365\024\232\266\034\025\331;\241\017n\024\202Q\014+\332w\325@\031\r\232\004\245\240HL\371_\014a2\272I\236\260\211\371\227,@\336\356\217\023\007\003\223P\246\004\240]\317=\247Cvgt\311'HSpSe\006\245h\205`_\253\\`\257i\2241$W;\014\006\343\007\266W\312\246!\024\031\001\006(\205\001ID<\261E\266\034\026\277<7\232\270\342\\Q\261\300\306O\244\2647\203\221\305%\227\352\300\303\006\215\271\323\242\215\324m\304R\272\315\310\351\316k\353\030E\000\300\302\007UZkL\231\310\016\263c\221f0$\n\313\210\372\320SA\nHj\235\027!\265\3615\024\246\255\002\0311\021\320\251\313\023\006%\022\326i3\357T(\224Z1\274%9*d4\317\341\275\251*\"\000\306\242\313\347xd\021\2271fP\354Y\300\007\007\023\000\311\356\222\242\003\n\"P\352[nC(7\332\337g\321ly\226\324\301\027\251\034;h\223{\\\306\n\252a\253\267\014E\013N\275\374\3316R\0265\241\336&\007\036TiE[\313\205\3438q\312T\031\211\344\365{\377hP\231\354\034\341\257\213\234|k\344<\322\006`\322&\025`\265?\327\205\204\n\367\344\025B\244K'\317\227hX\271g\335\260\tQ\246\r\333<\3358.T+\005SEd\033Z(>s\211\374 F\365\025\267\213\\k\333-\346\267\020^D\375\364\356\033(,\0074\335\303\262\347 j\327\324""\357u\274(3\327\253Bs\377\017\213\334\240\373\303G\265\004q\013\333\367\276\332\324_\341?Q\202\367\001\251\252\306\377\310\301\033}O4\225\353oh9,R\345\323\230=\256\375Hw;\370\210\\\247\212\365\374u\346\354\320\256s4z\265\204\344e\337F\363,\356q\307\355\n\322V\210\215\253A\320\027\036\301\240-\306k\026#\032\r2\241\0314\311\255\022O\374\220\004\t<1o\215\352\027\300 \205W\342\032\251\236\370\245m\207\244\022\274o(-\0005vx\374\300\321\313!\003\217\030\031k\221\216G\232\256\203=!\345\251wB5\265]\275\235\202\220\231\244\324$'&Q\254w\206\211\\Qa\245\212\255G\232\204'5\231\306.\352$~'\030\222\255#\376\032Q\212V\212\257 \3619E\017\206H\252\326\023\234'\031*\036\2710\323x\302\233\372\321\350>s\326b\377\305\334\221N\024$3\214H\200\200";
-    PyObject *data = __Pyx_DecompressString(cstring, 1694, 2);
+    const struct { const unsigned int length: 9; } index[] = {{1},{179},{14},{1},{8},{39},{3},{4},{4},{4},{4},{8},{5},{20},{6},{7},{14},{15},{6},{5},{6},{8},{6},{18},{9},{1},{7},{20},{13},{17},{18},{9},{30},{26},{17},{4},{24},{20},{7},{9},{25},{8},{19},{3},{12},{9},{13},{7},{1},{12},{22},{13},{11},{5},{3},{4},{14},{19},{8},{10},{13},{8},{20},{8},{13},{7},{17},{12},{9},{16},{8},{7},{10},{14},{17},{8},{7},{15},{16},{12},{12},{9},{18},{16},{8},{7},{9},{6},{9},{5},{14},{10},{10},{7},{3},{12},{12},{5},{31},{17},{12},{12},{10},{12},{6},{6},{12},{10},{5},{8},{6},{6},{6},{15},{11},{173},{505},{482}};
+    #if (CYTHON_COMPRESS_STRINGS) == 2 /* compression: bz2 (1681 bytes) */
+const char* const cstring = "BZh91AY&SY\312$3q\000\000\347\377\377\377\377\377\376\377\377\377\375\377\367\377\376\277\377\377\377\300@@@@@@@@@@@@\000@\000P\005\2577WL\216\350\003u\262\034\036\274\032\231)\243D\322oSS\323\000\323)\246\312F\203#\324\362\236\223OQ\247\250\r\032\001\246\206\365@\310\375#D=54i\214\246\323\032\243\324\032\230\202\233\n\233'\251O(~\250\375$\320\032\000\000\006\201\240\000\000\000\000\000=A\241\240\000\032\247\204d\215\"O\022dh=F\206\201\243@\032\r\000d\000\032\000\r\000\0004\000\320\320\002\250\021\202\r\2410F&\t\2010\004\300\000\010\311\223\003SC\021\210\302`\000 \323\004\301\"I\246\201\rLSje=\220\223M2\006 \032\000\000\000\000\000\000\000\000\001\220\005\240\001\020\241\202B\305\014\2063\363BI\3470\016K\327\215\t\027o\244\336\277\200@\376\377\211\004@\203\033m\262R\246\224\005\367\177\311)\025Z\247<\305e\240\\\304\233H\335\026\351\177\374d\310\263\232(\250B.*\313I\332k\235\002\252^\260bc\035e\345\035y\310\202\253\257j\310\021T\341\005@\224\2466\207\"JJ\200\270\246\255w\244\014\256\315\206v&\031\347E\010g0OMVl\0105\201\010N\335O8\240\013,\030R\032\"\027M\254,\243\032\264N\0248ZTht\021\2021\254\321\330\354\203\255\223\010\227}1\244\357>^VFV\377\327\227\270^b6Z\346\250\373Nhq\2156/-\203\273E\324\322\031\020L\033\340\267\314i\261\211\213\355\002\007Z!Qf\216\372\232\020\340tUYU\024h\301\346\203:t\325\317\202+\342\252\253\370S,\315g\362\271\"\016\371\216\30490\254\036x\267\231\303R\200M\206\324\304\020\326\200\231<\210\240\206>\322c\204g\221\257\304\225\022\214\345\271\224l\317!$\263*\325}\325Yo\016Vk\nq\203\230$\275 \266\257\2632\264:\306\350S\250\305\367\223_\325\351\313q\237\203\331)\366\004\255\240\205\215\354\265\261\310wn\332x\217\220y6\275\003V\220f\034C\267\364\277\000\220\2700Y\004\233&\026\263Bb\032\014\230\320\251\341Cl0bP\366\273\010};+\020S\237\022\367{\331&\"\010\243\tG\340\024W\235,#\0372\265\213y\252\343\301\264hT1\t}\227\000f\253\323\003>PLk\030\323\023\"g\004m t\213`\310\210(:c\024Q\020\210N\252L\216\226]\003\022\203\254\035\006F\347\\\003\322D*\212""\211\006\220\250.\030\201I\231\222&\252V9\334)\232\242\357\326\177]Y\244\274\256\201\367\271-7\362aw\022V\034\3351>(f\026\2110\346\276\n\214`H\"\220\303As\341H0\315\003\013\307\022\242q\245\202\217\003\272\371i1R\016 \236\311\341\\\2214W\006\370\314\300\371|\374B\271\245;`\216\246\313j\241\275\r\260m\312/\224\nVX\253-\343\206L\364,u\210\242\035V\250\230\251\006\2738o\272\233\363c\233\223\321\267\\\363\006\231\243\236\321Q\226!\225G\223\205\217\246\267N\004\355\262SjO4#\205\227D\006\021<\3051\272\371\025\031\025'u\356\332\357\207\215\223Ci\264\333rn\200\263]\373\313\212\001\263}o\346\325\301\247\214\207\270\216\212\033z\360!\231M,\207=S\220S]|\006:\013\271\320j\222\200\030+\225\314;\242\315\336\331nL9\207P\224\"\304b\366lb\310\021\223=6\336J\215\302E%\245\256\010\277\243\256;}\312g{h\330U\316\302\3256\003|\267\265\235\361\321\235\231\354E\334\000m\2644\254\331\001Q;K\032\252\262'\330&YxT\247\210\035\355U\232\370\016\033-\235\360\207\304\205 \224C\0136\212l\240Z6j\tJ\374\220\231\356=\273\300\227\035\"\317U\020<Z\326\000a`\035\226\016\006\316\001\010\006\201~\252\251|u\344V\226\312\2163\305\023\262\341\"\251P\254\014ts\310+=8\2058\225n\302\330\275\266\363\270\367\024\305\020Ah\020b\200P\024\224Q\266\t\207\\\375bT\313\255q\266sb\\\250\341p1\223\343\357\006\350\265\362\244\266\264c\211\216-\034I\323U\\T]3j\265\260\226d\250\306\261jTB\302\324\n\365\354\305+\241\346\n\262[\315( \030\021x\247\n\314N\342\204\3243\257\223\314\235\t\022\021L\360\0302R\314\337\033\317I\020 \320\332\312-\277\206D\211E\303\033\315)\311W!\246\177\r\355IU\020\006Ul\260\236\001\210,\372\013s\226\321\357\001\n\302\320\207fJ\352\224\210*&\327\273\207B\263I\026~\334\235\355\224\307UX]\231\030)\034\216\"$\336\3275\202\245p\325\373fB\245\273\277\263F<\025\205\255jx\t\201\314\316\215\324\251\270\271\017)\310\313)Th'\217\253\337{B\204\317`\365\006\25486\321\270=$\004\301\260D\342/\327\233\361\300\241\204}1I\016 \315\322\326\310\2565-;\363\341\004H*@\256;\326\331\247j\241$\022$\212\2468\365L}e\021~\214\032""\366\021\310\367\000\340\262K\316]\360\272g\305\334\264N\230\324\014l\263\202\333\031\303v\265\217/\177\320cA;\263\3457\265\266\327L6\320\325\361S\204\034k-\257\306\365\006\363\033\250\2415\314VJ0\267\270T\340\345R\234D\235\351s\330\216(\365)H\032\354\375\3103\223\3743&)=v\366\032\322m\317\255\246\273\332\375R\362M\332\257\202nW\3024gq\342\364\"\223\326\355\343\346\034KZB\256\\\371r\326\322\031\271\316^\206\364>\235\242\377\366\200HJa\307\334K\030L\000t\351\r\335\335\244\016A\024\261\330^\240\227c_\013\211\340>\243\310\267\2309\363'{\364\365\226\031\t\304\303\211\355\317\321\201\333\036\312\2274`\331E\313\2717\350\211\033\n\270@\372K\025R\214T\t/\306K\240\334=2P\204\346\2628A\335DOM\262$\251\242\177\206\214 \225R\252\361\017\003\214\020\361\t\025ZbR\242P\212\241\343\223\013\257\n)\325\325K\322:\247\301b\377\213\271\"\234(He\022\031\270\200";
+    PyObject *data = __Pyx_DecompressString(cstring, 1681, 2);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (1631 bytes) */
-const char* const cstring = "x\332uT\317W\033G\022\206X\330#,\260\204d\0206~\031\034\003\2667\260QBl\007\347\305\253\000\376\221Gl\204\235\030\333\273o^k\246\205&\221f\244\371A\2207\331\365Q\307>\366q\216s\234\243\216:\352\330\3079\352O\340OHUk0$qx\342uuuu\325W_}=kOm\217\252^\235x\352f\307\253\333\226j\272\252A\033f\225:\304\243\215\216\352z\216\251{\324\301 K\335\335\336]]\277\267\256\022\313P\035\372\023\325=Wu\375\252\336 \256K]\325\256\251U\337lx\246\245z\235\026u\327\324'5\265c\373\252E\251\241z\266\332\202\270\263\027\274:\265T\227zh\250+\304\262l\217x\246mip\335\264\016VT\303t\240\210yH\361\366C\322p\351\332\263\026F\220\306\233-\000\366\237\007\30404\270F[\200\337!\377\204p\333\322\315\006u4]v\264\326\352\034\225\255\016\006\357\230\256\367\375\263\037\267\237\332\026=\311\262K<\275\256i\273\235#\370\307 \355)=\362\366hmo\033C\367\266ww\312\233\333\317\001\026\255\371\215\227\246q@=\271kP\327\035m\177\330\335*\277\330\376\301\302|\372(kC\373\231v\\\322jQ\313 n\007\000\331k\272\355\330>PC\335*\255\331\016\325LC\327\201\324\003\352\352u\263ah-\342P\313\323\352^\263\201g\350\003\207\314\244i\2221\r\252\231\036m\342\026\022i&\020\345\020\235V\211\376\263\016\3072h\324\266f\230\265\232\366>\t\320\342;.\360x\366\324\262\r\372\341\223\226c\267\\\203x\344\357\322|(\201a\272-\333\245\324\362\233R=Z\315\264`6@\247\346z\244\332\240'\255iZ\315\267tM\203v\254Q\244<p=\277\n\r\302\357}A\264]d\033\r\3372\333>\322\226\2441\315\003\013x4F\014\231\226K\035\357O\2204\023H9\341\035\231\373\026\344iP\007M\027\256\341My\333\263\341R\323>\244\300\240\247\265\032@\252\241\3310\024\3238\322\264&\001\246\341\257i\033>\264\241a\240q\332\215E\232\340\264\350/\247D\375\"\225\341\242\017\303NV\331#n\240h\262`\351Qt\342p5wd\313!\240\001\t\0013Tl\222\026\356\361m\341zHd\342\323\333#\013\223 \364?(\010\0358\320\244'\\\222\342'\336d\0133\243'\307\022\n\332\222\325$\255\204\365\336\320j\216\335D`\350q\353\004aJ\031\342\036\201\342\n@mkSj\335\260\255-\207\034\330\326\256\003\017\010\267/\340\231\374A\371\311\016\312\265""\344\343D\200\322\242\240\257V\313\241\207\246\355\273X\023\021h\311\033\222hF\037\201\265\323\217\300_\034\311W!\361KmiZ\333\007&\345\020O\003G\244\217\232\004\250~\303s\250\347;\240\003\340$\0319X\006\255\0218K\022y\024\324\223|\274\240i\237\272\243\221$\203\001\215z\304\322i\262Ez\304\330W\275\334\361\364\330\304<\037\217S\327\304\265\317\242K\275\337\006\337\213WUQ\325\217\317\217M(\357\336\262<+\307\312\245n{\230\232\347y^\346\257\002\032\256\207N\224\217\312\321\253\036\355\1779\370h\260x<96\221\356^\350\266ce\206\335\342\353\274\035\214\2371!W:\323\275\307\276`$\316L\235\331\r3\227\272oy\216\337\016\036\206+Q!\332\357=\357\217\307\331\\\234\311\263\022{\304K\303\324\305\356}\326\014J\357\306\217\263c\347/\034\317 \252\377\262OX%V\322\210i!x\021\346\302\305\021\334\016;\307JPX\314\334\002\347\247\342\316\303~C\354\275\026\257\337@4\206\314\363\024\364\360&\204\206\213\\\tRA9\250\234^\375\212o\362\267\341\345P\217\212\275B\257\322#\303\017\247*\260\357x3\204BE>)\256\337\211H\364k\377\336\2404\330\021\373\257beJL-\007$V\246\273uv\300+q&\307rl\205_\r\036\207\217\201\264\177\367sqv\201\227\343\3545\216\265\323\223\010\240\310\216$i\251,\233\344\253A;\206\326\212A!\250\004f\330\306\200\202\310\337\010\312b\tg\226\000VD\361v\270\030+\027\273\2458s\205\337\n\356\207\315\036\230\227\272\277\362/8\211\263W\370\"\277\027\224\304\215\r\261\2613\330\022\273\025Q\331\003<\"\207\36723\354&_\tr\301R\320\016/\204o{\305\376\374`i \253\315\262\327\374\177a%NM\212\311\253\274\004h\225<2;\307\332\250\006\230Y\254\200?V\240\267X\201:\2612\013\303U\346a\230\213\374\2330\037nE\023\321k\220S\371X\031\233X\340\367\241\217#q\367\211xB\004\251\306\251i1\275\002]*Y\226beqY\0226\303V9\270\322h\255\241\200\300J\277\033\217\347\212\361\225\253\307\031\034\177\026;\367\304\305k\374\005\222#5\240\"m\327\203\263\"\274\330]\357\272\014ZD\354\217\202\257\303v4>L)\335I\360I\214\313\301tX\213\312\303T\036e\310\376\017\242.\305\243\215\230\273\031N\204R\025\037\303\224?G\026\322\"\r\005\344\nC\213!""\223,\223g\017\202\305\240\364~\324\234\006\245\340Q\270\001:\336\357WP//\305\313}\344\347fp# \201D\266\301*b\026{\317\024\330\263`\003\322\303\300\332q\3662\333\227z\230X\n\312qjQ\316\305\t\013\341\363\350B\324\351\217\367s\303\024\220\215\001\351\356\271\3567|~Tz\206\335\346O\303\305!dN\236\324\254\230\375\007t\223\205\267!\226\276\004\275\025\0079\030\302\324\234\230]\226 \240\336\021s`\204Y58/\226\357F\355\236\202\005P\226\337\211\345\177\301\023,\314\262*?'\256\226Di\263\177g\220\033fgY\235\037\200\034\221\250\002\312\367\362\212X\271\033\375\326/\0173KAE,\337\357\225\000\334\324<>\211\257{ \357\031v\235m\212\271U\261\372\240w\330\257H`\253\320nvA,|\032\356@\315\351\301O\360b~\007M\016\3639";
-    PyObject *data = __Pyx_DecompressString(cstring, 1631, 1);
+    #elif (CYTHON_COMPRESS_STRINGS) != 0 /* compression: zlib (1635 bytes) */
+const char* const cstring = "x\332uTMW\033\307\022\205ga\217\260\300\022\222A\330\370\274\3011`;\201D\t\261\035\234\023?=\300\216s\210\215\260\023c;9sZ3-4\2114#\315\007A\316\307\363R\313^\366r\226\263\234\245\226Zj\331\313Y\352'\360\023^Uk0$q8\342tuuu\325\255[\267g\355\211\355Q\325\253\023O\335\354xu\333RMW5h\303\254R\207x\264\321Q]\3171u\217:\030d\251\273\333\273\253\353\367\326Ub\031\252C\177\242\272\347\252\256_\325\033\304u\251\253\3325\265\352\233\r\317\264T\257\323\242\356\232\372\270\246vl_\265(5T\317V[\020w\366\202W\247\226\352R\017\ru\205X\226\355\021\317\264-\r\256\233\326\301\212j\230\016\0241\017)\336~H\032.]{\332\302\010\322x\275\005\300~|@\014C\203k\324u\364\217[\320\203CN\026\270i[\272\331\240\216\246\313\346\326Z\235\243\262\325\301{;\246\353}\373\364\373\355'\266EO\022\356\022O\257k\332n\347\010\3761H{B\217\274=Z\333\333\306\320\275\355\335\235\362\346\3663@Hk~\343\205i\034PO\356\032\324uG\333\357v\267\312\317\267\277\2630\237>\312\332\320~\246\035\227\264Z\3242\210\333\001@\366\232n;\266\017,Q\267Jk\266C5\323\320u\340\367\200\272z\335l\030Z\2138\324\362\264\272\327l\340\031\372\300!3i\232$O\203j\246G\233\270\205D\232\t\2349D\247U\242\377\254\303\261\014\032\265\255\031f\255\246\275K\002\264\370\216\013\224\236=\265l\203\276\377\244\345\330-\327 \036\371\2474\357K`\230n\313v)\265\374\246\024\222V3-\030\023\320\251\271\036\2516\350Ik\232V\363-]\323\240\035k\024)\017\\\317\257B\203\360{W\020m\027\331F\303\267\314\266\217\264%iL\363\300\002\036\215\021C\246\345R\307\373\013$\315\004RNxG\346\376\013J5\250\203\246\013\327\360\246\274\355\331p\251i\037R`\320\323Z\r \325\320l\030\212i\034iZ\223\000\323\360\327\264\r\037\332\3200\3208\355\306\"MpZ\364\227S\242~\221\312p\321\207a'\253\354\0217P4Y\260\364(:q\270\232;\262\345\020\320\200\204\200\031*6I\013\367\370\314p=$2\361\351\355\221\205I\020\372\237\024\204\016\034h\322\023.I\361\023o\262\205\231\321\223c\t\005m\311j\222V\302zgh5\307n\"0\364\270u\2020\245\014q\217@q\005\240\266\265)\265n\330\326\226C\016lk\327\201\007\204\333\347""\360L\376\244\374d\007\345Z\362q\"@iQ\320W\253\345\320C\323\366]\254\211\010\264\344\rI4\243\217\300Z\262\374\355[\3607\177\342\220\022\323\264\266\017\204\312Y\236F\214\270\037\365\n\210\375\206\347P\317w@\016@M2y\260\014Z#p\226$\202\017\223\247%\2373\350\335\247\356h2\311|@\252\036\261t\232l\221%1\366E/w<=61\317\307\343\3245q\355\223\350R\357\367\301\267\342eUT\365\343\363c\023\312\3337,\317\312\261r\251\333\036\246\346y\236\227\371\313\200\206\353\241\023\345\243r\364\262G\373\237\017\3765X<\236\034\233Hw/t\333\2612\303n\361u\336\016\306\317\230\220+\235\351\336c\2371\022g\246\316\354\206\231K\3357<\307o\007\017\303\225\250\020\355\367\236\365\307\343l.\316\344Y\211=\342\245a\352b\367>k\006\245\267\343\307\331\261\363\027\216g\020\325\257\354\003V\211\2254bZ\010\236\207\271pq\004\267\303\316\261\022\024\0263\267\300\371\221\270\363\260\337\020{\257\304\253\327\020\215!\363<\005=\274\016\241\341\"W\202TP\016*\247W\277\340\233\374Mx9\324\243b\257\320\253\364\310\360\375\251\n\354\033\336\014\241P\221O\212\353w\"\022\375\326\2777(\rv\304\376\313X\231\022S\313\001\211\225\351n\235\035\360J\234\311\261\034[\341W\203\257\303\257\201\264\037\372\2718\273\300\313q\366\032\307\332\351I\004PdG\222\264T\226M\362\325\240\035Ck\305\240\020T\0023lc@A\344o\004e\261\2043K\000+\242x;\\\214\225\213\335R\234\271\302o\005\367\303f\017\314K\335\337\370g\234\304\331+|\221\337\013J\342\306\206\330\330\031l\211\335\212\250\354\001\036\221\303{\231\031v\223\257\004\271`)h\207\027\3027\275b\177~\2604\220\325f\331+\376GX\211S\223b\362*/\001Z%\217\314\316\2616\252\001f\026+\340\217\025\350-V\240N\254\314\302p\225y\030\346\"\377*\314\207[\321D\364\n\344T>V\306&\026\370}\350\343H\334},\036\023A\252qjZL\257@\227J\226\245XY\\\226\204\315\260U\016\2564Zk( \260\322o\307\343\271b|\345\352q\006\307\237\305\316=q\361\032\177\216\344H\r\250H\333\365\340\254\010/v\327\273.\203\026\021\373\243\340\313\260\035\215\017SJw\022|\022\343r0\035\326\242\3620\225G\031\262\377\201\250K\361h#\346n\206\023\241T""\305\277a\312\237\"\013i\221\206\002r\205\241\305\220I\226\311\263\007\301bPz7jN\203R\360(\334\000\035\357\367+\250\227\027\342\305>\362s3\270\021\220@\"\333`\0251\213\275g\n\354i\260\001\351a`\3558{\231\355K=L,\005\3458\265(\347\342\204\205\360Yt!\352\364\307\373\271a\n\310\306\200t\367\\\367+>?*=\303n\363'\341\342\0202'OjV\314~\010\335d\341m\210\245\317Ao\305A\016\20605'f\227%\010\250w\304\034\030aV\r\316\213\345\273Q\273\247`\001\224\3457b\371?\360\004\013\263\254\312\317\211\253%Q\332\354\337\031\344\206\331YV\347\007 G$\252\200\362\275\274\"V\356F\277\367\313\303\314RP\021\313\367{%\00075\217O\342\313\036\310{\206]g\233bnU\254>\350\035\366+\022\330*\264\233]\020\013\037\205;Psz\360\023\274\230\377\003\n\316\372=";
+    PyObject *data = __Pyx_DecompressString(cstring, 1635, 1);
     if (unlikely(!data)) __PYX_ERR(0, 1, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 1, __pyx_L1_error) }
     #endif
-    #else /* compression: none (2570 bytes) */
-const char* const bytes = ".Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.Optional[Dict]?add_notepythra/reconciler_cython.pyxAnyDictListMOVENoneOptionalPatch__Pyx_PyDict_NextRefREMOVEREPLACEStatefulWidgetStatelessWidgetUPDATEUnionactionall_keysappendasyncio.coroutinesbefore_idcchangeschild_parent_html_idchildren_keys__class_getitem__cline_in_tracebackcss_classcython_diff_children_recursivecython_diff_node_recursivecython_diff_propsdata_diff_children_recursive_diff_node_recursivedisposeenumerate_find_next_stable_html_id__func___generate_html_stubgetget_childrenget_stateget_unique_idhtml_idiignored_keys_insert_node_recursive_is_coroutineitemBuilderitemskeykeyskeys_to_removelast_placed_old_idx__main____module__moved_html_id__name__new_children_widgetsnew_htmlnew_html_stubnew_keynew_key_to_widgetnew_keys_setnew_propsnew_rendered_mapnew_typenew_valnew_widgetnew_widget_keyold_children_keysold_dataold_idxold_key_to_dataold_key_to_indexold_keys_setold_node_keyold_propsold_props_from_mapold_shared_classold_typeold_valonChangedonDragonPressedonTapparent_html_idparent_keypatch_datapatchespopprevious_mapprop_changespropspythra.reconcilerpythra.reconciler_cythonpythra.state__qualname__reconcilerrender_propsresultreturn__set_name__setdefaultstate__test__typingvalueswidgetwidget_instancewidget_type\320\0009\270\021\360\016\000\005\031\230\001\330\004\035\320\0350\260\017\270}\310M\320Yb\320bc\360\006\000\005\010\200z\220\023\220A\330\010\017\210q\340\004\031\230\023\230A\230Y\240e\2504\250r\260\023\260A\260Y\270e\3005\310\002\310!\360\n\000\005\t\210\007\210q\330\010\022\220)\2304\230q\240\001\330\010\022\220)\2304\230q\240\001\360\006\000\t\014\2108\2203\220a\330\014\r\360\006\000\t\014\2108\2203\220a\340\014\017\210z\230\021\230*\240F\250'\260\024\260X\270S\300\001\330\020\021\330\014\023\2201\220G\2301\340\004\013\210;\220m\2401\200\001\360\020\000\006\007\360\022\000\005""\010\200{\220#\220Q\330\010\t\340\004\031\230\034\240T\250\021\250!\360\006\000\005\010\200y\220\003\2201\330\010\022\320\022)\250\021\250,\3206F\300l\320RZ\320Z[\330\010\t\360\006\000\005\031\230\004\230A\230[\250\001\330\004\030\230\010\240\004\240A\240Q\360\006\000\005\010\200y\220\003\2209\230C\230z\250\025\250c\260\030\270\024\270Q\270a\340\010\022\320\022)\250\021\250,\3206F\300l\320RZ\320Z[\330\010\024\220J\230m\2501\330\010\030\230\n\320\"6\260a\260|\3008\3101\310L\320XY\330\010\r\320\r&\240a\330\010\016\210h\220g\230Q\330\014\021\220\021\220'\230\033\240H\250H\260A\260\\\300\021\330\020\034\230A\330\020\035\230Q\360\006\000\t\n\360\006\000\005\030\220x\230q\240\001\330\004\020\220\n\230-\240q\330\004\031\230\030\240\024\240Q\240i\250q\360\006\000\005\024\320\023$\240A\320%9\270\021\360\006\000\005\010\200y\220\010\320\030*\250!\330\010\013\2101\330\014\032\230)\240;\250m\2701\330\014\017\210|\2303\230a\330\020\032\230!\2308\2401\320$:\320:L\310D\320PQ\320QR\330\014\021\320\021*\250!\330\014\022\220(\230'\240\021\240%\240q\250\007\250z\270\030\300\031\310%\310q\360\006\000\005\026\220Z\230~\250Q\330\004\n\320\n\033\2301\230A\330\010\023\2201\330\010\027\220q\330\010\017\210z\230\021\330\010\033\2301\330\010\021\220\021\330\010\032\230!\330\010\026\220a\330\010\031\230\021\230!\230>\250\023\250D\260\005\260Z\270}\310A\360\010\000\005\034\230;\240i\250x\3207I\320Ia\320ab\330\004\016\320\016'\240q\330\010\020\220\004\220A\320\025&\240a\330\010\022\220-\230q\330\010\t\330\010\022\220.\240\001\330\010\t\330\010\t\200\001\330\027\030\330\032\033\360\014\000\006\007\360\020\000\005\010\200t\320\013\035\230T\240\024\240Q\330\010\t\340\004 \240\001\330\004\"\240!\360\n\000\005\t\210\007\210q\330\010\013\2104\210s\220!\330\014\033\2301\230G\240<\250q\260\001\340\004\010\210\n\220!\330\010\031\230\021\230&\240\016\250f\260A\340\004\023\2203\220a\220\177\240e\2501\330\004\023\2203\220a\320\027(\250\005\250Q\360\006\000\005\037\230m\2502\250Q\330\004\t\320\t\"\240!\330""\004\t\320\t\035\230Q\330\004\010\210\007\210q\330\010\023\220?\240!\2401\330\010\016\210h\220g\230Q\230e\2401\240G\250:\260X\270X\300Q\300l\320RW\320WX\330\010\032\230(\240$\240a\240q\330\010\013\210:\220Q\320\026'\240q\330\014\024\220O\240:\250Q\330\014\017\210q\330\020\025\220X\230Q\360\006\000\005%\240A\330\004!\240\021\240%\240r\250\024\250S\260\007\260y\300\001\300\021\340\004\021\220\021\360\006\000\005\t\210\003\210>\230\031\240!\2401\330\010\022\220*\230N\250!\340\010\013\2108\2203\220a\340\014\026\320\026+\2501\330\020\031\230\034\320%5\260\\\300\030\310\021\360\010\000\r\027\320\026&\240a\240q\330\014\017\210x\220r\230\021\330\020 \240\006\320&7\260q\270\010\300\001\300\021\330\020\034\230J\320&@\300\001\330\024\026\220b\230\003\320\0331\3201C\3006\310\021\340\020\026\220h\230g\240Q\240e\2501\330\024\034\230A\330\025'\320'7\260}\300A\340\014%\240Q\320&;\2701\360\006\000\r\031\230\n\320\"<\270A\330\020\022\220\"\220C\320\027-\320-?\270v\300Q\340\014\026\320\026-\250Q\330\020\034\320\034,\250L\270\010\300\016\310j\320XY";
+    #else /* compression: none (2588 bytes) */
+const char* const bytes = ".Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the 'annotation_typing' directive to False.Optional[Dict]?add_notesrc/pythra/pythra/reconciler_cython.pyxAnyDictListMOVENoneOptionalPatch__Pyx_PyDict_NextRefREMOVEREPLACEStatefulWidgetStatelessWidgetUPDATEUnionactionall_keysappendasyncio.coroutinesbefore_idcchangeschild_parent_html_idchildren_keys__class_getitem__cline_in_tracebackcss_classcython_diff_children_recursivecython_diff_node_recursivecython_diff_propsdata_diff_children_recursive_diff_node_recursivedisposeenumerate_find_next_stable_html_id__func___generate_html_stubgetget_childrenget_stateget_unique_idhtml_idiignored_keys_insert_node_recursive_is_coroutineitemBuilderitemskeykeyskeys_to_removelast_placed_old_idx__main____module__moved_html_id__name__new_children_widgetsnew_htmlnew_html_stubnew_keynew_key_to_widgetnew_keys_setnew_propsnew_rendered_mapnew_typenew_valnew_widgetnew_widget_keyold_children_keysold_dataold_idxold_key_to_dataold_key_to_indexold_keys_setold_node_keyold_propsold_props_from_mapold_shared_classold_typeold_valonChangedonDragonPressedonTapparent_html_idparent_keypatch_datapatchespopprevious_mapprop_changespropspythra.pythra.reconciler_cythonpythra.reconcilerpythra.state__qualname__reconcilerrender_propsresultreturn__set_name__setdefaultstate__test__typingvalueswidgetwidget_instancewidget_type\320\0009\270\021\360\016\000\005\031\230\001\330\004\035\320\0350\260\017\270}\310M\320Yb\320bc\360\006\000\005\010\200z\220\023\220A\330\010\017\210q\340\004\031\230\023\230A\230Y\240e\2504\250r\260\023\260A\260Y\270e\3005\310\002\310!\360\n\000\005\t\210\007\210q\330\010\022\220)\2304\230q\240\001\330\010\022\220)\2304\230q\240\001\360\006\000\t\014\2108\2203\220a\330\014\r\360\006\000\t\014\2108\2203\220a\340\014\017\210z\230\021\230*\240F\250'\260\024\260X\270S\300\001\330\020\021\330\014\023\2201\220G\2301\340\004\013\210;\220m\2401\200\001\360\020\000\006""\007\360\022\000\005\010\200{\220#\220Q\330\010\t\340\004\031\230\034\240T\250\021\250!\360\006\000\005\010\200y\220\003\2201\330\010\022\320\022)\250\021\250,\3206F\300l\320RZ\320Z[\330\010\t\360\006\000\005\031\230\004\230A\230[\250\001\330\004\030\230\010\240\004\240A\240Q\360\006\000\005\010\200y\220\003\2209\230C\230z\250\025\250c\260\030\270\024\270Q\270a\340\010\022\320\022)\250\021\250,\3206F\300l\320RZ\320Z[\330\010\024\220J\230m\2501\330\010\030\230\n\320\"6\260a\260|\3008\3101\310L\320XY\330\010\r\320\r&\240a\330\010\016\210h\220g\230Q\330\014\021\220\021\220'\230\033\240H\250H\260A\260\\\300\021\330\020\034\230A\330\020\035\230Q\360\006\000\t\n\360\006\000\005\030\220x\230q\240\001\330\004\020\220\n\230-\240q\330\004\031\230\030\240\024\240Q\240i\250q\360\006\000\005\024\320\023$\240A\320%9\270\021\360\006\000\005\010\200y\220\010\320\030*\250!\330\010\013\2101\330\014\032\230)\240;\250m\2701\330\014\017\210|\2303\230a\330\020\032\230!\2308\2401\320$:\320:L\310D\320PQ\320QR\330\014\021\320\021*\250!\330\014\022\220(\230'\240\021\240%\240q\250\007\250z\270\030\300\031\310%\310q\360\006\000\005\026\220Z\230~\250Q\330\004\n\320\n\033\2301\230A\330\010\023\2201\330\010\027\220q\330\010\017\210z\230\021\330\010\033\2301\330\010\021\220\021\330\010\032\230!\330\010\026\220a\330\010\031\230\021\230!\230>\250\023\250D\260\005\260Z\270}\310A\360\010\000\005\034\230;\240i\250x\3207I\320Ia\320ab\330\004\016\320\016'\240q\330\010\020\220\004\220A\320\025&\240a\330\010\022\220-\230q\330\010\t\330\010\022\220.\240\001\330\010\t\330\010\t\200\001\330\027\030\330\032\033\360\014\000\006\007\360\020\000\005\010\200t\320\013\035\230T\240\024\240Q\330\010\t\340\004 \240\001\330\004\"\240!\360\n\000\005\t\210\007\210q\330\010\013\2104\210s\220!\330\014\033\2301\230G\240<\250q\260\001\340\004\010\210\n\220!\330\010\031\230\021\230&\240\016\250f\260A\340\004\023\2203\220a\220\177\240e\2501\330\004\023\2203\220a\320\027(\250\005\250Q\360\006\000\005\037\230m\2502\250Q\330\004""\t\320\t\"\240!\330\004\t\320\t\035\230Q\330\004\010\210\007\210q\330\010\023\220?\240!\2401\330\010\016\210h\220g\230Q\230e\2401\240G\250:\260X\270X\300Q\300l\320RW\320WX\330\010\032\230(\240$\240a\240q\330\010\013\210:\220Q\320\026'\240q\330\014\024\220O\240:\250Q\330\014\017\210q\330\020\025\220X\230Q\360\006\000\005%\240A\330\004!\240\021\240%\240r\250\024\250S\260\007\260y\300\001\300\021\340\004\021\220\021\360\006\000\005\t\210\003\210>\230\031\240!\2401\330\010\022\220*\230N\250!\340\010\013\2108\2203\220a\340\014\026\320\026+\2501\330\020\031\230\034\320%5\260\\\300\030\310\021\360\010\000\r\027\320\026&\240a\240q\330\014\017\210x\220r\230\021\330\020 \240\006\320&7\260q\270\010\300\001\300\021\330\020\034\230J\320&@\300\001\330\024\026\220b\230\003\320\0331\3201C\3006\310\021\340\020\026\220h\230g\240Q\240e\2501\330\024\034\230A\330\025'\320'7\260}\300A\340\014%\240Q\320&;\2701\360\006\000\r\031\230\n\320\"<\270A\330\020\022\220\"\220C\320\027-\320-?\270v\300Q\340\014\026\320\026-\250Q\330\020\034\320\034,\250L\270\010\300\016\310j\320XY";
     PyObject *data = NULL;
     CYTHON_UNUSED_VAR(__Pyx_DecompressString);
     #endif
@@ -5993,17 +5993,17 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   {
     const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 8, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 16};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_old_props, __pyx_mstate->__pyx_n_u_new_props, __pyx_mstate->__pyx_n_u_changes, __pyx_mstate->__pyx_n_u_ignored_keys, __pyx_mstate->__pyx_n_u_all_keys, __pyx_mstate->__pyx_n_u_old_val, __pyx_mstate->__pyx_n_u_new_val, __pyx_mstate->__pyx_n_u_key};
-    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_pythra_reconciler_cython_pyx, __pyx_mstate->__pyx_n_u_cython_diff_props, __pyx_mstate->__pyx_kp_b_iso88591_9_0_MYbbc_z_A_q_AYe4r_AYe5_q_4q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_pythra_pythra_reconciler_cyt, __pyx_mstate->__pyx_n_u_cython_diff_props, __pyx_mstate->__pyx_kp_b_iso88591_9_0_MYbbc_z_A_q_AYe4r_AYe5_q_4q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
   {
     const __Pyx_PyCode_New_function_description descr = {7, 0, 0, 20, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 53};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_old_node_key, __pyx_mstate->__pyx_n_u_new_widget, __pyx_mstate->__pyx_n_u_parent_html_id, __pyx_mstate->__pyx_n_u_parent_key, __pyx_mstate->__pyx_n_u_result, __pyx_mstate->__pyx_n_u_previous_map, __pyx_mstate->__pyx_n_u_reconciler, __pyx_mstate->__pyx_n_u_old_data, __pyx_mstate->__pyx_n_u_new_type, __pyx_mstate->__pyx_n_u_old_type, __pyx_mstate->__pyx_n_u_new_props, __pyx_mstate->__pyx_n_u_new_html_stub, __pyx_mstate->__pyx_n_u_Patch, __pyx_mstate->__pyx_n_u_html_id, __pyx_mstate->__pyx_n_u_old_props_from_map, __pyx_mstate->__pyx_n_u_prop_changes, __pyx_mstate->__pyx_n_u_patch_data, __pyx_mstate->__pyx_n_u_new_widget_key, __pyx_mstate->__pyx_n_u_child_parent_html_id, __pyx_mstate->__pyx_n_u_c};
-    __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_pythra_reconciler_cython_pyx, __pyx_mstate->__pyx_n_u_cython_diff_node_recursive, __pyx_mstate->__pyx_kp_b_iso88591_Q_T_y_1_6FlRZZ_A_AQ_y_9Cz_c_Qa, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_pythra_pythra_reconciler_cyt, __pyx_mstate->__pyx_n_u_cython_diff_node_recursive, __pyx_mstate->__pyx_kp_b_iso88591_Q_T_y_1_6FlRZZ_A_AQ_y_9Cz_c_Qa, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }
   {
     const __Pyx_PyCode_New_function_description descr = {7, 0, 0, 29, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 141};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_old_children_keys, __pyx_mstate->__pyx_n_u_new_children_widgets, __pyx_mstate->__pyx_n_u_parent_html_id, __pyx_mstate->__pyx_n_u_parent_key, __pyx_mstate->__pyx_n_u_result, __pyx_mstate->__pyx_n_u_previous_map, __pyx_mstate->__pyx_n_u_reconciler, __pyx_mstate->__pyx_n_u_old_key_to_data, __pyx_mstate->__pyx_n_u_new_key_to_widget, __pyx_mstate->__pyx_n_u_old_keys_set, __pyx_mstate->__pyx_n_u_new_keys_set, __pyx_mstate->__pyx_n_u_key, __pyx_mstate->__pyx_n_u_widget, __pyx_mstate->__pyx_n_u_keys_to_remove, __pyx_mstate->__pyx_n_u_Patch, __pyx_mstate->__pyx_n_u_StatefulWidget, __pyx_mstate->__pyx_n_u_old_data, __pyx_mstate->__pyx_n_u_widget_instance, __pyx_mstate->__pyx_n_u_state, __pyx_mstate->__pyx_n_u_last_placed_old_idx, __pyx_mstate->__pyx_n_u_old_key_to_index, __pyx_mstate->__pyx_n_u_old_idx, __pyx_mstate->__pyx_n_u_i, __pyx_mstate->__pyx_n_u_new_key, __pyx_mstate->__pyx_n_u_new_widget, __pyx_mstate->__pyx_n_u_moved_html_id, __pyx_mstate->__pyx_n_u_before_id, __pyx_mstate->__pyx_n_u_i, __pyx_mstate->__pyx_n_u_key};
-    __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_pythra_reconciler_cython_pyx, __pyx_mstate->__pyx_n_u_cython_diff_children_recursive, __pyx_mstate->__pyx_kp_b_iso88591_t_T_Q_q_4s_1G_q_fA_3a_e1_3a_Q_m, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[2] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_pythra_pythra_reconciler_cyt, __pyx_mstate->__pyx_n_u_cython_diff_children_recursive, __pyx_mstate->__pyx_kp_b_iso88591_t_T_Q_q_4s_1G_q_fA_3a_e1_3a_Q_m, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[2])) goto bad;
   }
   Py_DECREF(tuple_dedup_map);
   return 0;

@@ -5,6 +5,7 @@ PACKAGE_SYSTEM_README.md
 README.md
 pyproject.toml
 setup.py
+src/pythra/pythra/reconciler_cython.c
 src/pythra/MANIFEST.in
 src/pythra/__init__.py
 src/pythra/config.yaml
@@ -79,6 +80,7 @@ src/pythra/pythra/package_system.py
 src/pythra/pythra/painting.py
 src/pythra/pythra/plugins.py
 src/pythra/pythra/reconciler.py
+src/pythra/pythra/reconciler_cython.c
 src/pythra/pythra/reconciler_cython.pyx
 src/pythra/pythra/reconciler_loader.py
 src/pythra/pythra/rust_reconciler_adapter.py
