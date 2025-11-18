@@ -52,19 +52,25 @@ jobs:
           name: cibw-sdist
           path: dist/*.tar.gz
 
-  # upload_pypi:
-  #   needs: [build_wheels]
-  #   runs-on: ubuntu-latest
-  #   # Only publish when a release is created
-  #   if: github.event_name == 'release' && github.event.action == 'published'
-  #   steps:
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         pattern: cibw-wheels-*
-  #         path: dist
-  #         merge-multiple: true
+  upload_pypi:
+    # 1. Make sure to wait for BOTH jobs
+    needs: [build_wheels, build_sdist] 
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          # 2. Change pattern to 'cibw-*' to match:
+          #    - cibw-wheels-windows...
+          #    - cibw-wheels-ubuntu...
+          #    - cibw-sdist  <-- Catches the source tarball too
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
 
-  #     - uses: pypa/gh-action-pypi-publish@v1.10.3
-  #       with:
-  #         user: __token__
-  #         password: ${{ secrets.PYPI_API_TOKEN }}
+      - uses: pypa/gh-action-pypi-publish@v1.10.3
+        with:
+          # 'user' is actually not strictly required anymore if you have password, 
+          # but keeping it is fine for compatibility.
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
