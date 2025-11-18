@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.15] - 2025-11-19
+
+This release addresses critical packaging configuration errors that prevented valid distribution metadata from being generated, and fixes the CI/CD pipeline triggers.
+
+### 🐛 Fixed
+
+* **Invalid Distribution Metadata:**
+  * **Problem:** The build system was failing to associate the `src/` directory structure with the package metadata defined in `pyproject.toml` when `setup.py` was present. This resulted in wheels being built without a Name or Version (Metadata-Version issues).
+  * **Solution:** Added `package_dir={'': 'src'}` to `setup.py` and configured `[tool.setuptools.packages.find]` in `pyproject.toml`. This forces `setuptools` to correctly map the source code to the package definition.
+
+* **CI/CD Release Trigger:**
+  * **Problem:** The GitHub Actions workflow was configured to check for release events but was not actually triggered by them. Creating a GitHub Release did not start the build/upload process.
+  * **Solution:** Added `release: types: [published]` to the workflow triggers, ensuring deployment pipelines run automatically when a new release is published.
+
+---
 ## [0.1.14] - 2025-11-18
 
 This release brings significant performance improvements by ensuring the optimized C-extension is correctly built and distributed, alongside visual polish to icon rendering.
