@@ -4,6 +4,8 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+  release:
+    types: [published]
 
 jobs:
   # JOB 1: Build the Binary Wheels (Windows, Mac, Linux)
