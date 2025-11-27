@@ -1,3 +1,13 @@
+> ⚠️ Project status: Temporarily unmaintained
+
+Hi there 👋🏾
+
+My PC is currently unavailable, so I’m unable to actively maintain this project for the time being.  
+
+Feel free to open issues or pull requests — I’ll review them when I’m able to get back up and running again.  
+
+Thank you for your patience and understanding. 🙏
+
 ---
 
 # PyThra GUI Toolkit
