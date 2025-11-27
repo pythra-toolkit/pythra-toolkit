@@ -13,7 +13,7 @@ Thank you for your patience and understanding. 🙏
 # PyThra GUI Toolkit
 
 <p align="center">
-  <img src="https://github.com/itsredx/pythra-toolkit/blob/main/assets/pythra.png?raw=true" alt="PyThra Logo">
+  <img src="https://github.com/pythra-toolkit/pythra-toolkit/blob/main/assets/pythra.png?raw=true" alt="PyThra Logo">
 </p>
 
 <p align="center">
@@ -340,7 +340,7 @@ if __name__ == "__main__":
 ## 🪄 Demo
 
 <p align="center">
-  <img src="https://github.com/itsredx/pythra-toolkit/blob/main/assets/demo.gif?raw=true" alt="PyThra App Demo" width="600">
+  <img src="https://github.com/pythra-toolkit/pythra-toolkit/blob/main/assets/demo.gif?raw=true" alt="PyThra App Demo" width="600">
 </p>
 
 ## 📜 Philosophy
