@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pythra"            
-version = "0.1.15"
+version = "0.1.16"
 description = "PyThra — a Flutter-like GUI framework in Python. a declarative Python UI framework for desktop apps with a webview renderer."
 readme = "README.md"
 license = { text = "MIT" }
@@ -23,7 +23,8 @@ dependencies = [
     "pyinstaller>=4.0",
     "semver>=3.0.0",
     "requests>=2.31.0",
-    "Cython>=0.29.30"
+    "Cython>=0.29.30",
+    "dbus-python; sys_platform == 'linux'"
 ]
 classifiers = [
   "Programming Language :: Python :: 3",

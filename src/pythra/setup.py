@@ -25,7 +25,7 @@ if CYTHON_AVAILABLE:
 
 setup(
     name='pythra',
-    version='0.1.13',
+    version='0.1.16',
     author='Ahmad Muhammad Bashir (RED X)',
     author_email='ambashir02@gmail.com',
     description='A declarative Python UI framework for desktop apps with a webview renderer.',
@@ -47,6 +47,7 @@ setup(
     install_requires=[
         'PySide6',
         'typer[all]',
+        'dbus-python; sys_platform == "linux"',
         # Add any other core dependencies here
     ],
     

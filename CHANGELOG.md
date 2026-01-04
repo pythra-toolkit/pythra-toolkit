@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.16] - 2026-01-04
+
+This release improves Linux compatibility by fixing Windows-specific import errors and handling optional power management dependencies gracefully.
+
+### 🐛 Fixed
+
+* **Crash on Linux due to Windows-specific imports:**
+  * **Problem:** The application would crash on startup on Linux because `wmi` (a Windows-only library) was being imported unconditionally in `webwidget.py`.
+  * **Solution:** The `wmi` import was moved inside the `watch_for_power_events` function, which is only executed on Windows.
+
+* **Missing DBus Dependency Handling:**
+  * **Problem:** On Linux systems without `dbus-python` installed, the application would crash due to a `ModuleNotFoundError` in `window_manager.py`.
+  * **Solution:** Wrapped `dbus` imports in a try-except block. If `dbus-python` is missing, the application now logs a warning and disables sleep/resume detection instead of crashing. Added `dbus-python` as an optional dependency for Linux.
+
+---
 ## [0.1.15] - 2025-11-19
 
 This release addresses critical packaging configuration errors that prevented valid distribution metadata from being generated, and fixes the CI/CD pipeline triggers.
