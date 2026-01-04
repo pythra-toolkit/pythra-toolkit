@@ -5,7 +5,6 @@ PACKAGE_SYSTEM_README.md
 README.md
 pyproject.toml
 setup.py
-src/pythra/pythra/reconciler_cython.c
 src/pythra/MANIFEST.in
 src/pythra/__init__.py
 src/pythra/config.yaml

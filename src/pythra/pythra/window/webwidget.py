@@ -88,7 +88,7 @@ import io                                       # Input/Output operations
 from contextlib import redirect_stdout, redirect_stderr  # Context managers for stream redirection
 
 import threading
-import wmi
+
 import platform
 
 from .window_manager import SystemSleepManager 
@@ -309,11 +309,12 @@ sys.stderr = FilteredOutput(sys.stderr)  # Filter error messages and warnings
 
 
 
-def watch_for_power_events(sleep_manager, on_resume_callback): # <-- No change to signature
+def watch_for_power_events(sleep_manager, on_resume_callback):
     """
     Run in background thread, call sleep_manager methods on sleep/resume,
     and call the original on_resume_callback for repaint logic.
     """
+    import wmi
     c = wmi.WMI()
     watcher = c.watch_for(
         notification_type="Creation",

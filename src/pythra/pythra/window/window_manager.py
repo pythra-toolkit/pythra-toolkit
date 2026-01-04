@@ -4,11 +4,17 @@ from PySide6.QtCore import QObject, Signal, Qt
 # No need to import QApplication here; this module provides the logic, not the app instance.
 
 # For Linux D-Bus integration
+_dbus_available = False
 if platform.system() == "Linux":
-    import dbus
-    import threading
-    from dbus.mainloop.glib import DBusGMainLoop
-    from gi.repository import GLib
+    try:
+        import dbus
+        import threading
+        from dbus.mainloop.glib import DBusGMainLoop
+        from gi.repository import GLib
+        _dbus_available = True
+    except ImportError as e:
+        print(f"Warning: Linux power management dependencies missing ({e}). Sleep/Resume detection disabled.")
+        import threading # Ensure threading is available even if dbus fails
 
 class SystemSleepManager(QObject):
     """
@@ -42,7 +48,8 @@ class SystemSleepManager(QObject):
     def setup_event_listener(self):
         """Starts the platform-specific listener for sleep/resume events."""
         if platform.system() == "Linux":
-            self._start_linux_dbus_listener()
+            if _dbus_available:
+                self._start_linux_dbus_listener()
         elif platform.system() == "Windows":
             # Windows listener is handled externally by the existing WMI watcher
             # in the main webwidget module, which will call minimize/restore directly.
