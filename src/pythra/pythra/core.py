@@ -1052,648 +1052,187 @@ class Framework:
 
 
 
-
     def _generate_dom_patch_script(self, patches: List[Patch], js_initializers=None) -> str:
-        """Converts the list of Patch objects from the reconciler into executable JavaScript."""
-        js_commands = []
-        old_id = None
-        new_id = None
+        """
+        Converts the list of Patch objects into a JSON payload for the JS Bridge.
+        
+        OPTIMIZATION: Instead of generating thousands of lines of JS code strings,
+        we now generate a single lightweight JSON object and let the 
+        client-side 'PythraBridge' handle the DOM manipulation.
+        """
+        if not patches:
+            return ""
 
-        count = 0
+        # Prepare the data-only list for serialization
+        patches_data = []
+        
         for patch in patches:
+            # We convert the dataclass to a simple dict.
+            # _dumps will handle recursive serialization of widgets/functions implicitly.
+            patch_dict = {
+                "action": patch.action,
+                "html_id": patch.html_id,
+                "data": patch.data
+            }
+            patches_data.append(patch_dict)
 
-            action, target_id, data = patch.action, patch.html_id, patch.data
+        # Fast serialization using orjson (if available)
+        json_payload = _dumps(patches_data)
+        
+        # Log payload size in debug mode
+        if getattr(self, 'config', None) and self.config.get('Debug'):
+            print(f"📦 Bridge Payload: {len(json_payload)} bytes")
 
-            # --- THIS IS THE FIX ---
-            # Create a sanitized version of the data for logging. Avoid doing
-            # expensive sanitization unless debug logging is enabled.
-            if getattr(self, 'config', None) and self.config.get('Debug'):
-                # _dumps with our new default handler handles sanitization automatically and fast!
-                loggable_data_str = _dumps(data)
-            else:
-                # In non-debug mode, avoid the costly traversal and emit null
-                # to keep JS error logs small and fast.
-                loggable_data_str = 'null'
-            # --- END OF FIX ---
+        # The efficient bridge call
+        bridge_script = f"if (window.PythraBridge) {{ PythraBridge.applyPatches({json_payload}); }}"
 
-            command_js = ""
+        if js_initializers:
+            # Iterate and convert initializers (strings or dicts) into executable JS
+            processed_inits = []
+            for init in js_initializers:
+                if isinstance(init, str):
+                    processed_inits.append(init)
+                elif isinstance(init, dict):
+                    init_type = init.get("type")
+                    
+                    if init_type == "ResponsiveClipPath":
+                        # Generate JS for ResponsiveClipPath dynamic init
+                        target_id = init["target_id"]
+                        clip_data = init["data"]
+                        points_json = _dumps(clip_data["points"])
+                        radius_json = _dumps(clip_data["radius"])
+                        ref_w_json = _dumps(clip_data["viewBox"][0])
+                        ref_h_json = _dumps(clip_data["viewBox"][1])
 
-            # print("Patch details: ",action, target_id, data)
-
-            if action == "INSERT":
-                parent_id, html_stub, props, before_id = (
-                    data["parent_html_id"],
-                    data["html"],
-                    data["props"],
-                    data["before_id"],
-                )
-                # Escape the HTML for safe injection into a JS template literal
-                final_escaped_html = (
-                    _dumps(html_stub)[1:-1]
-                    .replace("`", "\\`")
-                    .replace("${", "\\${")
-                )
-                before_id_js = (
-                    f"document.getElementById('{before_id}')" if before_id else "null"
-                )
-                command_js = f"""
-                    var parentEl = document.getElementById('{parent_id}');
-                    if (parentEl) {{
-                        try {{
-                            // Create a temporary, disconnected container
-                            var tempContainer = document.createElement('div');
-                            // Use trim() to remove leading/trailing whitespace from the HTML string
-                            tempContainer.innerHTML = `{final_escaped_html}`.trim(); 
-                            
-                            // Use `firstElementChild` which ignores whitespace text nodes
-                            var insertedEl = tempContainer.firstElementChild; 
-
-                            if (insertedEl) {{
-                                // Check if before element exists and is still in DOM
-                                var beforeEl = {before_id_js};
-                                if (beforeEl && !parentEl.contains(beforeEl)) {{
-                                    beforeEl = null; // Element no longer exists, append at end
-                                }}
-                                parentEl.insertBefore(insertedEl, beforeEl);
-                                // Now we can safely apply props because 'insertedEl' is guaranteed to be an element
-                                {self._generate_prop_update_js(target_id, props, is_insert=True)}
-                            }} else {{
-                                console.warn('INSERT: No valid element created from HTML for {target_id}');
+                        processed_inits.append(f"""
+                        (function() {{
+                            const points = {points_json}.map(p => ({{x: p[0], y: p[1]}}));
+                            const pathStr = window.generateRoundedPath(points, {radius_json});
+                            if (window.ResponsiveClipPath) {{
+                                window._pythra_instances['{target_id}'] = new window.ResponsiveClipPath(
+                                    '{target_id}', 
+                                    pathStr, 
+                                    {ref_w_json}, 
+                                    {ref_h_json}, 
+                                    {{ uniformArc: true, decimalPlaces: 2 }}
+                                );
                             }}
-                        }} catch (e) {{
-                            console.error('INSERT: DOM operation failed for {target_id}:', e);
-                        }}
-                    }} else {{
-                        console.error('INSERT: Parent element {parent_id} not found for {target_id}');
-                    }}
-                """
-                props = data.get("props", {})
+                        }})();
+                        """)
 
-                # --- ADD THIS BLOCK ---
-                if props.get("init_gradient_clip_border"):
-                    options_json = _dumps(props.get("gradient_clip_options", {}))
-                    command_js += f"""
+                    elif init_type == "SimpleBar":
+                        target_id = init["target_id"]
+                        options_json = _dumps(init.get("options", {}))
+                        processed_inits.append(f"""
                         setTimeout(() => {{
-                            if (typeof PythraGradientClipPath !== 'undefined') {{
-                                window._pythra_instances['{target_id}'] = new PythraGradientClipPath('{target_id}', {options_json});
+                            const el = document.getElementById('{target_id}');
+                            if (el && !el.simplebar) {{
+                                new SimpleBar(el, {options_json});
                             }}
                         }}, 0);
-                    """
-                # --- END OF BLOCK ---
+                        """)
 
-                # --- ADD THIS BLOCK ---
-                if props.get("init_gesture_detector"):
-                    options_json = _dumps(props.get("gesture_options", {}))
-                    command_js += f"""
+                    elif init_type == "slider":
+                        target_id = init["target_id"]
+                        options_json = _dumps(init.get("data", {}).get("slider_options", {}))
+                        processed_inits.append(f"""
+                        setTimeout(() => {{
+                            if (typeof PythraSlider !== 'undefined') {{
+                                window._pythra_instances['{target_id}'] = new PythraSlider('{target_id}', {options_json});
+                            }}
+                        }}, 0);
+                        """)
+                    
+                    elif init_type == "virtual_list":
+                         target_id = init["target_id"]
+                         data = init.get("data", {})
+                         estimated_height = data.get("estimated_height", 50) # Fallback if missing
+                         item_count = data.get("item_count", 0)
+                         processed_inits.append(f"""
+                         setTimeout(() => {{
+                             if (typeof VirtualList !== 'undefined') {{
+                                 new VirtualList(
+                                     '{target_id}',
+                                     {item_count},
+                                     {estimated_height},
+                                     (i) => {{
+                                         const div = document.createElement("div");
+                                         div.dataset.index = i;
+                                         return div;
+                                     }}
+                                 );
+                             }}
+                         }}, 0);
+                         """)
+
+                    elif init_type == "dropdown":
+                        target_id = init["target_id"]
+                        # The 'data' dict usually contains 'dropdown_options' based on reconciler logic
+                        options_json = _dumps(init.get("data", {}).get("dropdown_options", {}))
+                        processed_inits.append(f"""
+                        setTimeout(() => {{
+                            if (typeof PythraDropdown !== 'undefined') {{
+                                window._pythra_instances['{target_id}'] = new PythraDropdown('{target_id}', {options_json});
+                            }}
+                        }}, 0);
+                        """)
+
+                    elif init_type == "gesture_detector":
+                        target_id = init["target_id"]
+                        options_json = _dumps(init.get("data", {}).get("gesture_options", {}))
+                        processed_inits.append(f"""
                         setTimeout(() => {{
                             if (typeof PythraGestureDetector !== 'undefined') {{
                                 window._pythra_instances['{target_id}'] = new PythraGestureDetector('{target_id}', {options_json});
                             }}
                         }}, 0);
-                    """
-                # --- END OF BLOCK ---
+                        """)
 
-                # --- ADD THIS BLOCK ---
-                # print("Props: ", props)
-                if props.get("init_dropdown"):
-                    options_json = _dumps(props.get("dropdown_options", {}))
-                    command_js += f"""
+                    elif init_type == "gradient_clip_border":
+                        target_id = init["target_id"]
+                        options_json = _dumps(init.get("data", {}).get("gradient_clip_options", {}))
+                        processed_inits.append(f"""
                         setTimeout(() => {{
-                            console.log("Initializig dropdown");
-                            if (typeof window.PythraDropdown !== 'undefined') {{
-                                console.log("Initializig the dropdown");
-                                if (!window._pythra_instances['{target_id}']){{
-                                    window._pythra_instances['{target_id}'] = new window.PythraDropdown('{target_id}', {options_json});
-                                }}
+                            if (typeof PythraGradientClipPath !== 'undefined') {{
+                                window._pythra_instances['{target_id}'] = new PythraGradientClipPath('{target_id}', {options_json});
                             }}
                         }}, 0);
-                    """
-                # --- END OF BLOCK ---
+                        """)
 
-                if props.get("init_slider"):
-                    options_json = _dumps(props.get("slider_options", {}))
-                    command_js += f"""
-                        setTimeout(() => {{
-                            if (typeof window.PythraSlider !== 'undefined') {{
-                                if (!window._pythra_instances['{target_id}']) {{
-                                    console.log('Initializing dynamically inserted PythraSlider for #{target_id}');
-                                    window._pythra_instances['{target_id}'] = new window.PythraSlider('{target_id}', {options_json});
-                                }}
-                            }}
-                        }}, 0);
-                    """
-                # --- END ADDITION ---
-                if props.get("init_simplebar"):
-                    options_json = _dumps(props.get("simplebar_options", {}))
-                    command_js += f"""
-                    setTimeout(() => {{
-                        var el_{target_id} = document.getElementById('{target_id}');
-                        if (el_{target_id} && !el_{target_id}.simplebar) {{
-                            new SimpleBar(el_{target_id}, {options_json} );
-                            console.log(el_{target_id}.simplebar);
-                        }}
-                        }}, 0);
-                    """
-                    # print("new SimpleBar: ", options_json)
-
-                # --- ADD THIS BLOCK ---
-                if props.get("init_virtual_list"):
-                    options = props.get("virtual_list_options", {})
-                    options_json = _dumps(options)
-                    # We need to wait for SimpleBar to initialize first, so we defer this.
-                    js_commands.append(f"""
-                    setTimeout(() => {{
-                        if (typeof window.PythraVirtualList !== 'undefined' && document.getElementById('{target_id}').simplebar) {{
-                            window._pythra_instances['{target_id}_vlist'] = new window.PythraVirtualList('{target_id}', {options_json});
-                        }}
-                    }}, 0);
-                    """)
-                # --- END OF BLOCK ---
-
-                if 'responsive_clip_path' in props:
-                    # print("INITIALIZERS: ", js_initializers)
-                    if target_id != new_id:
-                        old_id, new_id = new_id, target_id
-                    initializer_data = {
-                        'type': 'ResponsiveClipPath',
-                        'target_id': target_id,
-                        'data': props['responsive_clip_path'],
-                        'before_id': old_id
-                    }
-                    # js_initializers.append(initializer_data) if js_initializers else print("no js_initializers found")
-                    # print("INITIALIZERS:AFTER: ", js_initializers)
-                    # target_id = initializer_data["target_id"]
-                    clip_data = initializer_data["data"]
-                    # print("target id: ", target_id, "Data: ", clip_data, "before_id: ", initializer_data["before_id"] if initializer_data["before_id"] else None)
-
-                    # Serialize the Python data into JSON strings for JS
-                    points_json = _dumps(clip_data["points"])
-                    radius_json = _dumps(clip_data["radius"])
-                    ref_w_json = _dumps(clip_data["viewBox"][0])
-                    ref_h_json = _dumps(clip_data["viewBox"][1])
-
-                    # This JS code performs the exact two-step process you described.
-                    # commands_js = 
-
-
-                    js_commands.append(f"""
-                    setTimeout(() => {{
-                        // Step 0: Convert Python's array-of-arrays to JS's array-of-objects
-                        const pointsForGenerator_{target_id} = {points_json}.map(p => ({{x: p[0], y: p[1]}}));
+                    # Reconciler stores generic JS init info with the type set to the engine name
+                    # We can detect this pattern by checking if 'engine' is in the init dict or relying on fallback.
+                    # However, Reconciler line 499 sets: "type": js_init_data['engine']
+                    # So we should probably handle that case by exclusion or a specific check?
+                    # Actually, the user's snippet showed:
+                    # elif init_type == "_js_init": ... 
+                    # But Reconciler line 499 sets type=engine_name.
+                    # Let's check init['data'] to see if it has 'engine' for the generic case.
+                    elif isinstance(init.get("data"), dict) and "engine" in init["data"]:
+                        # This matches the generic _js_init pattern from Reconciler line 492+
+                        js_init_data = init["data"]
+                        engine_name = js_init_data.get("engine")
+                        instance_name = js_init_data.get("instance_name")
+                        options_json = _dumps(js_init_data.get("options", {}))
                         
-                        // Step 1: Call generateRoundedPath with the points and radius
-                        const initialPathString_{target_id} = window.generateRoundedPath(pointsForGenerator_{target_id}, {radius_json});
-                        
-                        // Step 2: Feed the generated path into ResponsiveClipPath
-                        window._pythra_instances['{initializer_data["before_id"] if initializer_data["before_id"] else target_id}'] = new window.ResponsiveClipPath(
-                            '{initializer_data["before_id"] if initializer_data["before_id"] else target_id}', 
-                            initialPathString_{target_id}, 
-                            {ref_w_json}, 
-                            {ref_h_json}, 
-                            {{ uniformArc: true, decimalPlaces: 2 }}
-                        );
-                        }}, 0);
-                    """)
-
-                # --- GENERIC JS INITIALIZER FOR BOTH INSERT AND REPLACE ---
-                js_init_data = props.get("_js_init")
-                if js_init_data and isinstance(js_init_data, dict):
-                    # print("js_init_data: ", js_init_data)
-                    engine_name = js_init_data.get("engine")
-                    instance_name = js_init_data.get("instance_name")
-                    options = js_init_data.get("options", {})
-                    options_json = _dumps(options)
-                    
-                    # We use setTimeout to ensure the element is fully in the DOM.
-                    command_js += f"""
-                        console.log('Scheduling dynamic initialization of {engine_name} for {instance_name}');
+                        processed_inits.append(f"""
                         setTimeout(() => {{
-        const targetElement = document.getElementById('{target_id}');
-        const instanceExists = window._pythra_instances && window._pythra_instances['{instance_name}'];
-
-        if (targetElement && typeof {engine_name} !== 'undefined') {{
-            // --- NEW LIFECYCLE LOGIC ---
-            
-            // 1. Check if an old instance exists.
-            if (instanceExists) {{
-                // 2. If it has a destroy method, call it to clean up.
-                if (typeof window._pythra_instances['{instance_name}'].destroy === 'function') {{
-                    window._pythra_instances['{instance_name}'].destroy();
-                }}
-                // 3. Nullify the reference.
-                window._pythra_instances['{instance_name}'] = null;
-            }}
-
-            // 4. Now, create the new instance. This is safe.
-            console.log('✅ Initializing/Re-initializing JS component: {instance_name} on #{target_id}');
-            if (!window._pythra_instances) {{ window._pythra_instances = {{}}; }}
-            window._pythra_instances['{instance_name}'] = new {engine_name}(targetElement, {options_json});
-
-        }} else {{
-            console.error('Failed to initialize {instance_name}. Element "{target_id}" or class "{engine_name}" not found.');
-        }}
-    }}, 0);
-                    """
-                # --- END OF GENERIC LOGIC ---
-                    
-                    
-            elif action == "REMOVE":
-                command_js = f"""
-                    var el_to_remove = document.getElementById('{target_id}');
-                    if (el_to_remove) {{
-                        // Check if it was a SimpleBar instance before removing.
-                        if (el_to_remove.simplebar) {{
-                            // This is crucial to prevent memory leaks from ResizeObserver.
-                            el_to_remove.simplebar.unMount();
-                        }}
-                        el_to_remove.remove();
-                    }}
-                """
-                command_js = f'var el = document.getElementById("{target_id}"); if(el) el.remove();'
-            elif action == "UPDATE":
-                # Pass the element's ID to the prop updater, not the element itself
-                prop_update_js = self._generate_prop_update_js(target_id, data["props"])
-                if prop_update_js:
-                    command_js = f"""
-                        var elToUpdate = document.getElementById("{target_id}");
-                        if (elToUpdate) {{
-                            try {{
-                                {prop_update_js}
-                            }} catch (e) {{
-                                console.error('UPDATE: Property update failed for {target_id}:', e);
-                            }}
-                        }} else {{
-                            console.error('UPDATE: Element {target_id} not found in DOM');
-                        }}
-                    """
-
-
-            elif action == "MOVE":
-                parent_id, before_id = data["parent_html_id"], data["before_id"]
-                before_id_js = (
-                    f"document.getElementById('{before_id}')" if before_id else "null"
-                )
-                command_js = f"""
-                    var el = document.getElementById('{target_id}');
-                    var p = document.getElementById('{parent_id}');
-                    if (el && p) {{
-                        try {{
-                            var beforeEl = {before_id_js};
-                            // Check if before element still exists and is in the target parent
-                            if (beforeEl && !p.contains(beforeEl)) {{
-                                beforeEl = null; // Element moved or removed, append at end
-                            }}
-                            p.insertBefore(el, beforeEl);
-                        }} catch (e) {{
-                            console.error('MOVE: Failed to move element {target_id}:', e);
-                        }}
-                    }} else {{
-                        if (!el) console.error('MOVE: Element {target_id} not found');
-                        if (!p) console.error('MOVE: Parent element {parent_id} not found');
-                    }}
-                """
-
-            # --- ADD THIS NEW BLOCK ---
-            elif action == "REPLACE":
-                new_html_stub = data["new_html"]
-                new_props = data["new_props"]
-                
-                # Use a robust replacement method. `outerHTML` is simple and effective.
-                # It replaces the entire element, including the element itself.
-                escaped_html = _dumps(new_html_stub)[1:-1].replace("`", "\\`")
-
-                command_js = f"""
-                    var oldEl = document.getElementById('{target_id}');
-                    if (oldEl) {{
-                        oldEl.outerHTML = `{escaped_html}`;
-                        // After replacement, we may need to apply props to the NEW element.
-                        // The new element's ID is embedded in the escaped_html, so we need to find it.
-                        // NOTE: This part is tricky. A simpler way for now is to bake initial props
-                        // into the HTML stub (like inline styles), which our stub generator does.
-                        // Complex JS initializers (like SimpleBar) would need more handling here.
-                    }}
-                """
-                # --- ADD THIS NEW LOGIC ---
-                # After replacing the HTML, we must check if the NEW widget
-                # needs a JS engine and initialize it.
-                
-                # Check for Dropdown
-                if new_props.get("init_dropdown"):
-                    options_json = _dumps(new_props.get("dropdown_options", {}))
-                    # The element ID is the same, but the element itself is new.
-                    command_js += f"""
-                        setTimeout(() => {{
-                            if (typeof PythraDropdown !== 'undefined') {{
-                                console.log('Re-initializing Dropdown for #{target_id} after replacement.');
-                                window._pythra_instances['{target_id}'] = new PythraDropdown('{target_id}', {options_json});
-                            }}
-                        }}, 0);
-                    """
-            # --- END OF NEW BLOCK ---
-                
-
-            elif action == "SVG_INSERT":
-                parent_id = data.get("parent_html_id")  # e.g., 'svg-defs'
-                html_stub = data.get("html")
-                final_escaped_html = _dumps(html_stub)[1:-1]
-
-                command_js = f"""
-                    var svgDefs = document.getElementById('{parent_id}');
-                    if (svgDefs) {{
-                        // Don't add if it already exists
-                        if (!document.getElementById('{target_id}')) {{
-                            svgDefs.insertAdjacentHTML('beforeend', `{final_escaped_html}`);
-                        }}
-                    }} else {{
-                        console.warn('SVG defs container #{parent_id} not found for INSERT of {target_id}');
-                    }}
-                """
-            # ... (any other patch types like SVG_INSERT) ...
-
-            if command_js:
-                # --- THIS IS THE FIX FOR THE TypeError ---
-                # Helper function to recursively clean a dictionary for JSON serialization.
-                def make_loggable(obj):
-                    if isinstance(obj, dict):
-                        # Create a new dict, processing each value.
-                        return {k: make_loggable(v) for k, v in obj.items()}
-                    if isinstance(obj, list):
-                        # Create a new list, processing each item.
-                        return [make_loggable(i) for i in obj]
-                    # Replace non-serializable types with a descriptive string.
-                    if (
-                        callable(obj)
-                        or isinstance(obj, Widget)
-                        or isinstance(obj, weakref.ReferenceType)
-                    ):
-                        return f"<{type(obj).__name__}>"
-                    # Return all other (presumably serializable) types as is.
-                    return obj
-
-                # Create the log-safe string representation of the data.
-                loggable_data_str = _dumps(make_loggable(data))
-
-                is_textfield_patch = False
-                if "props" in data and isinstance(data["props"], dict):
-                    if "onChangedName" in data["props"]:
-                        is_textfield_patch = True
-
-                # Use the sanitized string in the catch block.
-                # TODO: RECHECK AND FIX THE TRY CATCH BLOCK CAUSING UI BREAKAGE
-                # print(f"Loggable Data str: [{loggable_data_str}]")
-                js_commands.append(
-                    
-                    f"try {{ {command_js} }} catch (e) {{ console.error('Error applying patch {action} {target_id}:', e.name + ': ' + e.message, 'Stack:', e.stack, 'Data:', {loggable_data_str}); }};"
-                )
-
-         # --- THIS IS THE FIX ---
-        # The `self.called` flag is used to ensure we only inject the JS utilities ONCE
-        # per application session, on the very first set of patches that gets sent.
-        # --- Handle JS Initializers for Dynamic Inserts ---
-        if js_initializers:
-            for init in js_initializers:
-                if init["type"] == "ResponsiveClipPath":
-                    target_id = init["target_id"]
-                    clip_data = init["data"]
-                    
-                    # Serialize the Python data into JSON strings for JS
-                    points_json = _dumps(clip_data["points"])
-                    radius_json = _dumps(clip_data["radius"])
-                    ref_w_json = _dumps(clip_data["viewBox"][0])
-                    ref_h_json = _dumps(clip_data["viewBox"][1])
-                    target_id_json = _dumps(target_id)
-
-                    js_commands.append(
-                        f"""
-                        (function() {{
-                            var targetId = {target_id_json};
-                            var el = document.getElementById(targetId);
-                            if (el) {{
-                                console.log('🔧 PyThra JS | Found element ' + targetId + ', initializing ClipPath...');
-                                // Step 0: Convert Python's array-of-arrays to JS's array-of-objects
-                                var points = {points_json}.map(p => ({{x: p[0], y: p[1]}}));
-                                
-                                // Step 1: Call generateRoundedPath
-                                if (window.generateRoundedPath) {{
-                                     var initialPathString = window.generateRoundedPath(points, {radius_json});
-                                
-                                     // Step 2: Feed into ResponsiveClipPath
-                                     // NOTE: Passing 'el' directly to avoid re-querying by ID
-                                     window._pythra_instances = window._pythra_instances || {{}};
-                                     window._pythra_instances[targetId] = new window.ResponsiveClipPath(
-                                         el, 
-                                         initialPathString, 
-                                         {ref_w_json}, 
-                                         {ref_h_json}, 
-                                         {{ uniformArc: true, decimalPlaces: 2 }}
-                                     );
-                                     
-                                     // Verification
-                                     if (!el.style.clipPath) {{
-                                         console.error('❌ PyThra JS | Failed to apply clipPath property to ' + targetId);
-                                     }} else {{
-                                         console.log('✅ PyThra JS | Success! clipPath applied to ' + targetId);
-                                     }}
-                                     
-                                }} else {{
-                                    console.error('❌ PyThra JS | generateRoundedPath not available');
+                            const targetElement = document.getElementById('{target_id}');
+                            if (targetElement && typeof window['{engine_name}'] !== 'undefined') {{
+                                window._pythra_instances = window._pythra_instances || {{}};
+                                if (window._pythra_instances['{instance_name}'] && typeof window._pythra_instances['{instance_name}'].destroy === 'function') {{
+                                    window._pythra_instances['{instance_name}'].destroy();
                                 }}
-                            }} else {{
-                                console.error('❌ PyThra JS | Element ' + targetId + ' NOT found in DOM during patch!');
+                                window._pythra_instances['{instance_name}'] = new window['{engine_name}'](targetElement, {options_json});
                             }}
-                        }})();
-                        """
-                    )
-                # Add handling for other types if needed
-                elif init["type"] == "SimpleBar":
-                    target_id = init["target_id"]
-                    options_json = _dumps(init.get("options", {}))
-                    js_commands.append(f"new SimpleBar(document.getElementById('{target_id}'), {options_json});")
-                
-                # Generic JS Initializer
-                elif init["type"] in ["PythraSlider", "PythraVirtualList"]: # Add others as needed
-                     # Use the generic structure if it matches
-                     pass 
-
-        if not self.called:
-            self.called = True
-            print("🔧 PyThra Framework | Injecting JS utilities for the first time during reconciliation")
-            # Prepend the combined JS utilities to the list of commands.
-            # Get the required engines from the current reconciliation result
-            required_engines = self._analyze_required_js_engines(None, result)
-            js_utilities = self._get_js_utility_functions(required_engines)
-            print("🔧 PyThra Framework | Required JS engines for utilities:", required_engines)
-            print("🔧 PyThra Framework | Injecting JS utilities for engines:", js_utilities)
-            js_commands.insert(0, js_utilities)
-        else:
-            print("🔧 PyThra Framework | Skipping JS utilities injection (already loaded)")
-        # --- END OF FIX ---
+                        }}, 0);
+                        """)
 
 
-        return "\n".join(js_commands)
+            if processed_inits:
+                bridge_script += "\n" + "\n".join(processed_inits)
 
-    def _generate_prop_update_js(
-        self, target_id: str, props: Dict, is_insert: bool = False
-    ) -> str:
-        """Generates specific JS commands for updating element properties."""
-        js_prop_updates = []
-        style_updates = {}
-        element_var = "insertedEl" if is_insert else "elToUpdate"
+        return bridge_script
 
-        # --- Special handling for TextField value to prevent cursor jumping ---
-        # if props.get('onChangedName'): # A good heuristic for input-like elements
-        #      new_value = props.get('value', '')
-        #      # Only update the value if it's different. This is crucial for focus.
-        #      js_prop_updates.append(f"if ({element_var}.value !== {_dumps(new_value)}) {{ console.log({element_var}); {element_var}.value = {_dumps(new_value)}; }};")
-        # ---
-
-        for key, value in props.items():
-            # if key == 'value' and 'onChangedName' in props:
-            #     # For TextField, we target the inner <input> element directly.
-            #     input_element_selector = f"document.getElementById('{target_id}_input')"
-            #     js_prop_updates.append(f"var inputEl = {input_element_selector}; if(inputEl) inputEl.value = {_dumps(value)};")
-            # print("Props:", props)
-
-            if key == "data":
-                js_prop_updates.append(
-                    f"{element_var}.textContent = {_dumps(str(value))};"
-                )
-                # print("data: ",value)
-            # --- THIS IS THE NEW, INTELLIGENT CLASS UPDATE LOGIC ---
-            elif key == "css_class":
-                # We need the old shared class to remove it. This must be passed in the patch.
-                # Let's assume the patch data for an UPDATE now contains:
-                # data['props']['css_class'] -> new_class
-                # data['old_props']['css_class'] -> old_class
-                
-                old_class = props.get("old_shared_class") # We'll need to add this to the patch
-                new_class = value # The new shared class
-                new_classes = new_class.split(' ')
-                # print("New class: ", new_class.split(' '),)
-
-                for _class in new_classes:
-                    # print("New class: ",_class) 
-
-                    # This JS is robust: it works even if classes are None or the same.
-                    js_prop_updates.append(f"""
-                        if ("{old_class}" !== "{_class}") {{
-                            if ("{old_class}" && {element_var}.classList.contains("{old_class}")) {{
-                                {element_var}.classList.remove("{old_class}");
-                            }}
-                            if ("{_class}") {{
-                                {element_var}.classList.add("{_class}");
-                            }}
-                        }}
-                    """)
-            # --- END OF NEW LOGIC ---
-            elif key == "src":
-                js_prop_updates.append(f"{element_var}.src = {_dumps(value)};")
-            elif key == "tooltip":
-                js_prop_updates.append(f"{element_var}.title = {_dumps(value)};")
-            
-            elif key == "value" and "textfield" in props.get(
-                "css_class", ""
-            ):
-                # This is a value update for a TextField. Target the inner input.
-                
-                input_id = f"{target_id}_input"
-                # --- ADD DETAILED LOGGING ---
-                js_prop_updates.append(f"""
-                    var inputEl = document.getElementById('{input_id}');
-                    if (inputEl) {{
-                        console.log('--- TextField Update Patch ---');
-                        console.log('Target Input ID:', '{input_id}');
-                        console.log('Current Browser Value:', inputEl.value);
-                        console.log('New Value from Python:', {_dumps(str(value))});
-                        if (inputEl.value !== {_dumps(str(value))}) {{
-                            console.log('Values are different. Applying update.');
-                            inputEl.value = {_dumps(str(value))};
-                        }} else {{
-                            console.log('Values are the same. Skipping update to prevent cursor jump.');
-                        }}
-                    }} else {{
-                        console.error('Could not find input element with ID:', '{input_id}');
-                    }}
-                """)
-                # --- END OF LOGGING ---
-
-            elif key == "errorText" and "textfield-root-container" in props.get(
-                "css_class", ""
-            ):
-                # This is an errorText update for a TextField. Target the helper div.
-                helper_id = f"{target_id}_helper"
-                js_prop_updates.append(
-                    f"var helperEl = document.getElementById('{helper_id}'); if(helperEl) helperEl.textContent = {_dumps(str(value))};"
-                )
-
-            # elif key == 'value' and 'onChangedName' in props: # Check if it's a TextField
-            #         input_element = f"document.getElementById('{target_id}_input')" if not is_insert else f"{element_var}.querySelector('.textfield-input')"
-            #         js_prop_updates.append(f"var inputEl = {input_element}; if(inputEl && inputEl.value !== {json.dumps(value)}) {{ inputEl.value = {json.dumps(value)}; }}")
-
-            # Direct style props (use sparingly)
-            elif key == "color":
-                style_updates["color"] = value
-            elif key == "backgroundColor":
-                style_updates["backgroundColor"] = value
-            elif key == "width" and value is not None:
-                style_updates["width"] = (
-                    f"{value}px" if isinstance(value, (int, float)) else value
-                )
-            elif key == "height" and value is not None:
-                style_updates["height"] = (
-                    f"{value}px" if isinstance(value, (int, float)) else value
-                )
-            elif key == "aspectRatio":
-                style_updates["aspect-ratio"] = value
-            elif key == "clip_path_string":
-                style_updates["clip-path"] = value
-
-        # Handle the 'style' dictionary passed from render_props
-        if "style" in props and isinstance(props["style"], dict):
-            for style_key, style_value in props["style"].items():
-                # print("style_key: ",style_key,"style_value: ",style_value)
-                # Convert camelCase to kebab-case for CSS
-                css_prop_kebab = "".join(
-                    ["-" + c.lower() if c.isupper() else c for c in style_key]
-                ).lstrip("")
-                # print("css_prop_kebab: ", css_prop_kebab, f"{_dumps(style_value)}")
-                if css_prop_kebab == "--slider-percentage" and props.get("isDragEnded"):
-                    print("drag css", props["isDragEnded"])
-                    js_prop_updates.append(
-                        f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {_dumps(style_value)}); }} catch (e) {{ console.warn('Failed to set CSS property {css_prop_kebab}:', e); }}"
-                    )
-                elif css_prop_kebab == "--slider-percentage" and not props.get("isDragEnded"):
-                    print("drag css", props.get("isDragEnded"))
-                elif css_prop_kebab != "--slider-percentage" and "isDragEnded" not in props:
-                    js_prop_updates.append(
-                        f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {_dumps(style_value)}); }} catch (e) {{ console.warn('Failed to set CSS property {css_prop_kebab}:', e); }}"
-                    )
-        # --- END OF ADDITION ---
-
-        # --- NEW: Apply _style_override from the widget instance ---
-        # We need the widget instance to get the override
-        # This assumes the reconciler includes it in the patch data (we'll ensure this next)
-        widget_instance = props.get("widget_instance")
-        if widget_instance and hasattr(widget_instance, "_style_override"):
-            for style_key, style_value in widget_instance._style_override.items():
-                style_updates[style_key] = style_value
-                # print("Style Value Init: ", style_value)
-
-        # Handle style dict passed from widgets like ListTile
-        if "style" in props and isinstance(props["style"], dict):
-            for style_key, style_value in props["style"].items():
-                style_updates[style_key] = style_value
-
-        if style_updates:
-            for prop, val in style_updates.items():
-                css_prop_kebab = "".join(
-                    ["-" + c.lower() if c.isupper() else c for c in prop]
-                ).lstrip("-")
-                js_prop_updates.append(
-                    f"try {{ {element_var}.style.setProperty('{css_prop_kebab}', {_dumps(val)}); }} catch (e) {{ console.warn('Failed to set style property {css_prop_kebab}:', e); }}"
-                )
-
-        return "\n".join(js_prop_updates)
 
     def _generate_initial_js_script(self, result: 'ReconciliationResult', required_engines: set = None) -> str:
         """Generates a script tag to run initializations after the DOM loads with optimized JS loading."""
@@ -2153,7 +1692,7 @@ class Framework:
                 <style id=\"dynamic-styles\">{initial_css_rules}</style>\n
                 {self._get_js_includes()}\n
                 {plugin_css_str}\n
-            </head>\n<body>\n    <div id=\"root-container\">{html_content}</div>\n    <div id=\"overlay-container\"></div>\n\n    <!-- ADD SIMPLEBAR JS -->\n    <script src=\"./js/scroll-bar/simplebar.min.js\"></script>\n    <!-- ADD THE NEW SLIDER JS ENGINE -->\n    {initial_js}\n</body>\n</html>"""
+            </head>\n<body>\n    <div id=\"root-container\">{html_content}</div>\n    <div id=\"overlay-container\"></div>\n\n    <!-- ADD SIMPLEBAR JS -->\n    <script src=\"./js/scroll-bar/simplebar.min.js\"></script>\n    <script src=\"./js/pythra_bridge.js\"></script>\n    <!-- ADD THE NEW SLIDER JS ENGINE -->\n    {initial_js}\n</body>\n</html>"""
         )
 
         try:
