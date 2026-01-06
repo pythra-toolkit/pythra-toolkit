@@ -47,18 +47,35 @@ if TYPE_CHECKING:
     from .state import State
 
 
+def _json_default_handler(obj: Any) -> Any:
+    """
+    Default handler for JSON serialization of non-standard types.
+    Optimized for use with orjson's 'default' hook.
+    """
+    if isinstance(obj, Widget):
+        return f"<{type(obj).__name__}>"
+    if callable(obj):
+        return "<function>"
+    if isinstance(obj, weakref.ReferenceType):
+        return "<weakref>"
+    if isinstance(obj, set):
+        return list(obj)
+    
+    # Fallback for other types
+    return f"<{type(obj).__name__}>"
+
 # Fast JSON dumps: prefer orjson when available for speed-critical paths
 try:
     import orjson as _orjson  # type: ignore
 
     def _dumps(obj: Any) -> str:
         """Fast dumps using orjson, returns str."""
-        # orjson.dumps returns bytes
-        return _orjson.dumps(obj).decode('utf-8')
+        # orjson.dumps returns bytes. default hook handles custom types efficiently in C.
+        return _orjson.dumps(obj, default=_json_default_handler).decode('utf-8')
 except Exception:
     def _dumps(obj: Any) -> str:
         """Fallback to stdlib json.dumps with compact separators."""
-        return json.dumps(obj, separators=(',', ':'), ensure_ascii=False)
+        return json.dumps(obj, separators=(',', ':'), ensure_ascii=False, default=_json_default_handler)
 
 
 class Framework:
@@ -1034,45 +1051,7 @@ class Framework:
         return ""
 
 
-    def _sanitize_for_json(self, data: Any) -> Any:
-        """
-        Recursively removes non-serializable values from a data structure
-        before it's passed to json.dumps.
-        """
-        # Fast-path for simple serializable types
-        if data is None or isinstance(data, (str, int, float, bool)):
-            return data
 
-        # Handle lists/tuples with an iterative loop (avoid building unnecessary temporaries)
-        if isinstance(data, (list, tuple)):
-            out_list = []
-            for item in data:
-                if callable(item) or isinstance(item, Widget) or isinstance(item, weakref.ReferenceType):
-                    out_list.append(f"<{type(item).__name__}>")
-                else:
-                    out_list.append(self._sanitize_for_json(item))
-            return out_list
-
-        # Handle dicts (most common complex case)
-        if isinstance(data, dict):
-            out = {}
-            for k, v in data.items():
-                # Skip or summarize callables, widget instances, and weakrefs quickly
-                if callable(v) or isinstance(v, Widget) or isinstance(v, weakref.ReferenceType):
-                    out[k] = f"<{type(v).__name__}>"
-                else:
-                    out[k] = self._sanitize_for_json(v)
-            return out
-
-        # Weakrefs, callables, and widget instances get summarized
-        if callable(data) or isinstance(data, Widget) or isinstance(data, weakref.ReferenceType):
-            return f"<{type(data).__name__}>"
-
-        # Fallback: try to get a string representation
-        try:
-            return str(data)
-        except Exception:
-            return "<non-serializable>"
 
     def _generate_dom_patch_script(self, patches: List[Patch], js_initializers=None) -> str:
         """Converts the list of Patch objects from the reconciler into executable JavaScript."""
@@ -1089,8 +1068,8 @@ class Framework:
             # Create a sanitized version of the data for logging. Avoid doing
             # expensive sanitization unless debug logging is enabled.
             if getattr(self, 'config', None) and self.config.get('Debug'):
-                sanitized_data_for_log = self._sanitize_for_json(data)
-                loggable_data_str = _dumps(sanitized_data_for_log)
+                # _dumps with our new default handler handles sanitization automatically and fast!
+                loggable_data_str = _dumps(data)
             else:
                 # In non-debug mode, avoid the costly traversal and emit null
                 # to keep JS error logs small and fast.

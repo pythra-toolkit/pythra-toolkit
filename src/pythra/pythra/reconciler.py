@@ -60,7 +60,13 @@ only those elements, leaving everything else untouched.
 
 import uuid
 import html
+import uuid
+import html
 import json
+try:
+    import orjson
+except ImportError:
+    orjson = None
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable, Literal
 from dataclasses import dataclass, field
 from collections import defaultdict, OrderedDict
@@ -687,7 +693,12 @@ class Reconciler:
             if cacheable:
                 # Build a stable JSON key from props
                 try:
-                    stable_props_json = json.dumps(props, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+                    if orjson:
+                        # OPT_SORT_KEYS ensures deterministic order for caching
+                        stable_props_json = orjson.dumps(props, option=orjson.OPT_SORT_KEYS).decode()
+                    else:
+                        stable_props_json = json.dumps(props, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
                     cache_key = (type(widget).__name__, stable_props_json)
                     if cache_key in self._html_stub_cache:
                         template = self._html_stub_cache[cache_key]
