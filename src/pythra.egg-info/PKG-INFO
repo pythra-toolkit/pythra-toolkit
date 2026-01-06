@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: pythra
-Version: 0.1.15
+Version: 0.1.16
 Summary: PyThra — a Flutter-like GUI framework in Python. a declarative Python UI framework for desktop apps with a webview renderer.
 Author-email: Ahmad Muhammad Bashir <ambashir02@gmail.com>
 License: MIT
@@ -23,6 +23,7 @@ Requires-Dist: pyinstaller>=4.0
 Requires-Dist: semver>=3.0.0
 Requires-Dist: requests>=2.31.0
 Requires-Dist: Cython>=0.29.30
+Requires-Dist: dbus-python; sys_platform == "linux"
 Dynamic: license-file
 
 # PyThra GUI Toolkit

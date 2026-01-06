@@ -10,6 +10,7 @@ using Python, rendering via HTML/CSS/JS in a webview (like PySide6 QtWebEngine).
 # --- Core Framework Classes ---
 from .core import Framework
 from .config import Config  # Expose configuration access
+from .theme import ThemeData, ThemeManager
 
 # --- Base Widget and State Management ---
 from .base import Widget
@@ -27,9 +28,9 @@ from .controllers import (
     DropdownController,
 )
 from .events import TapDetails, PanUpdateDetails
-from .drived_widgets.dropdown.dropdown import DerivedDropdown
-from .drived_widgets.dropdown.controller import DerivedDropdownController
-from .drived_widgets.dropdown.style import DerivedDropdownTheme
+from .derived_widgets.dropdown.dropdown import DerivedDropdown
+from .derived_widgets.dropdown.controller import DerivedDropdownController
+from .derived_widgets.dropdown.style import DerivedDropdownTheme
 from .navigation import Navigator, NavigatorState, PageRoute
 
 
@@ -288,6 +289,6 @@ __all__ = [
 ]
 
 
-__version__ = "0.1.16"  # Example version
+__version__ = "0.1.17"  # Example version
 
 print("PyThra Toolkit Initialized")  # Optional: Confirmation message

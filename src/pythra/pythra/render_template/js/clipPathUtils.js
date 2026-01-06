@@ -130,8 +130,10 @@ export class ResponsiveClipPath {
         console.warn(`ResponsiveClipPath: no elements found for selector "${selector}"`);
       }
       nodeList.forEach(el => this.elements.push(el));
+      console.log(`ResponsiveClipPath: Target "${target}" found ${this.elements.length} elements.`);
     } else if (target instanceof HTMLElement) {
       this.elements.push(target);
+      console.log(`ResponsiveClipPath: Target is HTMLElement. ID: ${target.id}`);
     } else {
       console.warn('ResponsiveClipPath: invalid target', target);
     }
@@ -152,6 +154,7 @@ export class ResponsiveClipPath {
 
   applyClip(el) {
     const rect = el.getBoundingClientRect();
+    console.log(`ResponsiveClipPath.applyClip: ${el.id} Rect: ${rect.width}x${rect.height}`);
     const newPath = scalePathAbsoluteMLA(
       this.orig,
       this.refW,
@@ -161,6 +164,7 @@ export class ResponsiveClipPath {
       this.options
     );
     this.currentPath = `path("${newPath}")`;  // ⬅️ Save it
+    // console.log(`ResponsiveClipPath.applyClip: ${el.id} Path: ${this.currentPath}`);
     el.style.clipPath = this.currentPath;
     el.style.webkitClipPath = this.currentPath;
   }

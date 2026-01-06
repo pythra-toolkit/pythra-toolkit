@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pythra"            
-version = "0.1.16"
+version = "0.1.17"
 description = "PyThra — a Flutter-like GUI framework in Python. a declarative Python UI framework for desktop apps with a webview renderer."
 readme = "README.md"
 license = { text = "MIT" }
@@ -39,7 +39,7 @@ pythra = "pythra.pythra_cli.main:app"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src/pythra"]
 
 [tool.setuptools.package-data]
 "pythra" = [

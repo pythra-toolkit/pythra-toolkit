@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.17] - 2026-01-06
+
+This release introduces the new `DerivedDropdown` widget system with enhanced theming capabilities and fixes critical package structure issues that affected CLI functionality.
+
+### ✨ New Features
+
+* **Derived Menu & Theming System:**
+  * **DerivedDropdown:** A new, highly customizable dropdown widget (`derived_widgets`) has been added.
+  * **DerivedDropdownTheme:** Introduces `DerivedDropdownTheme` for consistent and flexible styling of dropdown menus, allowing developers to "start with the theme we created" for uniform UI design.
+  * **Controller Support:** Added `DerivedDropdownController` for programmatic control over dropdown state.
+
+### 🛠️ Fixed
+
+* **CLI Module Import Errors:**
+  * **Problem:** Running `pythra run` caused a `ModuleNotFoundError` for `pythra.pythra_cli` because the CLI module was incorrectly located as a sibling to the main package.
+  * **Solution:** Moved `pythra_cli` inside the `pythra` package (`src/pythra/pythra/pythra_cli`) and updated the `pyproject.toml` entry point to `pythra.pythra_cli.main:app` (relative to the new package root).
+
+* **Package Installation Structure:**
+  * **Problem:** `setup.py` and `pyproject.toml` incorrectly treated `src` as the package root, causing internal import failures (e.g., `pythra.styles`) during editable installs.
+  * **Solution:** Updated packaging configuration to use `src/pythra` as the package root directory.
+
+* **Typo in Imports:**
+  * Fixed a typo in `__init__.py` where `derived_widgets` was misspelled as `drived_widgets`.
+
+---
 ## [0.1.16] - 2026-01-04
 
 This release improves Linux compatibility by fixing Windows-specific import errors and handling optional power management dependencies gracefully.

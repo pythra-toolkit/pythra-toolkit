@@ -450,42 +450,42 @@ class Color:
         transparent_red = Colors.rgba(255, 0, 0, 0.5)
     """   
 
-    # --- Material Design 3 Color Role Constants (Examples - Use your theme's values) ---
+    # --- Material Design 3 Color Role Constants ---
     # Primary Palette
-    primary = '#6750A4'
-    onPrimary = '#FFFFFF'
-    primaryContainer = '#EADDFF'
-    onPrimaryContainer = '#21005D'
+    primary = 'var(--md-sys-color-primary)'
+    onPrimary = 'var(--md-sys-color-on-primary)'
+    primaryContainer = 'var(--md-sys-color-primary-container)'
+    onPrimaryContainer = 'var(--md-sys-color-on-primary-container)'
     # Secondary Palette
-    secondary = '#625B71'
-    onSecondary = '#FFFFFF'
-    secondaryContainer = '#E8DEF8'
-    onSecondaryContainer = '#1D192B'
+    secondary = 'var(--md-sys-color-secondary)'
+    onSecondary = 'var(--md-sys-color-on-secondary)'
+    secondaryContainer = 'var(--md-sys-color-secondary-container)'
+    onSecondaryContainer = 'var(--md-sys-color-on-secondary-container)'
     # Tertiary Palette
-    tertiary = '#7D5260'
-    onTertiary = '#FFFFFF'
-    tertiaryContainer = '#FFD8E4'
-    onTertiaryContainer = '#31111D'
+    tertiary = 'var(--md-sys-color-tertiary)'
+    onTertiary = 'var(--md-sys-color-on-tertiary)'
+    tertiaryContainer = 'var(--md-sys-color-tertiary-container)'
+    onTertiaryContainer = 'var(--md-sys-color-on-tertiary-container)'
     # Error Palette
-    error = '#B3261E'
-    onError = '#FFFFFF'
-    errorContainer = '#F9DEDC'
-    onErrorContainer = '#410E0B'
+    error = 'var(--md-sys-color-error)'
+    onError = 'var(--md-sys-color-on-error)'
+    errorContainer = 'var(--md-sys-color-error-container)'
+    onErrorContainer = 'var(--md-sys-color-on-error-container)'
     # Neutral Palette (Surface Tones)
-    background = '#FFFBFE' # Often same as Surface
-    onBackground = '#1C1B1F'
-    surface = '#FFFBFE'
-    onSurface = '#1C1B1F'
-    surfaceVariant = '#E7E0EC'
-    onSurfaceVariant = '#49454F'
-    outline = '#79747E'
-    outlineVariant = '#CAC4D0' # For dividers etc.
-    shadow = '#000000'
-    scrim = '#000000' # Often black with alpha applied separately
-    # Inverse Tones (for Snackbars, etc.)
-    inverseSurface = '#313033'
-    inverseOnSurface = '#F4EFF4'
-    inversePrimary = '#D0BCFF'
+    background = 'var(--md-sys-color-background)'
+    onBackground = 'var(--md-sys-color-on-background)'
+    surface = 'var(--md-sys-color-surface)'
+    onSurface = 'var(--md-sys-color-on-surface)'
+    surfaceVariant = 'var(--md-sys-color-surface-variant)'
+    onSurfaceVariant = 'var(--md-sys-color-on-surface-variant)'
+    outline = 'var(--md-sys-color-outline)'
+    outlineVariant = 'var(--md-sys-color-outline-variant)'
+    shadow = 'var(--md-sys-color-shadow)'
+    scrim = 'var(--md-sys-color-scrim)'
+    # Inverse Tones
+    inverseSurface = 'var(--md-sys-color-inverse-surface)'
+    inverseOnSurface = 'var(--md-sys-color-inverse-on-surface)'
+    inversePrimary = 'var(--md-sys-color-inverse-primary)'
     # Fixed Tones (Less common in M3 theming but sometimes useful)
     # surfaceBright = '#FFFBFE'
     # surfaceDim = '#DED8E1'
@@ -586,6 +586,15 @@ class Color:
              raise ValueError("Alpha value must be between 0.0 and 1.0.")
         # Corrected order: R, G, B, A
         return f"rgba({red}, {green}, {blue}, {alpha})"
+
+    @staticmethod
+    def adaptive(light: str, dark: str) -> str:
+        """
+        Creates a custom color that adapts to the theme mode.
+        Registers the values with ThemeManager and returns a CSS variable.
+        """
+        from .theme import ThemeManager
+        return ThemeManager.instance().register_dynamic_color(light, dark)
 
     # --- Removed __getattr__ ---
     # def __getattr__(self, name): ...

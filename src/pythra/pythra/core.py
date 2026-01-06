@@ -38,6 +38,7 @@ from .widgets import *  # Import all widgets for class lookups if needed
 from .package_manager import PackageManager
 from .package_system import PackageType
 from .styles import *
+from .theme import ThemeManager
 from .debug_utils import debug_print, init_debug_from_config
 
 
@@ -439,6 +440,28 @@ class Framework:
     def minimize(self):
         self.window.minimize() if self.window else debug_print("unable to close window: window is None")
 
+    def set_theme(self, theme):
+        """Updates the application theme instantly."""
+        ThemeManager.instance()._current_theme = theme
+        css_vars = theme.to_css_vars()
+        escaped_css = _dumps(css_vars).replace("`", "\\`")
+        
+        js_cmd = f"""
+            var themeSheet = document.getElementById('theme-styles');
+            if (themeSheet) {{
+                 themeSheet.textContent = {escaped_css};
+            }} else {{
+                 var style = document.createElement('style');
+                 style.id = 'theme-styles';
+                 style.textContent = {escaped_css};
+                 document.head.prepend(style);
+            }}
+        """
+        if self.window:
+             self.window.evaluate_js(self.id, js_cmd)
+        else:
+             print("Warning: Window not ready, theme will be applied on startup.")
+
     def _dispose_widget_tree(self, widget: Optional[Widget]):
         """Recursively disposes of the state of a widget and its children."""
         if widget is None:
@@ -689,6 +712,7 @@ class Framework:
         
         # --- NEW: Track required engines for this entire update cycle ---
         all_required_engines_this_cycle = set()
+        all_js_initializers = []
 
         for state_instance in self._pending_state_updates:
             widget_to_rebuild = state_instance.get_widget()
@@ -725,6 +749,7 @@ class Framework:
             # --- NEW: Analyze this subtree and aggregate required engines ---
             required_in_subtree = self._analyze_required_js_engines(new_subtree, subtree_result)
             all_required_engines_this_cycle.update(required_in_subtree)
+            all_js_initializers.extend(subtree_result.js_initializers)
             # --- END NEW ---
 
         for cb_id, cb_func in all_new_callbacks.items():
@@ -755,7 +780,7 @@ class Framework:
         else:
             print("✅ PyThra Framework | CSS styles unchanged - Skipping regeneration")
 
-        dom_patch_script = self._generate_dom_patch_script(all_patches, js_initializers=[])
+        dom_patch_script = self._generate_dom_patch_script(all_patches, js_initializers=all_js_initializers)
 
         # --- CRITICAL: Prepend the JS injection script to the DOM patches ---
         combined_script = (js_injection_script + "\n" + css_update_script + "\n" + dom_patch_script).strip()
@@ -1415,6 +1440,72 @@ class Framework:
          # --- THIS IS THE FIX ---
         # The `self.called` flag is used to ensure we only inject the JS utilities ONCE
         # per application session, on the very first set of patches that gets sent.
+        # --- Handle JS Initializers for Dynamic Inserts ---
+        if js_initializers:
+            for init in js_initializers:
+                if init["type"] == "ResponsiveClipPath":
+                    target_id = init["target_id"]
+                    clip_data = init["data"]
+                    
+                    # Serialize the Python data into JSON strings for JS
+                    points_json = _dumps(clip_data["points"])
+                    radius_json = _dumps(clip_data["radius"])
+                    ref_w_json = _dumps(clip_data["viewBox"][0])
+                    ref_h_json = _dumps(clip_data["viewBox"][1])
+                    target_id_json = _dumps(target_id)
+
+                    js_commands.append(
+                        f"""
+                        (function() {{
+                            var targetId = {target_id_json};
+                            var el = document.getElementById(targetId);
+                            if (el) {{
+                                console.log('🔧 PyThra JS | Found element ' + targetId + ', initializing ClipPath...');
+                                // Step 0: Convert Python's array-of-arrays to JS's array-of-objects
+                                var points = {points_json}.map(p => ({{x: p[0], y: p[1]}}));
+                                
+                                // Step 1: Call generateRoundedPath
+                                if (window.generateRoundedPath) {{
+                                     var initialPathString = window.generateRoundedPath(points, {radius_json});
+                                
+                                     // Step 2: Feed into ResponsiveClipPath
+                                     // NOTE: Passing 'el' directly to avoid re-querying by ID
+                                     window._pythra_instances = window._pythra_instances || {{}};
+                                     window._pythra_instances[targetId] = new window.ResponsiveClipPath(
+                                         el, 
+                                         initialPathString, 
+                                         {ref_w_json}, 
+                                         {ref_h_json}, 
+                                         {{ uniformArc: true, decimalPlaces: 2 }}
+                                     );
+                                     
+                                     // Verification
+                                     if (!el.style.clipPath) {{
+                                         console.error('❌ PyThra JS | Failed to apply clipPath property to ' + targetId);
+                                     }} else {{
+                                         console.log('✅ PyThra JS | Success! clipPath applied to ' + targetId);
+                                     }}
+                                     
+                                }} else {{
+                                    console.error('❌ PyThra JS | generateRoundedPath not available');
+                                }}
+                            }} else {{
+                                console.error('❌ PyThra JS | Element ' + targetId + ' NOT found in DOM during patch!');
+                            }}
+                        }})();
+                        """
+                    )
+                # Add handling for other types if needed
+                elif init["type"] == "SimpleBar":
+                    target_id = init["target_id"]
+                    options_json = _dumps(init.get("options", {}))
+                    js_commands.append(f"new SimpleBar(document.getElementById('{target_id}'), {options_json});")
+                
+                # Generic JS Initializer
+                elif init["type"] in ["PythraSlider", "PythraVirtualList"]: # Add others as needed
+                     # Use the generic structure if it matches
+                     pass 
+
         if not self.called:
             self.called = True
             print("🔧 PyThra Framework | Injecting JS utilities for the first time during reconciliation")
@@ -2049,6 +2140,7 @@ class Framework:
     <link rel=\"stylesheet\" href=\"./js/scroll-bar/simplebar.min.css\" />
     <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n
                 <link id=\"base-stylesheet\" type=\"text/css\" rel=\"stylesheet\" href=\"styles.css\">\n
+                <style id=\"theme-styles\">{ThemeManager.instance().current_theme.to_css_vars()}</style>\n
                 <style id=\"dynamic-styles\">{initial_css_rules}</style>\n
                 {self._get_js_includes()}\n
                 {plugin_css_str}\n

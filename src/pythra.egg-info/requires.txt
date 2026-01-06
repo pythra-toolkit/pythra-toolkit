@@ -11,3 +11,6 @@ pyinstaller>=4.0
 semver>=3.0.0
 requests>=2.31.0
 Cython>=0.29.30
+
+[:sys_platform == "linux"]
+dbus-python
