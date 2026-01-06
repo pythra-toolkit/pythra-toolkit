@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.18] - 2026-01-06
+
+This release brings significant performance optimizations to navigation and rendering, including background page pre-building and persistent asset caching.
+
+### 🚀 Performance & Optimizations
+
+* **Navigator Preloading:**
+  * Added `navigator.preload(route)`: Allows pre-building complex page widgets in the background thread *before* navigation occurs, making transitions instant.
+  * Added `navigator.preloadPrevious()`: Automatically pre-builds the previous page in the stack, ensuring "Go Back" actions are immediate without re-rendering delay.
+  * Implemented `Framework.build_subtree_async`: A core utility to safely build widget trees in background threads without blocking the UI.
+
+* **Persistent Web Cache:**
+  * Enabled persistent disk caching for `QtWebEngine`.
+  * Fonts (like Material Icons) and other remote assets are now cached on disk, reducing network usage and speeding up subsequent app launches.
+
+---
 ## [0.1.17] - 2026-01-06
 
 This release introduces the new `DerivedDropdown` widget system with enhanced theming capabilities and fixes critical package structure issues that affected CLI functionality.

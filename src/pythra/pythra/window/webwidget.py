@@ -77,9 +77,13 @@ os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout    # Basic UI components
 from PySide6.QtCore import Qt, QObject, Slot, QUrl, QSize, qInstallMessageHandler, QtMsgType, QTimer, QEvent, Signal  # Core functionality
 from PySide6.QtWebEngineWidgets import QWebEngineView               # Web browser widget
-from PySide6.QtWebEngineCore import QWebEngineSettings              # Browser configuration
+from PySide6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile # Browser configuration
 from PySide6.QtWebChannel import QWebChannel                        # Python ↔ JavaScript communication
 from PySide6.QtGui import QShortcut, QKeySequence, QGuiApplication  # Keyboard shortcuts and UI helpers
+from PySide6.QtCore import (
+    Qt, QObject, Slot, QUrl, QSize, qInstallMessageHandler, 
+    QtMsgType, QTimer, QEvent, Signal, QStandardPaths
+)
 
 # 🐍 Standard Python Libraries
 import sys                                      # System-specific parameters and functions
@@ -587,6 +591,22 @@ class WebWindow(QWidget):
 
         # Register the window with the WindowManager
         window_manager.register_window(window_id, self)
+
+        # --- CONFIGURE CACHING ---
+        # Set up a persistent profile for caching (including fonts)
+        profile = QWebEngineProfile.defaultProfile()
+        cache_path = os.path.join(
+            QStandardPaths.writableLocation(QStandardPaths.CacheLocation),
+            "pythra",
+            "webcache"
+        )
+        profile.setCachePath(cache_path)
+        profile.setPersistentStoragePath(cache_path)
+        # Enable disk cache
+        profile.setHttpCacheType(QWebEngineProfile.DiskHttpCache)
+        
+        # print("📁 Setup WebEngine Config: ", cache_path)
+        debug_print("📁 Setup WebEngine Config: ", cache_path)
 
         # WebView
         self.webview = QWebEngineView(self)

@@ -18,6 +18,15 @@ class PageRoute:
             self.widget_instance = self.builder(navigator_state)
         return self.widget_instance
 
+    def preload(self, navigator_state: 'NavigatorState'):
+        """Starts building the page in the background."""
+        from .core import Framework
+        if not self.widget_instance:
+            self.widget_instance = self.builder(navigator_state)
+        
+        # Trigger background build on the framework
+        Framework.instance().build_subtree_async(self.widget_instance)
+
 class NavigatorState(State):
     def initState(self):
         self.history: List[PageRoute] = [self.get_widget().initialRoute] # type: ignore
@@ -26,6 +35,18 @@ class NavigatorState(State):
         self.history.append(route)
         self.setState()
 
+    def preload(self, route: PageRoute):
+        """Pre-builds a route in the background so it opens instantly."""
+        route.preload(self)
+
+    def preloadPrevious(self):
+        """Pre-builds the previous route in the stack."""
+        if len(self.history) > 1:
+            # The previous route is at index -2
+            prev_route = self.history[-2]
+            print(f"🚀 Preloading previous page ({prev_route.name or 'Unnamed'}) in background...")
+            self.preload(prev_route)
+    
     def pop(self):
         if len(self.history) > 1:
             self.history.pop()

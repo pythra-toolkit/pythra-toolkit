@@ -809,6 +809,28 @@ class Framework:
         print("--- End of Report ---\n")
         
     # --- Widget Tree Building ---
+    def build_subtree_async(self, widget: Optional[Widget]):
+        """
+        Builds the widget subtree in a background thread to prepare for navigation.
+        
+        This sets `_preloaded = True` on the widget when complete.
+        """
+        if not widget:
+            return
+
+        def _worker():
+            try:
+                # print(f"🧵 Starting background build for {widget}...")
+                self._build_widget_tree(widget)
+                widget._preloaded = True
+                # print(f"✅ Background build complete for {widget}")
+            except Exception as e:
+                print(f"⚠️ Background build failed: {e}")
+
+        import threading
+        thread = threading.Thread(target=_worker, daemon=True)
+        thread.start()
+
     def _build_widget_tree(self, widget: Optional[Widget]) -> Optional[Widget]:
         """
         The "Widget Tree Builder" - converts your nested widgets into a complete tree structure.
@@ -843,6 +865,14 @@ class Framework:
         """
         if widget is None:
             return None
+
+        # --- OPTIMIZATION: Check for preloaded subtree ---
+        # If this widget was built in the background, use the prebuilt result
+        # and clear the flag to ensure future updates rebuild normally.
+        if getattr(widget, '_preloaded', False):
+            # debug_print(f"🚀 Using preloaded subtree for {widget}")
+            widget._preloaded = False
+            return widget
 
         # --- THIS IS THE FIX ---
         # Handle StatelessWidget and StatefulWidget with the same pattern.
