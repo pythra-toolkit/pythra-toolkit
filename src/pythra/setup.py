@@ -25,13 +25,13 @@ if CYTHON_AVAILABLE:
 
 setup(
     name='pythra',
-    version='0.1.18',
+    version='0.1.19',
     author='Ahmad Muhammad Bashir (RED X)',
     author_email='ambashir02@gmail.com',
     description='A declarative Python UI framework for desktop apps with a webview renderer.',
     long_description=open('README.md', encoding="utf-8").read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/itsredx/pythra-0.0.1', # Change this
+    url='https://github.com/pythra-toolkit/pythra-toolkit',
     
     # This automatically finds your `pythra` and `pythra_cli` packages
     packages=find_packages(),
