@@ -210,6 +210,7 @@ class State:
     def __init__(self):
         self._widget_ref: Optional[weakref.ref['StatefulWidget']] = None
         self.framework: Optional['Framework'] = None # Initialized in _set_widget
+        # self.widget = self.get_widget()
 
     def _set_widget(self, widget: 'StatefulWidget'): # Hint uses forward reference
         """Internal method to link State to its StatefulWidget and get framework."""
@@ -256,6 +257,8 @@ class State:
     def get_widget(self) -> Optional['StatefulWidget']: # Hint uses forward reference
         """Safely retrieves the associated StatefulWidget instance."""
         return self._widget_ref() if self._widget_ref else None
+
+    widget: Optional['Widget'] = lambda self: self.get_widget()
 
     def build(self) -> Optional['Widget']: # Return Optional[Widget]
         """Describes the part of the user interface represented by this state."""

@@ -154,6 +154,7 @@ class Container(Widget):
                  zAxisIndex: int = 0,
                  cssClass: Optional[Union[str, List[str]]] = None,
                  js_init = {},
+                 pointerEvents: Optional[str] = None # New property for 'auto', 'none', etc.
                  ):
                   # <-- NEW PARAMETER
 
@@ -173,6 +174,7 @@ class Container(Widget):
         self.gradient = gradient
         self.zAxisIndex = zAxisIndex
         self.js_init = js_init
+        self.pointerEvents = pointerEvents
         
         # Handle cssClass parameter - convert to list if string
         self.cssClass = cssClass if isinstance(cssClass, list) else [cssClass] if cssClass else []
@@ -182,7 +184,8 @@ class Container(Widget):
         self.style_key = tuple(make_hashable(prop) for prop in (
             self.padding, self.color, self.decoration, self.width, self.height,
             self.constraints, self.margin, self.transform, self.alignment,
-            self.clipBehavior, self.gradient, self.zAxisIndex, tuple(sorted(self.cssClass))
+            self.clipBehavior, self.gradient, self.zAxisIndex, tuple(sorted(self.cssClass)),
+            self.pointerEvents # Add to style key
         ))
 
         if self.style_key not in Container.shared_styles:
@@ -219,7 +222,7 @@ class Container(Widget):
             # 1. Unpack the style_key tuple, now with cssClass at the end
             (padding_tuple, color, decoration_tuple, width, height,
              constraints_tuple, margin_tuple, transform, alignment_tuple,
-             clipBehavior, gradient_tuple, z_axis_index, css_classes_tuple) = style_key
+             clipBehavior, gradient_tuple, z_axis_index, css_classes_tuple, pointerEvents) = style_key
 
             styles = ["box-sizing: border-box;"]
             extra_rules = [] # For storing @keyframes
@@ -305,6 +308,8 @@ class Container(Widget):
 
             if z_axis_index: styles.append(f"z-index: {z_axis_index};")
             
+            if pointerEvents: styles.append(f"pointer-events: {pointerEvents};")
+
             # Assemble and return the final CSS rules.
             main_rule = f".{css_class} {{ {' '.join(filter(None, styles))} }}"
             
@@ -639,6 +644,7 @@ class TextButton(Widget):
                 'text-align': 'center',
                 'text-decoration': 'none',
                 'outline': 'none',
+                'pointer-events': 'auto', # Ensure clickable even in non-clickable container
                 # 'min-height': f"{min_height}px", # M3 min target size
                 'min-width': '48px', # Ensure min width for touch target even if padding is small
                 'box-sizing': 'border-box',
@@ -1176,6 +1182,7 @@ class IconButton(Widget):
                 'color': fg_color,
                 'cursor': 'pointer',
                 'outline': 'none',
+                'pointer-events': 'auto', # Ensure clickable even in non-clickable container
                 'border-radius': '50%',  # Default to circular
                 'overflow': 'hidden',
                 'position': 'relative',
@@ -1445,6 +1452,7 @@ class FloatingActionButton(Widget):
                 'cursor': 'pointer',
                 'text-decoration': 'none',
                 'outline': 'none',
+                'pointer-events': 'auto',
                 'box-sizing': 'border-box',
                 'overflow': 'hidden', # Clip ripple/shadow correctly
                 # M3 Transition for shadow/transform

@@ -77,6 +77,7 @@ def generate_embedded_config_module_in_dir(
     """Generates a Python module containing a compressed config."""
     dest_dir = dest_dir.resolve()
     dest_dir.mkdir(parents=True, exist_ok=True)
+    # print(f"Config data: {data}")
     json_bytes = json.dumps(data, separators=(",", ":"), sort_keys=True).encode("utf-8")
     compressed = zlib.compress(json_bytes, level=9)
     b64 = base64.b64encode(compressed).decode("ascii")

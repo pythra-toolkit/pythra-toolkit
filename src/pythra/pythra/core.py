@@ -457,6 +457,10 @@ class Framework:
     def minimize(self):
         self.window.minimize() if self.window else debug_print("unable to close window: window is None")
 
+    @property
+    def theme(self):
+         return ThemeManager.instance().current_theme
+
     def set_theme(self, theme):
         """Updates the application theme instantly."""
         ThemeManager.instance()._current_theme = theme
@@ -516,6 +520,7 @@ class Framework:
             'PythraGestureDetector': "render/js/gesture_detector.js",
             'PythraGradientClipPath': "render/js/gradient_border.js",
             'PythraVirtualList': "render/js/virtual_list.js",
+            #'PythraMarkdownEditor': "render/js/dropdown.js", # Placeholder key to suppress warning, actual loaded via plugin
         }
         # Build a cache key. None means 'ALL' engines load; use a stable frozenset.
         cache_key = frozenset(required_engines) if required_engines is not None else frozenset({'__ALL__'})
@@ -528,16 +533,17 @@ class Framework:
 
         # Determine files to load
         if required_engines is None:
-            print("🔧 Loading all JS engines (no optimization applied)")
+            # print("🔧 Loading all JS engines (no optimization applied)")
             files_to_load = set(engine_to_file_map.values())
         else:
-            print(f"🎯 Optimized loading: Only loading engines for {required_engines}")
+            # print(f"🎯 Optimized loading: Only loading engines for {required_engines}")
             files_to_load = set()
             for engine in required_engines:
                 if engine in engine_to_file_map:
                     files_to_load.add(engine_to_file_map[engine])
                 else:
-                    print(f"⚠️  Unknown engine requested: {engine}")
+                    pass
+                    # print(f"⚠️  Unknown engine requested: {engine}")
 
         all_js_code = []
         loaded_files = set()
@@ -887,7 +893,7 @@ class Framework:
         # If this widget was built in the background, use the prebuilt result
         # and clear the flag to ensure future updates rebuild normally.
         if getattr(widget, '_preloaded', False):
-            # debug_print(f"🚀 Using preloaded subtree for {widget}")
+            # print(f"🚀 Using preloaded subtree for {widget}")
             widget._preloaded = False
             return widget
 
@@ -1210,6 +1216,7 @@ class Framework:
                     elif isinstance(init.get("data"), dict) and "engine" in init["data"]:
                         # This matches the generic _js_init pattern from Reconciler line 492+
                         js_init_data = init["data"]
+                        target_id = init["target_id"]
                         engine_name = js_init_data.get("engine")
                         instance_name = js_init_data.get("instance_name")
                         options_json = _dumps(js_init_data.get("options", {}))

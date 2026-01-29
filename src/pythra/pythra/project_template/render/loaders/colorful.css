@@ -1,0 +1,521 @@
+/* --- loader-colorful-1 --- */
+/* HTML: <div class="loader-colorful-1"></div> */
+.loader-colorful-1 {
+  width: 40px;
+  aspect-ratio: 1;
+  background:
+    linear-gradient(#00AAFF 0 0),
+    linear-gradient(#FF00AA 0 0),
+    #00AAFF;
+  background-repeat: no-repeat;
+  animation: l1 1.5s infinite; 
+}
+@keyframes l1 {
+  0%   {background-size:100%    0,0    100%}
+  30%,
+  50%  {background-size:100%    0,100% 100%}
+  80%,
+  100% {background-size:100% 100%,100% 100%}
+}
+/* --- loader-colorful-2 --- */
+/* HTML: <div class="loader-colorful-2"></div> */
+.loader-colorful-2 {
+  width: 40px;
+  aspect-ratio: 1;
+  background:
+    linear-gradient( 45deg,#0000 50%,#00AAFF 0),
+    linear-gradient(-45deg,#0000 50%,#FF00AA 0),
+    #00AAFF;
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  animation: l2 1.5s infinite; 
+}
+@keyframes l2 {
+  0%   {background-position: bottom left,bottom right}
+  30%,
+  50%  {background-position: bottom left,top left}
+  80%,
+  100% {background-position: top right  ,top left}
+}
+/* --- loader-colorful-3 --- */
+/* HTML: <div class="loader-colorful-3"></div> */
+.loader-colorful-3 {
+  width: 40px;
+  aspect-ratio: 1;
+  background:
+    linear-gradient( 45deg,#00AAFF 50%,#0000 0),
+    linear-gradient(-45deg,#F1BBBB 50%,#0000 0),
+    linear-gradient( 45deg,#0000 50%,#AA00FF 0),
+    linear-gradient(-45deg,#0000 50%,#FF00AA 0),
+    #00AAFF;
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  animation: l3 2.5s infinite; 
+}
+@keyframes l3 {
+  0%   {background-position:100% 0,0    0   ,0 100%,100% 100%}
+  15%,
+  25%  {background-position:100% 0,0    0   ,0 100%,0    0   }
+  40%,
+  50%  {background-position:100% 0,0    0   ,100% 0,0    0   }
+  65%,
+  75%  {background-position:100% 0,100% 100%,100% 0,0    0   }
+  90%,
+  100% {background-position:0 100%,100% 100%,100% 0,0    0   }
+}
+/* --- loader-colorful-4 --- */
+/* HTML: <div class="loader-colorful-4"></div> */
+.loader-colorful-4 {
+  width: 40px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(farthest-side,#ED303C 94%,#0000),
+    radial-gradient(farthest-side,#FF9C5B 94%,#0000),
+    #ED303C;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: l4 1.5s infinite; 
+}
+@keyframes l4 {
+  0%   {background-size:0    0   ,0    0}
+  30%,
+  50%  {background-size:0    0   ,120% 120%}
+  80%,
+  100% {background-size:120% 120%,120% 120%}
+}
+/* --- loader-colorful-5 --- */
+/* HTML: <div class="loader-colorful-5"></div> */
+.loader-colorful-5 {
+  width: 40px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(farthest-side,#ED303C 94%,#0000),
+    radial-gradient(farthest-side,#3B8183 94%,#0000),
+    radial-gradient(farthest-side,#FAD089 94%,#0000),
+    radial-gradient(farthest-side,#FF9C5B 94%,#0000),
+    #ED303C;
+  background-size: 105% 105%;
+  background-repeat: no-repeat;
+  animation: l5 2s infinite; 
+}
+@keyframes l5 {
+  0%  {background-position: 50% -50px,-40px 50%, 50% calc(100% + 50px),calc(100% + 50px) 50%}
+  20%,
+  25% {background-position: 50% -50px,-50px 50%, 50% calc(100% + 50px),50% 50%}
+  45%,
+  50% {background-position: 50% -50px,-50px 50%, 50% 50%              ,50% 50%}
+  75%,
+  75% {background-position: 50% -50px, 50%  50%, 50% 50%              ,50% 50%}
+  95%,
+  100%{background-position: 50%  50% , 50%  50%, 50% 50%              ,50% 50%}
+}
+/* --- loader-colorful-6 --- */
+/* HTML: <div class="loader-colorful-6"></div> */
+.loader-colorful-6 {
+  width: 40px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    linear-gradient(#ED303C 0 0),
+    linear-gradient(#ED303C 0 0),
+    linear-gradient(#3B8183 0 0),
+    linear-gradient(#3B8183 0 0),
+    linear-gradient(#FAD089 0 0),
+    linear-gradient(#FAD089 0 0),
+    linear-gradient(#FF9C5B 0 0),
+    linear-gradient(#FF9C5B 0 0),
+    #ED303C;
+  background-position: top left,bottom right;
+  background-repeat: no-repeat;
+  animation: l6 2.5s infinite; 
+}
+@keyframes l6 {
+  0%   {background-size: 0   100%,0   100%,100% 0  ,100% 0  ,0   100%,0   100%,100% 0  ,100% 0  }
+  20%,
+  25%  {background-size: 0   100%,0   100%,100% 0  ,100% 0  ,0   100%,0   100%,100% 50%,100% 50%}
+  45%,
+  50%  {background-size: 0   100%,0   100%,100% 0  ,100% 0  ,50% 100%,50% 100%,100% 50%,100% 50%}
+  70%,
+  75%  {background-size: 0   100%,0   100%,100% 50%,100% 50%,50% 100%,50% 100%,100% 50%,100% 50%}
+  95%,
+  100% {background-size: 50% 100%,50% 100%,100% 50%,100% 50%,50% 100%,50% 100%,100% 50%,100% 50%}
+}
+/* --- loader-colorful-7 --- */
+/* HTML: <div class="loader-colorful-7"></div> */
+.loader-colorful-7 {
+  width: 50px;
+  aspect-ratio: 1.154;
+  clip-path: polygon(50% 0,100% 100%,0 100%);
+  display: grid;
+  background: #3A89C9;
+}
+.loader-colorful-7::before,
+.loader-colorful-7::after {
+  content: "";
+  grid-area: 1/1;
+  background: inherit;
+  clip-path: inherit;
+  transform-origin: 50% 66%;
+  animation: l7-1 2s infinite; 
+}
+.loader-colorful-7::before {
+  background: #9CC4E4;
+  animation: l7-2 2s infinite 1s; 
+}
+@keyframes l7-1 {
+  0% ,99.9% {transform:scale(1)}
+  50%,99%   {transform:scale(0)}
+}
+@keyframes l7-2 {
+  0%,51%{transform:scale(1)}
+  50%   {transform:scale(0)}
+}
+/* --- loader-colorful-8 --- */
+/* HTML: <div class="loader-colorful-8"></div> */
+.loader-colorful-8 {
+  width: 50px;
+  aspect-ratio: 1.154;
+  clip-path: polygon(50% 0,100% 100%,0 100%);
+  display: grid;
+  background:
+    conic-gradient(from 0deg   at 50% 60%,#3A89C9 120deg,#0000 0),
+    conic-gradient(from 120deg at 50% 60%,#3A89C9 120deg,#0000 0),
+    conic-gradient(from 240deg at 50% 60%,#3A89C9 120deg,#0000 0),
+    conic-gradient(from 0deg   at 50% 60%,#9CC4E4 120deg,#0000 0),
+    conic-gradient(from 120deg at 50% 60%,#9CC4E4 120deg,#0000 0),
+    conic-gradient(from 240deg at 50% 60%,#9CC4E4 120deg,#0000 0),
+    #3A89C9;
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  animation: l8 1.5s infinite;
+}
+@keyframes l8 {
+  0%   {background-position: left,top,right}
+  30%,
+  50%  {background-position: left,top,right,center,center,center}
+  80%,
+  100% {background-position: center}
+}
+/* --- loader-colorful-9 --- */
+/* HTML: <div class="loader-colorful-9"></div> */
+.loader-colorful-9 {
+  width: 50px;
+  aspect-ratio: 1.154;
+  clip-path: polygon(50% 0,100% 100%,0 100%);
+  position: relative;
+}
+.loader-colorful-9::before{
+  content: "";
+  position: absolute;
+  inset:-150% -100% -50%;
+  background:repeating-conic-gradient(from 30deg,#FFABAB 0 60deg,#ABE4FF 0 120deg,#FF7373 0 180deg);
+  animation: l9 2s infinite; 
+}
+@keyframes l9 {
+  0%   {transform: rotate(0)}
+  23%,
+  33%  {transform: rotate(60deg)}
+  56%,
+  66%  {transform: rotate(120deg)}
+  90%,
+  100% {transform: rotate(180deg)}
+}
+/* --- loader-colorful-10 --- */
+/* HTML: <div class="loader-colorful-10"></div> */
+.loader-colorful-10 {
+  width: 80px;
+  aspect-ratio: 2;
+  --c:linear-gradient(#FFD412 25%,#ABD406 0 50%,#FF821C 0 75%,#FFD412 0);
+  background: var(--c), var(--c), var(--c), var(--c);
+  background-size: 26% 400%;
+  background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 100%;
+  background-repeat: no-repeat;
+  animation: l10 2s infinite; 
+}
+@keyframes l10 {
+  0%     {background-position: calc(0*100%/3) calc(3*100%/3),calc(1*100%/3) calc(3*100%/3),calc(2*100%/3) calc(3*100%/3),calc(3*100%/3) calc(3*100%/3)}
+  8.33%  {background-position: calc(0*100%/3) calc(2*100%/3),calc(1*100%/3) calc(3*100%/3),calc(2*100%/3) calc(3*100%/3),calc(3*100%/3) calc(3*100%/3)}
+  16.67% {background-position: calc(0*100%/3) calc(2*100%/3),calc(1*100%/3) calc(2*100%/3),calc(2*100%/3) calc(3*100%/3),calc(3*100%/3) calc(3*100%/3)}
+  25%    {background-position: calc(0*100%/3) calc(2*100%/3),calc(1*100%/3) calc(2*100%/3),calc(2*100%/3) calc(2*100%/3),calc(3*100%/3) calc(3*100%/3)}
+  30%,
+  33.33% {background-position: calc(0*100%/3) calc(2*100%/3),calc(1*100%/3) calc(2*100%/3),calc(2*100%/3) calc(2*100%/3),calc(3*100%/3) calc(2*100%/3)}
+  41.67% {background-position: calc(0*100%/3) calc(1*100%/3),calc(1*100%/3) calc(2*100%/3),calc(2*100%/3) calc(2*100%/3),calc(3*100%/3) calc(2*100%/3)}
+  50%    {background-position: calc(0*100%/3) calc(1*100%/3),calc(1*100%/3) calc(1*100%/3),calc(2*100%/3) calc(2*100%/3),calc(3*100%/3) calc(2*100%/3)}
+  58.33% {background-position: calc(0*100%/3) calc(1*100%/3),calc(1*100%/3) calc(1*100%/3),calc(2*100%/3) calc(1*100%/3),calc(3*100%/3) calc(2*100%/3)}
+  63%,
+  66.67% {background-position: calc(0*100%/3) calc(1*100%/3),calc(1*100%/3) calc(1*100%/3),calc(2*100%/3) calc(1*100%/3),calc(3*100%/3) calc(1*100%/3)}
+  75%    {background-position: calc(0*100%/3) calc(0*100%/3),calc(1*100%/3) calc(1*100%/3),calc(2*100%/3) calc(1*100%/3),calc(3*100%/3) calc(1*100%/3)}
+  83.33% {background-position: calc(0*100%/3) calc(0*100%/3),calc(1*100%/3) calc(0*100%/3),calc(2*100%/3) calc(1*100%/3),calc(3*100%/3) calc(1*100%/3)}
+  91.67% {background-position: calc(0*100%/3) calc(0*100%/3),calc(1*100%/3) calc(0*100%/3),calc(2*100%/3) calc(0*100%/3),calc(3*100%/3) calc(1*100%/3)}
+  97%,
+  100%   {background-position: calc(0*100%/3) calc(0*100%/3),calc(1*100%/3) calc(0*100%/3),calc(2*100%/3) calc(0*100%/3),calc(3*100%/3) calc(0*100%/3)}
+}
+/* --- loader-colorful-11 --- */
+/* HTML: <div class="loader-colorful-11"></div> */
+.loader-colorful-11 {
+  width: 50px;
+  aspect-ratio: 1;
+  display: flex;
+  --c:linear-gradient(90deg,#FFD412 25%,#ABD406 0 50%,#FF821C 0 75%,#FFD412 0);
+}
+.loader-colorful-11:before,
+.loader-colorful-11:after {
+  content: "";
+  flex:1;
+  background:var(--c), var(--c), var(--c), var(--c);
+  background-size: 400% 26%;
+  background-repeat: no-repeat;
+  animation: l11 2s infinite; 
+}
+.loader-colorful-11:after {
+  transform: scaleX(-1);
+}
+@keyframes l11 {
+  0%     {background-position: calc(3*100%/3) calc(0*100%/3),calc(3*100%/3) calc(1*100%/3),calc(3*100%/3) calc(2*100%/3),calc(3*100%/3) calc(3*100%/3)}
+  8.33%  {background-position: calc(2*100%/3) calc(0*100%/3),calc(3*100%/3) calc(1*100%/3),calc(3*100%/3) calc(2*100%/3),calc(3*100%/3) calc(3*100%/3)}
+  16.67% {background-position: calc(2*100%/3) calc(0*100%/3),calc(2*100%/3) calc(1*100%/3),calc(3*100%/3) calc(2*100%/3),calc(3*100%/3) calc(3*100%/3)}
+  25%    {background-position: calc(2*100%/3) calc(0*100%/3),calc(2*100%/3) calc(1*100%/3),calc(2*100%/3) calc(2*100%/3),calc(3*100%/3) calc(3*100%/3)}
+  30%,
+  33.33% {background-position: calc(2*100%/3) calc(0*100%/3),calc(2*100%/3) calc(1*100%/3),calc(2*100%/3) calc(2*100%/3),calc(2*100%/3) calc(3*100%/3)}
+  41.67% {background-position: calc(1*100%/3) calc(0*100%/3),calc(2*100%/3) calc(1*100%/3),calc(2*100%/3) calc(2*100%/3),calc(2*100%/3) calc(3*100%/3)}
+  50%    {background-position: calc(1*100%/3) calc(0*100%/3),calc(1*100%/3) calc(1*100%/3),calc(2*100%/3) calc(2*100%/3),calc(2*100%/3) calc(3*100%/3)}
+  58.33% {background-position: calc(1*100%/3) calc(0*100%/3),calc(1*100%/3) calc(1*100%/3),calc(1*100%/3) calc(2*100%/3),calc(2*100%/3) calc(3*100%/3)}
+  63%,
+  66.67% {background-position: calc(1*100%/3) calc(0*100%/3),calc(1*100%/3) calc(1*100%/3),calc(1*100%/3) calc(2*100%/3),calc(1*100%/3) calc(3*100%/3)}
+  75%    {background-position: calc(0*100%/3) calc(0*100%/3),calc(1*100%/3) calc(1*100%/3),calc(1*100%/3) calc(2*100%/3),calc(1*100%/3) calc(3*100%/3)}
+  83.33% {background-position: calc(0*100%/3) calc(0*100%/3),calc(0*100%/3) calc(1*100%/3),calc(1*100%/3) calc(2*100%/3),calc(1*100%/3) calc(3*100%/3)}
+  91.67% {background-position: calc(0*100%/3) calc(0*100%/3),calc(0*100%/3) calc(1*100%/3),calc(0*100%/3) calc(2*100%/3),calc(1*100%/3) calc(3*100%/3)}
+  97%,
+  100%   {background-position: calc(0*100%/3) calc(0*100%/3),calc(0*100%/3) calc(1*100%/3),calc(0*100%/3) calc(2*100%/3),calc(0*100%/3) calc(3*100%/3)}
+}
+/* --- loader-colorful-12 --- */
+/* HTML: <div class="loader-colorful-12"></div> */
+.loader-colorful-12 {
+  width: 50px;
+  aspect-ratio: 1;
+  background:
+    linear-gradient(#ed303c 0 0),
+    linear-gradient(#3b8183 0 0),
+    linear-gradient(#ff9c5b 0 0)
+    #ed303c;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: l12 2s infinite; 
+}
+@keyframes l12 {
+  0%  {background-size: 100% 100%,100% 100%,100% 100%}
+  33% {background-size:  0px  0px,100% 100%,100% 100%}
+  66% {background-size:  0px  0px, 0px  0px,100% 100%}
+  100%{background-size:  0px  0px, 0px  0px, 0px  0px}
+}
+/* --- loader-colorful-13 --- */
+/* HTML: <div class="loader-colorful-13"></div> */
+.loader-colorful-13 {
+  width: 50px;
+  aspect-ratio: 1;
+  display: grid;
+  --c:#CFF09E 25%,#79BD9A 0 50%,#0B486B 0 75%,#CFF09E 0;
+}
+.loader-colorful-13:before,
+.loader-colorful-13:after {
+  content: "";
+  background:
+    linear-gradient( 90deg,var(--c)),
+    linear-gradient(-90deg,var(--c));
+  background-size: 400% 52%;
+  background-repeat: no-repeat;
+  animation: l13 2s infinite; 
+}
+@keyframes l13 {
+  0%       {background-position:calc(3*100%/3) 0,calc(0*100%/3) 100%}
+  23%,33%  {background-position:calc(2*100%/3) 0,calc(1*100%/3) 100%}
+  56%,66%  {background-position:calc(1*100%/3) 0,calc(2*100%/3) 100%}
+  90%,100% {background-position:calc(0*100%/3) 0,calc(3*100%/3) 100%}
+}
+/* --- loader-colorful-14 --- */
+/* HTML: <div class="loader-colorful-14"></div> */
+.loader-colorful-14 {
+  width: 50px;
+  aspect-ratio: 1;
+  transform: translate(-100%,100%);
+  animation: l14 2s infinite; 
+}
+@keyframes l14 {
+  0%{
+   box-shadow: 
+    50px -50px #B5AC01,
+    50px -50px #ECBA09,
+    50px -50px #0000,
+    50px -50px #0000,
+    50px -50px #0000}
+  25%{
+   box-shadow: 
+    100px -50px #0000,
+    50px  -50px #ECBA09,
+    50px  -50px #E86E1C,
+    50px  -50px #0000,
+    50px  -50px #0000}
+  50%{
+   box-shadow: 
+    100px -50px  #0000,
+    50px  -100px #0000,
+    50px  -50px  #E86E1C,
+    50px  -50px  #D41E45,
+    50px  -50px  #0000}
+  75%{
+   box-shadow: 
+    100px -50px  #0000,
+    50px  -100px #0000,
+     0px  -50px  #0000,
+    50px  -50px  #D41E45,
+    50px  -50px  #B5AC01}
+  100%{
+   box-shadow: 
+    100px -50px  #0000,
+    50px  -100px #0000,
+     0px  -50px  #0000,
+    50px    0px  #0000,
+    50px  -50px  #B5AC01}
+}
+/* --- loader-colorful-15 --- */
+/* HTML: <div class="loader-colorful-15"></div> */
+.loader-colorful-15 {
+  width: 50px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: 
+    linear-gradient(#FF003C 0 0),
+    linear-gradient(#FF003C 0 0),
+    linear-gradient(#FF003C 0 0),
+    linear-gradient(#FF003C 0 0),
+    linear-gradient(#00C176 0 0),
+    linear-gradient(#00C176 0 0),
+    linear-gradient(#00C176 0 0),
+    linear-gradient(#00C176 0 0),
+    #FF003C;
+  background-position: 0 0,100% 0,100% 100%, 0 100%;
+  background-repeat: no-repeat;
+  animation: l15 2s infinite; 
+}
+@keyframes l15 {
+  0%       {background-size:0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    }
+  40%,50%  {background-size:0 0    ,0 0    ,0 0    ,0 0    ,51% 51%,51% 51%,51% 51%,51% 51%}
+  90%,100% {background-size:51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%}
+}
+/* --- loader-colorful-16 --- */
+/* HTML: <div class="loader-colorful-16"></div> */
+.loader-colorful-16 {
+  width: 50px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: 
+    linear-gradient(#CC333F 0 0),
+    linear-gradient(#CC333F 0 0),
+    linear-gradient(#CC333F 0 0),
+    linear-gradient(#CC333F 0 0),
+    linear-gradient(#00A0B0 0 0),
+    linear-gradient(#00A0B0 0 0),
+    linear-gradient(#00A0B0 0 0),
+    linear-gradient(#00A0B0 0 0),
+    #CC333F;
+  background-position: 0 0,100% 0,100% 100%, 0 100%;
+  background-repeat: no-repeat;
+  animation: l16 2s infinite; 
+}
+@keyframes l16 {
+  0%   {background-size:0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    }
+  12.5%{background-size:0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,51% 51%}
+  25%  {background-size:0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,51% 51%,51% 51%} 
+  37.5%{background-size:0 0    ,0 0    ,0 0    ,0 0    ,0 0    ,51% 51%,51% 51%,51% 51%}
+  50%  {background-size:0 0    ,0 0    ,0 0    ,0 0    ,51% 51%,51% 51%,51% 51%,51% 51%}
+  62.5%{background-size:0 0    ,0 0    ,0 0    ,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%}
+  75%  {background-size:0 0    ,0 0    ,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%}
+  87.5%{background-size:0 0    ,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%}
+  100% {background-size:51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%,51% 51%}
+}
+/* --- loader-colorful-17 --- */
+/* HTML: <div class="loader-colorful-17"></div> */
+.loader-colorful-17 {
+  width: 40px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  margin-top: -30px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  transform-origin: 50% 116.5%;
+  animation: l17 2s infinite linear; 
+}
+.loader-colorful-17:before {
+  content:"";
+  min-width: 233%;
+  height: 233%;
+  background: 
+    radial-gradient(farthest-side,#00DA3C 90%,#0000) top,
+    radial-gradient(farthest-side,#00CBE7 90%,#0000) left,
+    radial-gradient(farthest-side,#FD8603 90%,#0000) bottom,
+    radial-gradient(farthest-side,#F4F328 90%,#0000) right;
+  background-size: 43% 43%;
+  background-repeat: no-repeat;
+  animation: inherit;
+  animation-direction: reverse;
+}
+@keyframes l17 {
+  100% {transform: rotate(360deg)}
+}
+/* --- loader-colorful-18 --- */
+/* HTML: <div class="loader-colorful-18"></div> */
+.loader-colorful-18 {
+  width: 60px;
+  aspect-ratio: 1;
+  background:
+    linear-gradient(90deg,#CEE879 50%,#FF5254 0) top/100% 50% no-repeat,
+    linear-gradient(90deg,#FCB653 50%,#5CACC4 0);
+  -webkit-mask:linear-gradient(#000 0 0) 0 0/50% 50% no-repeat;
+  animation: l18 2s infinite; 
+}
+@keyframes l18 {
+  0%   {-webkit-mask-position:0    0   }
+  25%  {-webkit-mask-position:100% 0   }
+  50%  {-webkit-mask-position:100% 100%}
+  75%  {-webkit-mask-position:0    100%}
+  100% {-webkit-mask-position:0    0   }
+}
+/* --- loader-colorful-19 --- */
+/* HTML: <div class="loader-colorful-19"></div> */
+.loader-colorful-19 {
+  width: 40px;
+  aspect-ratio: .577;
+  clip-path: polygon(0 0,100% 100%,0 100%,100% 0);
+  position: relative;
+  animation: l19 2s infinite linear; 
+  overflow: hidden;
+}
+.loader-colorful-19:before{
+  content: "";
+  position: absolute;
+  inset: -150% -150%;
+  background: repeating-conic-gradient(from 30deg,#FFABAB 0 60deg,#ABE4FF 0 120deg,#FF7373 0 180deg);
+  animation: inherit;
+  animation-direction: reverse; 
+}
+@keyframes l19 {
+  100% {transform: rotate(360deg)}
+}
+/* --- loader-colorful-20 --- */
+/* HTML: <div class="loader-colorful-20"></div> */
+.loader-colorful-20 {
+  width: 70px;
+  aspect-ratio: 1;
+  background: conic-gradient(from -45deg,#8A8780 90deg,#94BA65 0 180deg,#2790B0 0 270deg,#2B4E72 0);
+  animation: l20 2s infinite; 
+}
+@keyframes l20 {
+  0%  {clip-path: polygon(0    0   ,100% 0   ,50% 50%)}
+  25% {clip-path: polygon(100% 0   ,100% 100%,50% 50%)}
+  50% {clip-path: polygon(100% 100%,0    100%,50% 50%)}
+  75% {clip-path: polygon(0    100%,0    0   ,50% 50%)}
+  100%{clip-path: polygon(0    0   ,100% 0   ,50% 50%)}
+}
