@@ -3,9 +3,9 @@
 .loader-dots-bars-1 {
   width: 40px;
   aspect-ratio: 1;
-  --c: linear-gradient(#000 0 0);
-  --r1: radial-gradient(farthest-side at bottom,#000 93%,#0000);
-  --r2: radial-gradient(farthest-side at top   ,#000 93%,#0000);
+  --c: linear-gradient(var(--loader-color, #000) 0 0);
+  --r1: radial-gradient(farthest-side at bottom,var(--loader-color, #000) 93%,#0000);
+  --r2: radial-gradient(farthest-side at top   ,var(--loader-color, #000) 93%,#0000);
   background: 
     var(--c) ,var(--r1),var(--r2),
     var(--c) ,var(--r1),var(--r2),
@@ -28,9 +28,9 @@
 .loader-dots-bars-2 {
   width: 40px;
   aspect-ratio: 1;
-  --c: linear-gradient(#000 0 0);
-  --r1: radial-gradient(farthest-side at bottom,#000 93%,#0000);
-  --r2: radial-gradient(farthest-side at top   ,#000 93%,#0000);
+  --c: linear-gradient(var(--loader-color, #000) 0 0);
+  --r1: radial-gradient(farthest-side at bottom,var(--loader-color, #000) 93%,#0000);
+  --r2: radial-gradient(farthest-side at top   ,var(--loader-color, #000) 93%,#0000);
   background: 
     var(--c) ,var(--r1),var(--r2),
     var(--c) ,var(--r1),var(--r2),
@@ -61,7 +61,7 @@
 .loader-dots-bars-3 {
   width: 40px;
   height: 26px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background:
     var(--c) 0    100%,
     var(--c) 50%  100%,
@@ -75,7 +75,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   left: 0;
   top: 0;
   animation: 
@@ -93,7 +93,7 @@
 .loader-dots-bars-4 {
   width: 40px;
   height: 20px;
-  --c:no-repeat radial-gradient(farthest-side,#000 93%,#0000);
+  --c:no-repeat radial-gradient(farthest-side,var(--loader-color, #000) 93%,#0000);
   background:
     var(--c) 0    0,
     var(--c) 50%  0,
@@ -107,7 +107,7 @@
   position: absolute;
   width: 8px;
   height: 12px;
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   left: 0;
   top: 0;
   animation: 
@@ -132,7 +132,7 @@
 .loader-dots-bars-5 {
   width: 40px;
   height: 30px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background:
     var(--c) 0    100%/8px 30px,
     var(--c) 50%  100%/8px 20px,
@@ -146,7 +146,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   left: -16px;
   top: 0;
   animation: 
@@ -165,7 +165,7 @@
 .loader-dots-bars-6 {
   width: 40px;
   height: 20px;
-  --c:no-repeat radial-gradient(farthest-side,#000 93%,#0000);
+  --c:no-repeat radial-gradient(farthest-side,var(--loader-color, #000) 93%,#0000);
   background:
     var(--c) 0    0,
     var(--c) 50%  0;
@@ -179,7 +179,7 @@
   position: absolute;
   width: 8px;
   height: 12px;
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   left: -16px;
   top: 0;
   animation: 
@@ -193,7 +193,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #000; 
+  background: var(--loader-color, var(--loader-color, #000)); 
   animation: l6-3 1.5s linear infinite;
 }
 @keyframes l6-0 {
@@ -220,7 +220,7 @@
 .loader-dots-bars-7{
   width: 40px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: 
     var(--c) 0    0,
     var(--c) 0    100%, 
@@ -239,7 +239,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   top: calc(50% - 4px);
   left: -8px;
   animation: inherit;
@@ -266,7 +266,7 @@
 .loader-dots-bars-8 {
   width: 40px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: 
     var(--c) 0    0,
     var(--c) 0    100%, 
@@ -285,7 +285,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   top: calc(50% - 4px);
   left: -8px;
   animation: inherit;
@@ -307,7 +307,7 @@
 .loader-dots-bars-9 {
   width: 40px;
   height: 40px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: 
     var(--c) 0    0,
     var(--c) 0    100%, 
@@ -326,7 +326,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   top: calc(50% - 4px);
   left: -8px;
   animation: inherit;
@@ -361,7 +361,7 @@
   border-radius:50%;
   inset:0;
   margin:auto; 
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   transform-origin: bottom;
   animation: l10-1 3s infinite;
 }
@@ -371,7 +371,7 @@
   width:8px;
   height:14px;
   bottom:calc(50% - 4px);
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   animation: l10-2 3s infinite;
 }
 @keyframes l10-1 {
@@ -398,10 +398,10 @@
 .loader-dots-bars-11 {
   width: 40px;
   aspect-ratio: 1;
-   --c:no-repeat linear-gradient(#000 0 0);
+   --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: var(--c),var(--c),var(--c);
   background-size: 8px calc(50% + 8px);
-  -webkit-mask:radial-gradient(circle closest-side,#0000 92%,#000) 0/8px 100%;
+  -webkit-mask:radial-gradient(circle closest-side,#0000 92%,var(--loader-color, #000)) 0/8px 100%;
   animation: l11 .75s infinite alternate linear;
 }
 @keyframes l11 {
@@ -418,8 +418,8 @@
 .loader-dots-bars-12 {
   width: 40px;
   aspect-ratio: 1;
-   --c:no-repeat linear-gradient(#000 0 0);
-   --m:no-repeat radial-gradient(circle closest-side,#0000 92%,#000);
+   --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
+   --m:no-repeat radial-gradient(circle closest-side,#0000 92%,var(--loader-color, #000));
   background: 
     var(--c) 0    50%,
     var(--c) 50%  50%, 
@@ -442,8 +442,8 @@
 .loader-dots-bars-13 {
   width: 40px;
   aspect-ratio: 1;
-   --c: linear-gradient(#000 0 0);
-   --m: radial-gradient(farthest-side,#000 92%,#0000);
+   --c: linear-gradient(var(--loader-color, #000) 0 0);
+   --m: radial-gradient(farthest-side,var(--loader-color, #000) 92%,#0000);
   background: 
     var(--c),var(--m),
     var(--c),var(--m), 
@@ -465,8 +465,8 @@
 .loader-dots-bars-14 {
   width: 40px;
   aspect-ratio: 1;
-   --c: linear-gradient(#000 0 0);
-   --m: radial-gradient(farthest-side,#000 92%,#0000);
+   --c: linear-gradient(var(--loader-color, #000) 0 0);
+   --m: radial-gradient(farthest-side,var(--loader-color, #000) 92%,#0000);
   background: 
     var(--c),var(--m),
     var(--c),var(--m), 
@@ -488,8 +488,8 @@
 .loader-dots-bars-15 {
   width: 40px;
   aspect-ratio: 1;
-   --c: linear-gradient(#000 0 0);
-   --m: radial-gradient(farthest-side,#000 92%,#0000);
+   --c: linear-gradient(var(--loader-color, #000) 0 0);
+   --m: radial-gradient(farthest-side,var(--loader-color, #000) 92%,#0000);
   background: 
     var(--c),var(--m),
     var(--c),var(--m), 
@@ -515,8 +515,8 @@
 .loader-dots-bars-16 {
   width: 40px;
   aspect-ratio: 1;
-   --c: linear-gradient(#000 0 0);
-   --m: radial-gradient(farthest-side,#000 92%,#0000);
+   --c: linear-gradient(var(--loader-color, #000) 0 0);
+   --m: radial-gradient(farthest-side,var(--loader-color, #000) 92%,#0000);
   background: 
     var(--c),var(--m),
     var(--c),var(--m), 
@@ -539,8 +539,8 @@
 .loader-dots-bars-17 {
   width: 40px;
   aspect-ratio: 1;
-   --c: linear-gradient(#000 0 0);
-   --m: radial-gradient(farthest-side,#000 92%,#0000);
+   --c: linear-gradient(var(--loader-color, #000) 0 0);
+   --m: radial-gradient(farthest-side,var(--loader-color, #000) 92%,#0000);
   background: 
     var(--c),var(--m),
     var(--c),var(--m), 
@@ -566,8 +566,8 @@
 .loader-dots-bars-18 {
   width: 40px;
   aspect-ratio: 1;
-   --c: linear-gradient(#000 0 0);
-   --m: radial-gradient(farthest-side,#000 92%,#0000);
+   --c: linear-gradient(var(--loader-color, #000) 0 0);
+   --m: radial-gradient(farthest-side,var(--loader-color, #000) 92%,#0000);
   background: 
     var(--m) center               /12px 12px,
     var(--c) left 50% top    -20px/8px 16px, 
@@ -597,8 +597,8 @@
 .loader-dots-bars-19 {
   width: 40px;
   aspect-ratio: 1;
-   --c: linear-gradient(#000 0 0);
-   --m: radial-gradient(farthest-side,#000 90%,#0000);
+   --c: linear-gradient(var(--loader-color, #000) 0 0);
+   --m: radial-gradient(farthest-side,var(--loader-color, #000) 90%,#0000);
   background: var(--c),var(--m),var(--c);
   background-size:16px 8px,10px 10px; 
   background-repeat: no-repeat;
@@ -621,8 +621,8 @@
 .loader-dots-bars-20 {
   width: 40px;
   aspect-ratio: 1;
-   --c: linear-gradient(#000 0 0);
-   --m: radial-gradient(farthest-side,#000 90%,#0000);
+   --c: linear-gradient(var(--loader-color, #000) 0 0);
+   --m: radial-gradient(farthest-side,var(--loader-color, #000) 90%,#0000);
   background: var(--c),var(--m),var(--c);
   background-size: 16px 8px,10px 10px; 
   background-repeat: no-repeat;

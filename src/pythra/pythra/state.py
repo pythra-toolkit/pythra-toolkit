@@ -253,12 +253,16 @@ class State:
         """
         pass # Default implementation does nothing
 
-
-    def get_widget(self) -> Optional['StatefulWidget']: # Hint uses forward reference
+    @property
+    def widget(self) -> Optional['StatefulWidget']: # Hint uses forward reference
         """Safely retrieves the associated StatefulWidget instance."""
         return self._widget_ref() if self._widget_ref else None
+    
+    def get_widget(self) -> Optional['StatefulWidget']: # Hint uses forward reference
+        """Safely retrieves the associated StatefulWidget instance. for internal framwork use only"""
+        return self._widget_ref() if self._widget_ref else None
 
-    widget: Optional['Widget'] = lambda self: self.get_widget()
+    # widget: Optional['Widget'] = lambda self: self.get_widget()
 
     def build(self) -> Optional['Widget']: # Return Optional[Widget]
         """Describes the part of the user interface represented by this state."""

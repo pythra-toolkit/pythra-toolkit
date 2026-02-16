@@ -4690,3 +4690,309 @@ class GradientClipPathBorder(Widget):
             animation: borderShift-{css_class} {speed} {timing} infinite;
         }}
         """
+# =============================================================================
+# PROGRESS INDICATOR WIDGET
+# =============================================================================
+
+
+class ProgressIndicator(Widget):
+    """
+    A widget that displays a CSS-based progress indicator (loader) using a dedicated JS engine.
+    """
+    def __init__(self,
+                 loader: Loader,
+                 style: LoaderStyle,
+                 controller: Optional[ProgressIndicatorController] = None,
+                 key: Optional[Key] = None,
+                 color: Optional[str] = None,
+                 primary_color: Optional[str] = None,
+                 secondary_color: Optional[str] = None,
+                 tertiary_color: Optional[str] = None,
+                 background_color: Optional[str] = None,
+                 size: Optional[float] = None,
+                 ):
+        
+        super().__init__(key=key, children=[])
+        self.loader = loader
+        self.style = style
+        self.controller = controller
+        self.color = color or Colors.adaptive(light="#000000", dark="#FFFFFF")
+        self.primary_color = primary_color or Colors.adaptive(light="#000000", dark="#FFFFFF")
+        self.secondary_color = secondary_color
+        self.tertiary_color = tertiary_color
+        self.background_color = background_color
+        self.size = size or 24
+        
+        if self.controller:
+            self.controller.add_listener(self._on_controller_update)
+
+    def _on_controller_update(self):
+        # Trigger re-render
+        pass
+
+    def render_props(self) -> Dict[str, Any]:
+        """Return properties for the Reconciler."""
+        visible = self.controller.visible if self.controller else True
+        
+        # --- Runtime Engine Registration (Hack to avoid core.py changes) ---
+        try:
+            # Safely import Framework to register our engine
+            import sys
+            if 'pythra.core' in sys.modules:
+                fw = sys.modules['pythra.core'].Framework.instance()
+                if 'PythraProgressIndicator' not in fw.plugin_js_modules:
+                    js_path = str(fw.project_root / "render" / "js" / "progress_indicator.js")
+                    
+                    fw.plugin_js_modules['PythraProgressIndicator'] = {
+                        'path': js_path,
+                        'plugin': 'PythraCore_ProgressIndicator'
+                    }
+        except Exception as e:
+            # print(f"Warning: Failed to register ProgressIndicator JS engine: {e}")
+            pass
+
+        props = {
+            'render_type': 'progress_indicator',
+            'class': self.style.value,
+            
+            # --- JS Initialization ---
+            '_js_init': {
+                'engine': 'PythraProgressIndicator',
+                'options': {
+                    'loader': self.loader.value,
+                    'visible': visible,
+                    'class': self.style.value,
+                    'color' : self.color,
+                    'colors': {
+                        'primary': self.primary_color,
+                        'secondary': self.secondary_color,
+                        'tertiary': self.tertiary_color,
+                        'bg': self.background_color,
+                    },
+                    'size': self.size,
+                }
+            },
+            
+            # Optional overrides
+            'data-color': {
+                        'primary': self.primary_color,
+                        'secondary': self.secondary_color,
+                        'tertiary': self.tertiary_color,
+                        'bg': self.background_color,
+                    },
+            'data-size': self.size,
+            
+            'style': f"display: {'inline-block' if visible else 'none'};"
+        }
+        return {k: v for k, v in props.items() if v is not None}
+
+    def get_required_css_classes(self) -> Set[str]:
+        return set()
+
+
+# BaseLoader
+class _BaseLoader(Widget):
+    """Internal base class for all CSS-based loaders."""
+    def __init__(
+        self,
+        style_class: str,
+        loader_type: str, # 'bars', 'dots', etc.
+        color: Optional[str] = None,
+        size: float = 40.0,
+        controller: Optional['ProgressIndicatorController'] = None,
+        key: Optional[Key] = None,
+        **colors # Support for primary, secondary, etc.
+    ):
+        super().__init__(key=key)
+        self.style_class = style_class
+        self.loader_type = loader_type
+        self.size = size
+        self.controller = controller
+        
+        # Default to adaptive colors if not provided
+        self.primary_color = color or colors.get('primary') or Colors.adaptive(light="#000000", dark="#FFFFFF")
+        self.secondary_color = colors.get('secondary')
+        self.tertiary_color = colors.get('tertiary')
+        self.bg_color = colors.get('bg')
+
+        if self.controller:
+            self.controller.add_listener(self.mark_needs_build)
+
+    def render_props(self) -> Dict[str, Any]:
+        visible = self.controller.visible if self.controller else True
+
+        # --- Runtime Engine Registration (Hack to avoid core.py changes) ---
+        try:
+            # Safely import Framework to register our engine
+            import sys
+            if 'pythra.core' in sys.modules:
+                fw = sys.modules['pythra.core'].Framework.instance()
+                if 'PythraProgressIndicator' not in fw.plugin_js_modules:
+                    js_path = str(fw.project_root / "render" / "js" / "progress_indicator.js")
+                    
+                    fw.plugin_js_modules['PythraProgressIndicator'] = {
+                        'path': js_path,
+                        'plugin': 'PythraCore_ProgressIndicator'
+                    }
+        except Exception as e:
+            print(f"Warning: Failed to register ProgressIndicator JS engine: {e}")
+            pass
+        
+        return {
+            'render_type': 'progress_indicator',
+            'class': self.style_class,
+            '_js_init': {
+                'engine': 'PythraProgressIndicator',
+                'options': {
+                    'loader': self.loader_type,
+                    'visible': visible,
+                    'class': self.style_class,
+                    'size': self.size,
+                    'colors': {
+                        'primary': self.primary_color,
+                        'secondary': self.secondary_color,
+                        'tertiary': self.tertiary_color,
+                        'bg': self.bg_color,
+                    }
+                }
+            },
+            'style': f"display: {'inline-block' if visible else 'none'};"
+        }
+
+class BarsProgressIndicator(_BaseLoader):
+    """A progress indicator that uses bar-style animations."""
+    def __init__(self, variant: int = 1, color: str = None, size: float = 45, **kwargs):
+        # Maps to .loader-bars-{variant} in your CSS
+        super().__init__(
+            style_class=f"loader-bars-{variant}",
+            loader_type="bars",
+            color=color,
+            size=size,
+            **kwargs
+        )
+
+
+
+class DotsProgressIndicator(_BaseLoader):
+    def __init__(self, variant: int = 1, color: str = None, size: float = 45, **kwargs):
+        super().__init__(
+            style_class=f"loader-dots-{variant}",
+            loader_type="dots",
+            color=color,
+            size=size,
+            **kwargs
+        )
+
+
+
+class ThreeDLoader(Widget):
+    """
+    A 3D-styled loading animation widget.
+    
+    Provides 12 different 3D animation variants.
+    
+    Args:
+        variant (int): The style index (1-12).
+        size (float): The base size of the loader (defaults vary by variant, usually 25-40).
+        color (str): The primary base color of the shape.
+        secondary_color (str, optional): The accent color (used in variants 7, 9, 10, 11, 12).
+        gap (float, optional): The gap between elements (used in variants 7-12).
+        shadow_1 (str, optional): Override the first shadow color (normally calculated automatically).
+        shadow_2 (str, optional): Override the second shadow color.
+    """
+    
+    def __init__(self,
+                 variant: int = 1,
+                 size: float = 25.0,
+                 color: str = "#ffffff",
+                 secondary_color: Optional[str] = None,
+                 gap: float = 5.0,
+                 shadow_1: Optional[str] = None,
+                 shadow_2: Optional[str] = None,
+                 controller: Optional['ProgressIndicatorController'] = None,
+                 key: Optional[Key] = None):
+        
+        super().__init__(key=key)
+        
+        # Validation
+        if not (1 <= variant <= 12):
+            raise ValueError("ThreeDLoader variant must be between 1 and 12")
+            
+        self.variant = variant
+        self.size = size
+        self.color = color
+        self.secondary_color = secondary_color
+        self.gap = gap
+        self.shadow_1 = shadow_1
+        self.shadow_2 = shadow_2
+        self.controller = controller
+        
+        if self.controller:
+            self.controller.add_listener(self.mark_needs_build)
+
+    def render_props(self) -> Dict[str, Any]:
+        visible = self.controller.visible if self.controller else True
+        style_class = f"loader-3d-{self.variant}"
+
+        
+        # Prepare CSS variables mapping
+        css_vars = {
+            '--opt-size': f"{self.size}px",
+            '--opt-color': self.color,
+        }
+        
+        if self.gap is not None:
+            css_vars['--opt-gap'] = f"{self.gap}px"
+            
+        if self.secondary_color:
+            css_vars['--opt-accent'] = self.secondary_color
+            
+        if self.shadow_1:
+            css_vars['--opt-shadow-1'] = self.shadow_1
+            
+        if self.shadow_2:
+            css_vars['--opt-shadow-2'] = self.shadow_2
+
+        # --- Runtime Engine Registration (Hack to avoid core.py changes) ---
+        try:
+            # Safely import Framework to register our engine
+            import sys
+            if 'pythra.core' in sys.modules:
+                fw = sys.modules['pythra.core'].Framework.instance()
+                if 'PythraProgressIndicator' not in fw.plugin_js_modules:
+                    js_path = str(fw.project_root / "render" / "js" / "progress_indicator.js")
+                    
+                    fw.plugin_js_modules['PythraProgressIndicator'] = {
+                        'path': js_path,
+                        'plugin': 'PythraCore_ProgressIndicator'
+                    }
+        except Exception as e:
+            print(f"Warning: Failed to register ProgressIndicator JS engine: {e}")
+            pass
+
+        return {
+            'render_type': 'progress_indicator',
+            'class': style_class,
+            '_js_init': {
+                'engine': 'PythraProgressIndicator',
+                'options': {
+                    'loader': '3d', # Loads render/loaders/3d.css
+                    'visible': visible,
+                    'class': style_class,
+                    'css_vars': css_vars 
+                }
+            },
+            'style': f"display: {'' if visible else 'none'};"
+        }
+
+    # --- Factory Constructors for Ease of Use ---
+
+    @classmethod
+    def spinner(cls, size=25, color=Colors.white):
+        """Variants 1-6 are generally single-colored spinning 3D shapes."""
+        return cls(variant=1, size=size, color=color)
+
+    @classmethod
+    def multi_color(cls, size=25, primary=Colors.white, accent=Colors.red):
+        """Variants 7-12 allow for two distinct colors."""
+        return cls(variant=7, size=size, color=primary, secondary_color=accent)

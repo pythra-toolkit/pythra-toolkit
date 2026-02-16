@@ -320,7 +320,204 @@ class Container(Widget):
             import traceback
             print(f"ERROR generating CSS for Container {css_class} with key {style_key}:")
             traceback.print_exc()
+
             return f"/* Error generating rule for .{css_class} */"
+
+
+# =============================================================================
+# TRANSFORM WIDGET - The "Shape Shifter" for Rotating, Scaling, and Moving
+# =============================================================================
+
+class Transform(Widget):
+    """
+    A widget that applies a 2D or 3D transformation to its child.
+    
+    **What is Transform?**
+    Think of Transform like a magic lens that can change how a widget appears:
+    - Rotate it (spin it around)
+    - Scale it (make it bigger or smaller)
+    - Translate it (move it around)
+    - Skew it (tilt it)
+    - Flip it (mirror image)
+    
+    **Real-world analogy:**
+    Transform is like holding a picture and:
+    - Turning it sideways (rotation)
+    - Holding it closer to your eyes (scaling)
+    - Shifting it to the left or right (translation)
+    
+    **Common use cases:**
+    - Creating animations (spinning icons)
+    - FLipping images or icons
+    - Zooming in on content
+    - Creating complex layouts with overlapping elements
+    
+    **Constructors:**
+    - `Transform(...)`: Generic constructor taking a Matrix4.
+    - `Transform.rotate(...)`: Rotates the child by an angle.
+    - `Transform.scale(...)`: Scales the child uniformly or on X/Y axes.
+    - `Transform.translate(...)`: Moves the child by an offset.
+    - `Transform.flip(...)`: Flips the child horizontally or vertically.
+    """
+    shared_styles: Dict[Tuple, str] = {}
+
+    def __init__(self,
+                 transform: Matrix4,
+                 child: Optional[Widget] = None,
+                 key: Optional[Key] = None,
+                 origin: Optional[Offset] = None,
+                 alignment: Optional[Alignment] = None,
+                 transformHitTests: bool = True, # Web usually handles this naturally
+                 ):
+        super().__init__(key=key, children=[child] if child else [])
+        self.transform = transform
+        self.origin = origin
+        self.alignment = alignment
+        self.transformHitTests = transformHitTests
+
+        # --- CSS Class Management ---
+        # We need to hash the matrix and origin/alignment
+        # Matrix4 is hashable. Offset and Alignment are hashable.
+        self.style_key = (
+            self.transform,
+            self.origin,
+            self.alignment,
+            self.transformHitTests
+        )
+
+        if self.style_key not in Transform.shared_styles:
+            self.css_class = f"shared-transform-{len(Transform.shared_styles)}"
+            Transform.shared_styles[self.style_key] = self.css_class
+        else:
+            self.css_class = Transform.shared_styles[self.style_key]
+
+    @classmethod
+    def rotate(cls,
+               angle: float,
+               child: Optional[Widget] = None,
+               key: Optional[Key] = None,
+               origin: Optional[Offset] = None,
+               alignment: Optional[Alignment] = None,
+               transformHitTests: bool = True):
+        """Creates a widget that transforms its child using a rotation around the center."""
+        return cls(
+            transform=Matrix4.rotationZ(angle),
+            child=child,
+            key=key,
+            origin=origin,
+            alignment=alignment,
+            transformHitTests=transformHitTests
+        )
+
+    @classmethod
+    def scale(cls,
+              scale: Optional[float] = None,
+              scaleX: Optional[float] = None,
+              scaleY: Optional[float] = None,
+              child: Optional[Widget] = None,
+              key: Optional[Key] = None,
+              origin: Optional[Offset] = None,
+              alignment: Optional[Alignment] = None,
+              transformHitTests: bool = True):
+        """Creates a widget that scales its child along the 2D plane."""
+        sx = scale if scale is not None else (scaleX if scaleX is not None else 1.0)
+        sy = scale if scale is not None else (scaleY if scaleY is not None else 1.0)
+        return cls(
+            transform=Matrix4.diagonal3Values(sx, sy, 1.0),
+            child=child,
+            key=key,
+            origin=origin,
+            alignment=alignment,
+            transformHitTests=transformHitTests
+        )
+
+    @classmethod
+    def translate(cls,
+                  offset: Offset,
+                  child: Optional[Widget] = None,
+                  key: Optional[Key] = None,
+                  transformHitTests: bool = True):
+        """Creates a widget that transforms its child using a translation."""
+        return cls(
+            transform=Matrix4.translationValues(offset.dx, offset.dy, 0.0),
+            child=child,
+            key=key,
+            transformHitTests=transformHitTests
+        )
+
+    @classmethod
+    def flip(cls,
+             flipX: bool = False,
+             flipY: bool = False,
+             child: Optional[Widget] = None,
+             key: Optional[Key] = None,
+             origin: Optional[Offset] = None,
+             transformHitTests: bool = True):
+        """Creates a widget that mirrors its child."""
+        sx = -1.0 if flipX else 1.0
+        sy = -1.0 if flipY else 1.0
+        return cls(
+            transform=Matrix4.diagonal3Values(sx, sy, 1.0),
+            child=child,
+            key=key,
+            origin=origin,
+            transformHitTests=transformHitTests
+        )
+
+    def render_props(self) -> Dict[str, Any]:
+        return {
+            'css_class': self.css_class,
+        }
+
+    def get_required_css_classes(self) -> Set[str]:
+        return {self.css_class}
+
+    @staticmethod
+    def generate_css_rule(style_key: Tuple, css_class: str) -> str:
+        try:
+            transform, origin, alignment, hitTests = style_key
+            
+            css_styles = []
+            
+            # Helper to convert alignment to transform-origin
+            def alignment_to_origin(align: Alignment) -> str:
+                # Map simple alignments or use %
+                # This is an approximation. 
+                # Flex alignments: flex-start, center, flex-end
+                # Mapping to x% y%
+                mapping = {
+                    'flex-start': '0%',
+                    'center': '50%',
+                    'flex-end': '100%',
+                    'stretch': '50%', # Default?
+                    'baseline': '0%',
+                }
+                x = mapping.get(align.justify_content, '50%')
+                y = mapping.get(align.align_items, '50%')
+                return f"{x} {y}"
+
+            if transform:
+                css_styles.append(f"transform: {transform.to_css()};")
+            
+            if origin:
+                # If explicit offset origin is provided, it usually relates to top-left
+                css_styles.append(f"transform-origin: {origin.dx}px {origin.dy}px;")
+            elif alignment:
+                css_styles.append(f"transform-origin: {alignment_to_origin(alignment)};")
+            else:
+                 css_styles.append("transform-origin: center center;")
+
+            if not hitTests:
+                css_styles.append("pointer-events: none;")
+
+            style_str = " ".join(css_styles)
+            
+            # Transform should probably be inline-block or block to accept transforms properly
+            return f".{css_class} {{ display: inline-block; {style_str} }}"
+        except Exception as e:
+            print(f"Error generating CSS for Transform {css_class}: {e}")
+            return f"/* Error generating rule for .{css_class} */"
+
 
 
 
@@ -2013,15 +2210,22 @@ class Scrollbar(Widget):
         }
         
         # --- THIS IS THE CHANGE ---
-        # Only initialize SimpleBar OR VirtualList, not both.
-        # VirtualList will now handle the SimpleBar initialization internally.
-        print("virtualization_options: ", self.virtualization_options)
+        # Only initialize SimpleBar OR VirtualList/Grid, not both.
+        # VirtualList/Grid will now handle the SimpleBar initialization internally.
+        # print("virtualization_options: ", self.virtualization_options)
         if self.virtualization_options:
             
-            props['init_virtual_list'] = True
-            props['virtual_list_options'] = self.virtualization_options
-            # Pass simplebar options inside the vlist options
-            props['virtual_list_options']['simplebarOptions'] = {'autoHide': self.autoHide}
+            v_type = self.virtualization_options.get('type', 'list')
+            
+            if v_type == 'grid':
+                props['init_virtual_grid'] = True
+                props['virtual_grid_options'] = self.virtualization_options
+                props['virtual_grid_options']['simplebarOptions'] = {'autoHide': self.autoHide}
+            else: # Default to list
+                props['init_virtual_list'] = True
+                props['virtual_list_options'] = self.virtualization_options
+                props['virtual_list_options']['simplebarOptions'] = {'autoHide': self.autoHide}
+
         else:
             # For a non-virtualized scrollbar, do the normal initialization
             props['init_simplebar'] = True
@@ -3185,7 +3389,7 @@ class _VirtualListViewState(State):
         initial_items_html = {}
         initial_item_count = min(widget.initialItemCount, widget.itemCount) # type: ignore
         for i in range(initial_item_count):
-            initial_items_html[i] = self.build_item_for_js(i)
+            initial_items_html[str(i)] = self.build_item_for_js(i)
         
         self._virtualization_options = {
             "itemCount": widget.itemCount, # type: ignore
@@ -3287,8 +3491,178 @@ class _VirtualListViewState(State):
         )
 
 # =============================================================================
-# VIRTUAL LIST VIEW - The High-Performance List for "Infinite" Scrolling
+# VIRTUAL GRID VIEW - The High-Performance Grid for "Infinite" Scrolling
 # =============================================================================
+
+class _VirtualGridViewState(State):
+    """
+    State for VirtualGridView. Adapts _VirtualListViewState logic for grids.
+    """
+    def __init__(self):
+        super().__init__()
+        self.item_builder_name = None
+        self._virtualization_options = None
+
+    def initState(self):
+        widget = self.get_widget()
+        if not widget: return
+
+        if widget.controller: # type: ignore
+            widget.controller._attach(self) # type: ignore
+
+        self.item_builder_name = f"vgrid_item_builder_{widget.key.value}" # type: ignore
+        Api().register_callback(self.item_builder_name, self.build_item_for_js)
+
+        # Pre-render initial items
+        initial_items_html = {}
+        initial_item_count = min(widget.initialItemCount, widget.itemCount) # type: ignore
+        for i in range(initial_item_count):
+            initial_items_html[str(i)] = self.build_item_for_js(i)
+        
+        self._virtualization_options = {
+            "type": "grid", # Signal to Scrollbar to use Virtual Grid logic
+            "itemCount": widget.itemCount, # type: ignore
+            "crossAxisCount": widget.crossAxisCount, # type: ignore
+            "childAspectRatio": widget.childAspectRatio, # type: ignore
+            "childMinWidth": widget.childMinWidth, # type: ignore
+            "mainAxisSpacing": widget.mainAxisSpacing, # type: ignore
+            "crossAxisSpacing": widget.crossAxisSpacing, # type: ignore
+            "itemBuilderName": self.item_builder_name,
+            "initialItems": initial_items_html
+        }
+
+    def dispose(self):
+        widget = self.get_widget()
+        if widget and widget.controller: # type: ignore
+            widget.controller._detach() # type: ignore
+        super().dispose()
+
+    def refresh_js(self, indices: Optional[List[int]] = None):
+        """
+        Called by the controller to command the JS engine to refresh.
+        """
+        widget = self.get_widget()
+        if not (self.framework and self.framework.window and widget):
+            return
+
+        instance_name = f"{widget.key.value}_vlist" # Using same naming convention as core.py expects for 'vlist' type, but maybe we change key logic in core
+        # Actually core.py generates instance name. Let's look at core.py...
+        # It uses f"{widget_key_val}_vlist" for VirtualList.
+        # We need to make sure core.py handles this new type.
+        
+        # For now, let's assume core.py will use the same naming convention or we update it.
+        # Let's match what we will implement in core.py
+        instance_name = f"{widget.key.value}_vgrid" # Distinct name
+
+        if indices is None:
+            # print(f"Python: Commanding JS instance '{instance_name}' to perform a FULL refresh.")
+            js_command = f"window._pythra_instances['{instance_name}']?.refresh();"
+        else:
+            # print(f"Python: Commanding JS instance '{instance_name}' to refresh items at indices: {indices}")
+            indices_json = json.dumps(indices)
+            js_command = f"window._pythra_instances['{instance_name}']?.refreshItems({indices_json});"
+
+        self.framework.window.evaluate_js(self.framework.id, js_command)
+
+    def build_item_for_js(self, index: int) -> Dict[str, Any]:
+        # Reuse logic from VirtualListView, maybe extract to mixin?
+        # For now, duplicate for safety/speed.
+        widget = self.get_widget()
+        if not widget or not self.framework:
+            return {"html": "<div>Error</div>", "css": "", "callbacks": {}}
+            
+        widget_to_build = widget.itemBuilder(index) # type: ignore
+        built_tree = self.framework._build_widget_tree(widget_to_build)
+        
+        main_context_map = self.framework.reconciler.get_map_for_context("main")
+        result = self.framework.reconciler.reconcile(
+            previous_map=main_context_map,
+            new_widget_root=built_tree,
+            parent_html_id='__limbo__',
+            is_partial_reconciliation=True
+        )
+        
+        main_context_map.update(result.new_rendered_map)
+        
+        root_key = built_tree.get_unique_id() if built_tree else None
+        html_string = self.framework._generate_html_from_map(root_key, result.new_rendered_map)
+        css_string = self.framework._generate_css_from_details(result.active_css_details)
+        callbacks = result.registered_callbacks
+        
+        for name, func in callbacks.items():
+            self.framework.api.register_callback(name, func)
+
+        return {
+            "html": html_string,
+            "css": css_string,
+            "callback_names": list(callbacks.keys())
+        }
+
+    def build(self) -> Widget:
+        widget = self.get_widget()
+        if not widget: return Container(width=0, height=0)
+
+        return Scrollbar(
+            key=widget.key, # type: ignore
+            width=widget.width, # type: ignore
+            height=widget.height, # type: ignore
+            theme=widget.theme, # type: ignore
+            child=Container(key=Key(f"{widget.key.value}_content"), alignment=Alignment.center()), # type: ignore
+            virtualization_options=self._virtualization_options
+        )
+
+class VirtualGridView(StatefulWidget):
+    """
+    A highly-performant, scrollable grid that only renders the items currently
+    visible on screen.
+    
+    **When to use:**
+    - Large grids of items (photos, products, file explorers).
+    - When GridView performance suffers.
+    
+    **Key Parameters:**
+    - **key**: Required unique Key.
+    **Key Parameters:**
+    - **key**: Required unique Key.
+    - **controller**: Required VirtualGridController (shared logic).
+    - **itemCount**: Total items.
+    - **crossAxisCount**: Number of columns.
+    - **itemBuilder**: Function(index) -> Widget.
+    """
+    def __init__(self,
+                 key: Key,
+                 controller: VirtualGridController,
+                 itemCount: int,
+                 itemBuilder: Callable[[int], Widget],
+                 crossAxisCount: int = 2,
+                 childAspectRatio: float = 1.0,
+                 childMinWidth: Optional[float] = None,
+                 mainAxisSpacing: float = 0.0,
+                 crossAxisSpacing: float = 0.0,
+                 initialItemCount: int = 20,
+                 theme: Optional[ScrollbarTheme] = None,
+                 width: Optional[Any] = '100%',
+                 height: Optional[Any] = '100%'):
+
+        self.controller = controller
+        self.itemCount = itemCount
+        self.itemBuilder = itemBuilder
+        self.crossAxisCount = crossAxisCount
+        self.childAspectRatio = childAspectRatio
+        self.childMinWidth = childMinWidth
+        self.mainAxisSpacing = mainAxisSpacing
+        self.crossAxisSpacing = crossAxisSpacing
+        self.initialItemCount = initialItemCount
+        self.theme = theme
+        self.width = width
+        self.height = height
+        super().__init__(key=key)
+
+    def createState(self) -> _VirtualGridViewState:
+        return _VirtualGridViewState()
+
+
+
 
 class VirtualListView(StatefulWidget):
     """
@@ -3695,6 +4069,7 @@ class GridView(Widget):
                  mainAxisSpacing: float = 0, # Gap between items along the main (scrolling) axis
                  crossAxisSpacing: float = 0, # Gap between items along the cross axis
                  childAspectRatio: float = 1.0, # Width / Height ratio for children
+                 childMinWidth: Optional[float] = None, # Min width for responsive layout
                  # Accessibility
                  semanticChildCount: Optional[int] = None
                 ):
@@ -3713,6 +4088,7 @@ class GridView(Widget):
         self.crossAxisSpacing = crossAxisSpacing
         self.childAspectRatio = max(0.01, childAspectRatio) # Ensure positive aspect ratio
         self.semanticChildCount = semanticChildCount
+        self.childMinWidth = childMinWidth
 
         # --- CSS Class Management ---
         # Key includes properties affecting CSS rules for the container and item layout
@@ -3727,6 +4103,7 @@ class GridView(Widget):
             self.mainAxisSpacing,
             self.crossAxisSpacing,
             self.childAspectRatio,
+            self.childMinWidth,
         )
 
         if self.style_key not in GridView.shared_styles:
@@ -3748,6 +4125,7 @@ class GridView(Widget):
             'mainAxisSpacing': self.mainAxisSpacing,
             'crossAxisSpacing': self.crossAxisSpacing,
             'childAspectRatio': self.childAspectRatio,
+            'childMinWidth': self.childMinWidth,
             'semanticChildCount': self.semanticChildCount,
             'css_class': self.css_class,
             # Children diffing handled separately
@@ -3764,7 +4142,7 @@ class GridView(Widget):
         try:
             # Unpack the style key tuple based on its creation order in __init__
             (padding_repr, scrollDirection, reverse, primary, physics, shrinkWrap,
-             crossAxisCount, mainAxisSpacing, crossAxisSpacing, childAspectRatio) = style_key
+             crossAxisCount, mainAxisSpacing, crossAxisSpacing, childAspectRatio, childMinWidth) = style_key
 
             # --- Determine CSS for the GridView container ---
 
@@ -3799,10 +4177,10 @@ class GridView(Widget):
             padding_style = ""
             if isinstance(padding_obj, EdgeInsets):
                  padding_style = f"padding: {padding_obj.to_css()};"
-                 print(padding_style)
+                 # print(padding_style)
             elif padding_repr:
                  padding_style = f"padding: {padding_repr};" # Fallback
-                 print(padding_style)
+                 # print(padding_style)
 
 
             # Grid Layout Properties
@@ -3815,21 +4193,32 @@ class GridView(Widget):
             # Would likely need JS reordering or different grid population logic. Ignoring for CSS.
 
             if scrollDirection == Axis.VERTICAL:
-                # Columns are fixed by crossAxisCount
-                grid_template_style = f"grid-template-columns: repeat({crossAxisCount}, 1fr);"
+                # Columns
+                if childMinWidth:
+                    # Responsive columns
+                    grid_template_style = f"grid-template-columns: repeat(auto-fill, minmax({childMinWidth}px, 1fr));"
+                else:
+                    # Columns are fixed by crossAxisCount
+                    grid_template_style = f"grid-template-columns: repeat({crossAxisCount}, 1fr);"
+                
                 # Gap maps mainAxis (vertical) to row-gap, crossAxis (horizontal) to column-gap
                 grid_gap_style = f"gap: {mainAxisSpacing}px {crossAxisSpacing}px;"
             else: # HORIZONTAL
-                # Rows are fixed by crossAxisCount
-                # We need to tell the grid how rows auto-size (usually auto)
-                 grid_template_style = f"grid-template-rows: repeat({crossAxisCount}, auto);"
+                # Rows
+                if childMinWidth:
+                    # Responsive rows (assuming minWidth implies minCrossAxisSize here too)
+                     grid_template_style = f"grid-template-rows: repeat(auto-fill, minmax({childMinWidth}px, 1fr));"
+                else:
+                    # Rows are fixed by crossAxisCount
+                    grid_template_style = f"grid-template-rows: repeat({crossAxisCount}, auto);"
+                
                  # Auto-flow columns
-                 grid_template_style += " grid-auto-flow: column;"
+                grid_template_style += " grid-auto-flow: column;"
                  # Define auto column width (often based on content or 1fr if filling)
                  # This is simplified, might need 'grid-auto-columns: min-content;' or similar
-                 grid_template_style += " grid-auto-columns: 1fr;" # Example: columns fill space
+                grid_template_style += " grid-auto-columns: 1fr;" # Example: columns fill space
                  # Gap maps mainAxis (horizontal) to column-gap, crossAxis (vertical) to row-gap
-                 grid_gap_style = f"gap: {crossAxisSpacing}px {mainAxisSpacing}px;"
+                grid_gap_style = f"gap: {crossAxisSpacing}px {mainAxisSpacing}px;"
 
 
             # Combine styles for the main GridView container

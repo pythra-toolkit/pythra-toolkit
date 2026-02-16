@@ -5,7 +5,7 @@
   height: 20px;
   background:
    linear-gradient(#000 0 0) left/20px 20px no-repeat
-   #ddd;
+   var(--loader-color-5, var(--loader-color-5, #ddd));
   animation: l1 1s infinite linear;
 }
 @keyframes l1 {
@@ -18,7 +18,7 @@
   height: 20px;
   border-radius: 20px;
   background:
-   radial-gradient(farthest-side,orange 94%,#0000) left/20px 20px no-repeat
+   radial-gradient(farthest-side,var(--loader-color-8, orange) 94%,#0000) left/20px 20px no-repeat
    lightblue;
   animation: l2 1s infinite linear;
 }
@@ -31,7 +31,7 @@
   width: 120px;
   height: 22px;
   border-radius: 40px;
-  color: #514b82;
+  color: var(--loader-color-2, var(--loader-color-2, #514b82));
   border: 2px solid;
   position: relative;
 }
@@ -55,8 +55,8 @@
 .loader-wobbling-4 {
   width: 20px;
   aspect-ratio: 1;
-  background: #25b09b;
-  box-shadow: 0 0 60px 15px #25b09b;
+  background: var(--loader-color, var(--loader-color, #25b09b));
+  box-shadow: 0 0 60px 15px var(--loader-color, var(--loader-color, #25b09b));
   transform: translate(-80px);
   clip-path: inset(0);
   animation:
@@ -78,9 +78,9 @@
   height: 20px;
   clip-path: polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%);
   background:
-   conic-gradient(from 135deg at top   ,#f03355 90deg,#0000 0) top    left,
-   conic-gradient(from -45deg at bottom,#f03355 90deg,#0000 0) bottom left,
-   #ccc;
+   conic-gradient(from 135deg at top   ,var(--loader-color-6, var(--loader-color-6, #f03355)) 90deg,#0000 0) top    left,
+   conic-gradient(from -45deg at bottom,var(--loader-color-6, var(--loader-color-6, #f03355)) 90deg,#0000 0) bottom left,
+   var(--loader-color-4, var(--loader-color-4, #ccc));
   background-size: 20px 50%;
   background-repeat: no-repeat;
   animation: l5 1s infinite linear;
@@ -95,7 +95,7 @@
   height: 21px;
   background:
    linear-gradient(#000 0 0) left/10px 100% no-repeat
-   #ddd;
+   var(--loader-color-5, var(--loader-color-5, #ddd));
   animation: l6 1s infinite cubic-bezier(0,0.2,1,1);
   position: relative;
 }
@@ -108,7 +108,7 @@
   height: 7px;
   background:
     linear-gradient(#000 0 0) left/10px 100% no-repeat
-    #ddd;
+    var(--loader-color-5, var(--loader-color-5, #ddd));
   animation: inherit;
 }
 .loader-wobbling-6:before {
@@ -128,7 +128,7 @@
   width: 20px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(at 30% 30%,#0000,#000a) red;
+  background: radial-gradient(at 30% 30%,#0000,#000a) var(--loader-color-9, red);
   position: relative;
   left: 0;
   top: 0;
@@ -152,14 +152,14 @@
   border-radius: 50%;
   position: relative;
   transform-origin: 50% -200%;
-  background: radial-gradient(at 30% 30%,#0000,#000a) red;
+  background: radial-gradient(at 30% 30%,#0000,#000a) var(--loader-color-9, red);
   animation: l8 1s cubic-bezier(.5,-200,.5,200) infinite;
 }
 .loader-wobbling-8:before {
   content: "";
   position: absolute;
   inset: -200% 8px 100%;
-  background: #ddd; 
+  background: var(--loader-color-5, var(--loader-color-5, #ddd)); 
 }
 @keyframes l8 { 
     100% {transform:rotate(1deg)} 
@@ -169,7 +169,7 @@
 .loader-wobbling-9 {
   width: 80px;
   height: 20px;
-  color: #514b82;
+  color: var(--loader-color-2, var(--loader-color-2, #514b82));
   background:
     radial-gradient(farthest-side,currentColor 98%,#0000) left  /20px 20px,
     radial-gradient(farthest-side,currentColor 98%,#0000) right /20px 20px,
@@ -188,8 +188,8 @@
   height: 50px;
   border-radius: 50px;
   background: 
-   radial-gradient(farthest-side,#0000 calc(100% - 15px),#ccc calc(100% - 14px) 99%,#0000) left,
-   radial-gradient(farthest-side,#0000 calc(100% - 15px),#ccc calc(100% - 14px) 99%,#0000) right;
+   radial-gradient(farthest-side,#0000 calc(100% - 15px),var(--loader-color-4, var(--loader-color-4, #ccc)) calc(100% - 14px) 99%,#0000) left,
+   radial-gradient(farthest-side,#0000 calc(100% - 15px),var(--loader-color-4, var(--loader-color-4, #ccc)) calc(100% - 14px) 99%,#0000) right;
   background-size: calc(50% + 7px) 100%;
   background-repeat: no-repeat;
   position: relative;
@@ -203,7 +203,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #f03355;
+  background: var(--loader-color-6, var(--loader-color-6, #f03355));
   transform-origin: -14px 50%;
   animation: l10-1 0.5s infinite linear;
 }
@@ -231,7 +231,7 @@
   position: relative;
 }
 .loader-wobbling-11::before {
-  background: radial-gradient(at 30% 30%,#0000,#000a) red;
+  background: radial-gradient(at 30% 30%,#0000,#000a) var(--loader-color-9, red);
   transform: scaleY(0.65);
   top: 0;
   animation: l11-1, l11-2;
@@ -240,7 +240,7 @@
   animation-iteration-count: infinite;
 }
 .loader-wobbling-11::after {
-  background: #ccc;
+  background: var(--loader-color-4, var(--loader-color-4, #ccc));
   filter: blur(8px);
   transform: scaleY(0.3) translate(0px,0px);
   left: 0;
@@ -269,8 +269,8 @@
   flex:4;
   background: 
     radial-gradient(at 50% 20%,#0000,#000a) bottom left/20px 20px repeat-x,
-    linear-gradient(red 0 0) bottom/100% 20px no-repeat
-    #ddd;
+    linear-gradient(var(--loader-color-9, red) 0 0) bottom/100% 20px no-repeat
+    var(--loader-color-5, var(--loader-color-5, #ddd));
   -webkit-mask:
     repeating-linear-gradient(90deg,#000 0 4px,#0000 0 20px) 8px 0,
     radial-gradient(farthest-side,#000 90%,#0000) left bottom/20px 20px repeat-x;
@@ -300,7 +300,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(at 30% 30%,#0000,#000a) red;
+  background: radial-gradient(at 30% 30%,#0000,#000a) var(--loader-color-9, red);
   animation: l13-1 0.5s cubic-bezier(.5,-500,.5,500) infinite;
 }
 .loader-wobbling-13::after {
@@ -332,7 +332,7 @@
   inset: auto 0 0;
   margin: auto;
   border-radius: 50%;
-  background: orange;
+  background: var(--loader-color-8, orange);
   transform-origin: 50% -20px;
   animation: l14 1s infinite cubic-bezier(0.5,623,0.5,-623);
 }
@@ -344,7 +344,7 @@
 .loader-wobbling-15 {
   height: 80px;
   width: 20px;
-  color: #514b82;
+  color: var(--loader-color-2, var(--loader-color-2, #514b82));
   background:
     radial-gradient(farthest-side,currentColor 94%,#0000 ) top/8px 8px,
     linear-gradient(currentColor 0 0) top/4px 70%,
@@ -363,8 +363,8 @@
     width: 80px;
     height: 50px;
     background: 
-      radial-gradient(farthest-side,#0000 calc(100% - 15px),#ccc calc(100% - 14px) 99%,#0000) center/50px 100%, 
-      linear-gradient(#ccc 0 0) bottom/100% 14px;
+      radial-gradient(farthest-side,#0000 calc(100% - 15px),var(--loader-color-4, var(--loader-color-4, #ccc)) calc(100% - 14px) 99%,#0000) center/50px 100%, 
+      linear-gradient(var(--loader-color-4, var(--loader-color-4, #ccc)) 0 0) bottom/100% 14px;
     background-repeat: no-repeat;
     position: relative;
     animation: l16-0 2s -0.5s infinite linear;
@@ -376,7 +376,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #f03355;
+    background: var(--loader-color-6, var(--loader-color-6, #f03355));
     transform-origin:50% -14px;
     animation: l16-1 .5s infinite linear alternate;
 }
@@ -396,8 +396,8 @@
   width: 80px;
   transform: rotate(-30deg);
   background: 
-    radial-gradient(farthest-side,#f03355 90%,#0000) left bottom/15px 15px no-repeat
-    #ddd;
+    radial-gradient(farthest-side,var(--loader-color-6, var(--loader-color-6, #f03355)) 90%,#0000) left bottom/15px 15px no-repeat
+    var(--loader-color-5, var(--loader-color-5, #ddd));
   animation:
     l17-0 2s infinite alternate linear,
     l17-1 2s infinite cubic-bezier(.75,0,1,.6);
@@ -413,7 +413,7 @@
 .loader-wobbling-18 {
   height: 40px;
   aspect-ratio: 2;
-  --c:no-repeat linear-gradient(#25b09b 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #25b09b)) 0 0);
   background: var(--c),var(--c),var(--c),var(--c);
   background-size: 26% 50%;
   animation: l18 1s infinite cubic-bezier(0.5,150,0.5,-150);
@@ -427,7 +427,7 @@
 .loader-wobbling-19 {
   height: 30px;
   aspect-ratio: 3;
-  --c:no-repeat linear-gradient(#514b82 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color-2, var(--loader-color-2, #514b82)) 0 0);
   background:
     var(--c) calc(0*100%/5) 50%,
     var(--c) calc(1*100%/5) 50%,
@@ -467,14 +467,14 @@
     radial-gradient(at 80% 40%,#0000,#0008),
     radial-gradient(circle  5px,#fff 94%,#0000),
     radial-gradient(circle 10px,#000 94%,#0000),
-    linear-gradient(#F93318 0 0) top   /100% calc(50% - 5px),
+    linear-gradient(var(--loader-color-3, var(--loader-color-3, #F93318)) 0 0) top   /100% calc(50% - 5px),
     linear-gradient(#fff    0 0) bottom/100% calc(50% - 5px)
     #000;
   background-repeat: no-repeat;
   animation: l20 1s infinite cubic-bezier(0.5,120,0.5,-120);
 }
 .loader-wobbling-20::before {
-  background:#ddd;
+  background:var(--loader-color-5, var(--loader-color-5, #ddd));
   filter: blur(8px);
   transform: scaleY(0.4) translate(-13px, 0px);
 }

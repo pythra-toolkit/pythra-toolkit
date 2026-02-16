@@ -350,6 +350,36 @@ class VirtualListController:
 
 
 
+class VirtualGridController:
+    """
+    A controller for a VirtualGridView.
+
+    This allows a parent widget to programmatically command the grid to
+    refresh its content when the underlying data source changes.
+    """
+    def __init__(self):
+        self._state: Optional['_VirtualGridViewState'] = None # type: ignore
+
+    def _attach(self, state: '_VirtualGridViewState'): # type: ignore
+        """Internal method for the state to link itself to the controller."""
+        self._state = state
+
+    def _detach(self):
+        """Internal method to unlink."""
+        self._state = None
+
+    def refresh(self):
+        """Commands the virtual grid to clear its cache and re-render visible items."""
+        
+        if self._state:
+            # print("Refreshing Grid")
+            self._state.refresh_js(indices=None)
+            # print("Refreshed Grid")
+
+    def refreshItem(self, index: int):
+        """Commands the virtual grid to refresh a single item at a specific index."""
+        if self._state:
+            self._state.refresh_js(indices=[index]) # Pass a specific index
 
 class MarkdownEditingController:
     def __init__(self, initialText: str = ""):
@@ -387,3 +417,47 @@ class MarkdownEditingController:
         """Sets the entire content of the editor."""
         self.markdown = markdown
         # ... similar logic to send command to JS ...
+
+
+class ProgressIndicatorController:
+    """
+    Controller for the ProgressIndicator widget.
+    Manages the visibility state of the loader.
+    """
+    def __init__(self, visible: bool = True):
+        self._visible = visible
+        self._listeners: List[Callable] = []
+
+    @property
+    def visible(self) -> bool:
+        return self._visible
+
+    @visible.setter
+    def visible(self, value: bool):
+        if self._visible != value:
+            self._visible = value
+            self._notify_listeners()
+
+    def show(self):
+        """Show the progress indicator."""
+        self.visible = True
+
+    def hide(self):
+        """Hide the progress indicator."""
+        self.visible = False
+
+    def toggle(self):
+        """Toggle visibility."""
+        self.visible = not self.visible
+
+    def add_listener(self, listener: Callable):
+        if listener not in self._listeners:
+            self._listeners.append(listener)
+
+    def remove_listener(self, listener: Callable):
+        if listener in self._listeners:
+            self._listeners.remove(listener)
+
+    def _notify_listeners(self):
+        for listener in self._listeners:
+            listener()

@@ -3,7 +3,7 @@
 .loader-hypnotic-1 {
   width: 50px;
   aspect-ratio: 1;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   border: 2px solid;
   display: grid;
   box-sizing: border-box;
@@ -35,7 +35,7 @@
   width: 40px;
   aspect-ratio: 1;
   border-radius: 50%;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   border: 2px solid;
   box-sizing: border-box;
   position: relative;
@@ -71,7 +71,7 @@
   width: 50px;
   aspect-ratio: 1;
   border: 2px solid;
-  --c:conic-gradient(from -90deg at calc(100% - 2px) calc(100% - 2px),#0000 0 90deg,#000 0);
+  --c:conic-gradient(from -90deg at calc(100% - 2px) calc(100% - 2px),#0000 0 90deg,var(--loader-color, #000) 0);
   background: var(--c),var(--c);
   background-size: 16px 16px;
   background-position: 0 0;
@@ -85,10 +85,10 @@
 .loader-hypnotic-4 {
   width: 50px;
   aspect-ratio: 1;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   border: 2px solid;
   box-sizing: border-box;
-  --c:radial-gradient(farthest-side,#0000 calc(100% - 3px),currentColor calc(100% - 2px) 98%,#0000);
+  --c:radial-gradient(farthest-side,#0000 calc(100% - 3px),var(--loader-color, currentColor) calc(100% - 2px) 98%,#0000);
   background: var(--c),var(--c);
   background-size: 23px 23px;
   background-position: 0 0,12px 12px;
@@ -103,11 +103,11 @@
   width: 50px;
   aspect-ratio: 1.154;
   display: grid;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   background:
-    linear-gradient(to bottom left ,#0000 calc(50% - 1px),currentColor 0 calc(50% + 1px),#0000 0) right/50% 100%,
-    linear-gradient(to bottom right,#0000 calc(50% - 1px),currentColor 0 calc(50% + 1px),#0000 0) left /50% 100%,
-    linear-gradient(currentColor 0 0) bottom/100% 2px;
+    linear-gradient(to bottom left ,#0000 calc(50% - 1px),var(--loader-color, currentColor) 0 calc(50% + 1px),#0000 0) right/50% 100%,
+    linear-gradient(to bottom right,#0000 calc(50% - 1px),var(--loader-color, currentColor) 0 calc(50% + 1px),#0000 0) left /50% 100%,
+    linear-gradient(var(--loader-color, currentColor) 0 0) bottom/100% 2px;
   background-repeat: no-repeat;
   transform-origin: 50% 66%;
   animation: l5 4s infinite linear;
@@ -132,12 +132,12 @@
   width: 50px;
   aspect-ratio: 1;
   display: grid;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   background:
-    linear-gradient(90deg,currentColor 2px,#0000 0 calc(100% - 2px),currentColor 0) center/100% 14px,
-    linear-gradient(0deg, currentColor 2px,#0000 0 calc(100% - 2px),currentColor 0) center/14px 100%,
-    linear-gradient(currentColor 0 0) center/100% 2px,
-    linear-gradient(currentColor 0 0) center/2px 100%;
+    linear-gradient(90deg,var(--loader-color, currentColor) 2px,#0000 0 calc(100% - 2px),var(--loader-color, currentColor) 0) center/100% 14px,
+    linear-gradient(0deg, var(--loader-color, currentColor) 2px,#0000 0 calc(100% - 2px),var(--loader-color, currentColor) 0) center/14px 100%,
+    linear-gradient(var(--loader-color, currentColor) 0 0) center/100% 2px,
+    linear-gradient(var(--loader-color, currentColor) 0 0) center/2px 100%;
   background-repeat: no-repeat;
   animation: l6 4s infinite linear;
 }
@@ -160,12 +160,12 @@
 .loader-hypnotic-7 {
   width: 50px;
   aspect-ratio: 1;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   border: 2px solid;
   box-sizing: border-box;
   background:
-    repeating-conic-gradient(#0000 0 90deg,currentColor 0 180deg),
-    repeating-conic-gradient(currentColor 0 90deg,#0000 0 180deg);
+    repeating-conic-gradient(#0000 0 90deg,var(--loader-color, currentColor) 0 180deg),
+    repeating-conic-gradient(var(--loader-color, currentColor) 0 90deg,#0000 0 180deg);
   background-size: 16px 16px;
   background-position: 0 0;
   animation: l7 2s infinite;
@@ -178,12 +178,12 @@
 .loader-hypnotic-8 {
   width: 50px;
   aspect-ratio: 1;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   border: 2px solid;
   box-sizing: border-box;
   background:
-    radial-gradient(farthest-side,currentColor 90%,#0000),
-    radial-gradient(farthest-side,#0000 90%,currentColor);
+    radial-gradient(farthest-side,var(--loader-color, currentColor) 90%,#0000),
+    radial-gradient(farthest-side,#0000 90%,var(--loader-color, currentColor));
   background-size: 16px 16px;
   background-position: 0 0;
   animation: l8 2s infinite;
@@ -197,7 +197,7 @@
   width: 50px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: repeating-conic-gradient(#0000,#000 1deg 18deg,#0000 20deg 36deg);
+  background: repeating-conic-gradient(#0000,var(--loader-color, #000) 1deg 18deg,#0000 20deg 36deg);
   animation: l9 4s infinite linear;
   position: relative;
 }
@@ -224,12 +224,12 @@
   content: "";
   grid-area: 1/1;
   border-radius: 50%;
-  background: repeating-conic-gradient(#0000,#000 1deg 18deg,#0000 20deg 36deg);
-  -webkit-mask:repeating-radial-gradient(farthest-side,#000 0 10%,#0000 0 20%);
+  background: repeating-conic-gradient(#0000,var(--loader-color, #000) 1deg 18deg,#0000 20deg 36deg);
+  -webkit-mask:repeating-radial-gradient(farthest-side,var(--loader-color, #000) 0 10%,#0000 0 20%);
   animation: l10 4s infinite linear;
 }
 .loader-hypnotic-10::after{
-  -webkit-mask:repeating-radial-gradient(farthest-side,#0000 0 10%,#000 0 20%);
+  -webkit-mask:repeating-radial-gradient(farthest-side,#0000 0 10%,var(--loader-color, #000) 0 20%);
   animation-direction: reverse;
 }
 @keyframes l10 {
@@ -295,7 +295,7 @@
   width: 60px;
   height: 30px;
   display: flex;
-  --c:#0000 calc(100% - 5px),#000 calc(100% - 4px) 96%,#0000;
+  --c:#0000 calc(100% - 5px),var(--loader-color, #000) calc(100% - 4px) 96%,#0000;
   background:
     radial-gradient(farthest-side at bottom,var(--c)) 0 0,
     radial-gradient(farthest-side at top   ,var(--c)) 100% 100%;
@@ -318,7 +318,7 @@
   width: 60px;
   height: 30px;
   display: grid;
-  --c: #0000 calc(100% - 5px),#000 calc(100% - 4px) 96%,#0000;
+  --c: #0000 calc(100% - 5px),var(--loader-color, #000) calc(100% - 4px) 96%,#0000;
   background:
     radial-gradient(farthest-side at bottom,var(--c)) 0 0,
     radial-gradient(farthest-side at top   ,var(--c)) 100% 100%;
@@ -347,7 +347,7 @@
   aspect-ratio: 1;
   border: 2px solid;
   box-sizing: border-box;
-  --c:conic-gradient(from 180deg at 50% calc(100% - 2px),#000 90deg, #0000 0);
+  --c:conic-gradient(from 180deg at 50% calc(100% - 2px),var(--loader-color, #000) 90deg, #0000 0);
   background: var(--c),var(--c);
   background-position: 0 0,8px 0;
   background-size: 16px 9.6px;
@@ -369,7 +369,7 @@
   content: "";
   position: absolute;
   inset: -48px;
-  --c:conic-gradient(from 180deg at 50% calc(100% - 2px),#000 90deg, #0000 0);
+  --c:conic-gradient(from 180deg at 50% calc(100% - 2px),var(--loader-color, #000) 90deg, #0000 0);
   background: var(--c),var(--c);
   background-position: 0 0,8px 0;
   background-size: 16px 9.6px;
@@ -384,13 +384,13 @@
 .loader-hypnotic-17 {
   width: 30px;
   aspect-ratio: .577;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   display: grid;
   background:
-    linear-gradient(currentColor 0 0) top   /100% 1px,
-    linear-gradient(currentColor 0 0) bottom/100% 1px,
-    linear-gradient(to bottom right, #0000 calc(50% - 2px),currentColor calc(50% - 1px),#0000 50%) top/100% calc(100% + 2px),
-    linear-gradient(to bottom left , #0000 calc(50% - 2px),currentColor calc(50% - 1px),#0000 50%) top/100% calc(100% + 2px); 
+    linear-gradient(var(--loader-color, currentColor) 0 0) top   /100% 1px,
+    linear-gradient(var(--loader-color, currentColor) 0 0) bottom/100% 1px,
+    linear-gradient(to bottom right, #0000 calc(50% - 2px),var(--loader-color, currentColor) calc(50% - 1px),#0000 50%) top/100% calc(100% + 2px),
+    linear-gradient(to bottom left , #0000 calc(50% - 2px),var(--loader-color, currentColor) calc(50% - 1px),#0000 50%) top/100% calc(100% + 2px); 
   background-repeat: no-repeat;
   animation: l17 4s infinite linear;
 }
@@ -414,12 +414,12 @@
   width: 25px;
   height: 50px;
   display: grid;
-  color: #000;
+  color: var(--loader-color, var(--loader-color, #000));
   background:
-    linear-gradient(currentColor 0 0) top/100% 2px,
-    radial-gradient(farthest-side at  top, #0000 calc(100% - 2px),currentColor calc(100% - 1px) ,#0000) top,
-    linear-gradient(currentColor 0 0) bottom/100% 2px,
-    radial-gradient(farthest-side at  bottom, #0000 calc(100% - 2px),currentColor calc(100% - 1px) ,#0000) bottom;
+    linear-gradient(var(--loader-color, currentColor) 0 0) top/100% 2px,
+    radial-gradient(farthest-side at  top, #0000 calc(100% - 2px),var(--loader-color, currentColor) calc(100% - 1px) ,#0000) top,
+    linear-gradient(var(--loader-color, currentColor) 0 0) bottom/100% 2px,
+    radial-gradient(farthest-side at  bottom, #0000 calc(100% - 2px),var(--loader-color, currentColor) calc(100% - 1px) ,#0000) bottom;
   background-size: 100% 1px,100% 50%; 
   background-repeat: no-repeat;
   animation: l18 4s infinite linear;
@@ -450,12 +450,12 @@
   content: "";
   grid-area: 1/1;
   border-radius: 50%;
-  background: repeating-radial-gradient(farthest-side,#0000 0%,#000 1% 10%,#0000 11% 30%);
-  -webkit-mask: repeating-conic-gradient(#000 0 36deg,#0000 0 72deg);
+  background: repeating-radial-gradient(farthest-side,#0000 0%,var(--loader-color, #000) 1% 10%,#0000 11% 30%);
+  -webkit-mask: repeating-conic-gradient(var(--loader-color, #000) 0 36deg,#0000 0 72deg);
   animation: l19 4s infinite linear;
 }
 .loader-hypnotic-19::after {
-  -webkit-mask: repeating-conic-gradient(#0000 0 36deg,#000 0 72deg);
+  -webkit-mask: repeating-conic-gradient(#0000 0 36deg,var(--loader-color, #000) 0 72deg);
   animation-direction: reverse;
 }
 @keyframes l19 {
@@ -469,14 +469,14 @@
   aspect-ratio: 1;
   border-radius: 50%;
   background: 
-    repeating-radial-gradient(calc(2*var(--b)) at top,#0000 -1px,#000 0 calc(50% - 1px),#0000 50% calc(100% - 1px)) calc(50% + var(--b)) 100%, 
-    repeating-radial-gradient(calc(2*var(--b)) at bottom,#000 -1px,#0000 0 calc(50% - 1px),#000 50% calc(100% - 1px)) 50% 0;
+    repeating-radial-gradient(calc(2*var(--b)) at top,#0000 -1px,var(--loader-color, #000) 0 calc(50% - 1px),#0000 50% calc(100% - 1px)) calc(50% + var(--b)) 100%, 
+    repeating-radial-gradient(calc(2*var(--b)) at bottom,var(--loader-color, #000) -1px,#0000 0 calc(50% - 1px),var(--loader-color, #000) 50% calc(100% - 1px)) 50% 0;
   background-size: 150% 50%;
   background-repeat: no-repeat;
   mask: 
-    radial-gradient(calc(1.5*var(--b)) at calc(100% - var(--b)/2) 0, #0000 calc(100%/3), #000 calc(100%/3 + 1px) 110%, #0000 0) calc(50% + var(--b)/2) 
+    radial-gradient(calc(1.5*var(--b)) at calc(100% - var(--b)/2) 0, #0000 calc(100%/3), var(--loader-color, #000) calc(100%/3 + 1px) 110%, #0000 0) calc(50% + var(--b)/2) 
      100%/calc(3*var(--b)) 50% exclude no-repeat, 
-    conic-gradient(#000 0 0);
+    conic-gradient(var(--loader-color, #000) 0 0);
   animation: l20 1s infinite linear;
 }
 @keyframes l20 {

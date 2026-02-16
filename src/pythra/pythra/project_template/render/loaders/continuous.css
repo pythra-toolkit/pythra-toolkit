@@ -5,7 +5,7 @@
   height: 20px;
   background: 
     linear-gradient(90deg,#0001 33%,#0005 50%,#0001 66%)
-    #f2f2f2;
+    var(--loader-color-7, var(--loader-color-7, #f2f2f2));
   background-size:300% 100%;
   animation: l1 1s infinite linear;
 }
@@ -18,7 +18,7 @@
   width: 120px;
   height: 20px;
   background: 
-    linear-gradient(90deg, #0000 ,orange) left -50px top 0/50px 20px no-repeat 
+    linear-gradient(90deg, #0000 ,var(--loader-color-9, orange)) left -50px top 0/50px 20px no-repeat 
     lightblue;
   animation: l2 1s infinite linear;
 }
@@ -32,8 +32,8 @@
   height: 20px;
   transform: skewX(-45deg);
   background: 
-    linear-gradient(#f03355 0 0) left -30px top 0/30px 20px no-repeat 
-    #ccc;
+    linear-gradient(var(--loader-color-6, var(--loader-color-6, #f03355)) 0 0) left -30px top 0/30px 20px no-repeat 
+    var(--loader-color-3, var(--loader-color-3, #ccc));
   animation: l3 1s infinite linear;
 }
 
@@ -46,7 +46,7 @@
   width: 120px;
   height: 22px;
   border-radius: 40px;
-  color: #514b82;
+  color: var(--loader-color-2, var(--loader-color-2, #514b82));
   border: 2px solid;
   position: relative;
   overflow: hidden;
@@ -74,8 +74,8 @@
   width: 120px;
   height: 20px;
   background: 
-    linear-gradient(#25b09b 0 0) left -40px top 0/40px 20px,
-    linear-gradient(#ddd 0 0) center/100% 50%; 
+    linear-gradient(var(--loader-color, var(--loader-color, #25b09b)) 0 0) left -40px top 0/40px 20px,
+    linear-gradient(var(--loader-color-4, var(--loader-color-4, #ddd)) 0 0) center/100% 50%; 
   background-repeat: no-repeat;
   animation: l5 1s infinite linear;
 }
@@ -105,7 +105,7 @@
   -webkit-mask: linear-gradient(90deg,#000 70%,#0000 0) left/20% 100%;
   background:
    linear-gradient(#000 0 0) left -25% top 0 /20% 100% no-repeat
-   #ddd;
+   var(--loader-color-4, var(--loader-color-4, #ddd));
   animation: l7 1s infinite steps(6);
 }
 @keyframes l7 {
@@ -119,7 +119,7 @@
   background:
     linear-gradient(to bottom right,#0000 calc(50% - 40px),#fff 50%,#0000 calc(50% + 40px)) 
     bottom right/calc(200% + 80px) calc(200% + 80px) 
-    orange;
+    var(--loader-color-9, orange);
   animation: l8 1s infinite ;
 }
 @keyframes l8 {
@@ -131,8 +131,8 @@
   width: 120px;
   height: 20px;
   background: 
-    radial-gradient(circle closest-side,#f03355 94%,#0000) 50% 50%/calc(50% + 10px) 70% repeat-x 
-    #ccc;
+    radial-gradient(circle closest-side,var(--loader-color-6, var(--loader-color-6, #f03355)) 94%,#0000) 50% 50%/calc(50% + 10px) 70% repeat-x 
+    var(--loader-color-3, var(--loader-color-3, #ccc));
   animation: l9 1s infinite cubic-bezier(0.3,1,0,1);
 }
 @keyframes l9 {
@@ -143,7 +143,7 @@
 .loader-continuous-10 {
   width: 120px;
   height: 20px;
-  background: linear-gradient(#514b82 0 0) left -40px top 0/40px 100% no-repeat #eee;
+  background: linear-gradient(var(--loader-color-2, var(--loader-color-2, #514b82)) 0 0) left -40px top 0/40px 100% no-repeat var(--loader-color-5, var(--loader-color-5, #eee));
   -webkit-mask:
     conic-gradient(from 90deg at 5px 5px,#0000 25%,#000 0)
      0 0/calc((100% - 5px)/5) calc(100% - 5px);

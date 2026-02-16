@@ -3,7 +3,7 @@
 .loader-shuriken-1 {
   width: 80px;
   aspect-ratio: 1;
-  background: #8d7958;
+  background: var(--loader-color, var(--loader-color, #8d7958));
   clip-path: polygon(100.00% 50.00%,64.14% 64.14%,50.00% 100.00%,35.86% 64.14%,0.00% 50.00%,35.86% 35.86%,50.00% 0.00%,64.14% 35.86%);
   -webkit-mask:radial-gradient(circle 5px,#0000 90%,#000);
   animation: l1 1.5s infinite linear;
@@ -16,7 +16,7 @@
 .loader-shuriken-2 {
   width: 80px;
   aspect-ratio: 1;
-  background: #8d7958;
+  background: var(--loader-color, var(--loader-color, #8d7958));
   clip-path: polygon(100.00% 50.00%,68.48% 57.65%,85.36% 85.36%,57.65% 68.48%,50.00% 100.00%,42.35% 68.48%,14.64% 85.36%,31.52% 57.65%,0.00% 50.00%,31.52% 42.35%,14.64% 14.64%,42.35% 31.52%,50.00% 0.00%,57.65% 31.52%,85.36% 14.64%,68.48% 42.35%);
   -webkit-mask: radial-gradient(circle 5px,#0000 90%,#000);
   animation: l2 1.5s infinite linear;
@@ -30,7 +30,7 @@
   width: 80px;
   aspect-ratio: 1;
   display: grid;
-  color: #8d7958;
+  color: var(--loader-color, var(--loader-color, #8d7958));
   -webkit-mask:radial-gradient(circle 5px,#0000 90%,#000);
   animation: l3 1.5s infinite linear;
 }
@@ -60,7 +60,7 @@
 .loader-shuriken-4 {
   width: calc(80px*0.707);
   height: calc(80px*0.707);
-  background: #8d7958;
+  background: var(--loader-color, var(--loader-color, #8d7958));
   clip-path: polygon(0 0,50% 15%,100% 0,85% 50%,100% 100%,50% 85%,0 100%,15% 50%);
   -webkit-mask:
     radial-gradient(circle closest-side,#0000 92%,#000) top   /100% 33.4%,
@@ -79,7 +79,7 @@
 .loader-shuriken-5 {
   width: 80px;
   aspect-ratio: 1;
-  color: #8d7958;
+  color: var(--loader-color, var(--loader-color, #8d7958));
   background:
     linear-gradient(currentColor 0 0) 50%/100% 15px,
     linear-gradient(currentColor 0 0) 50%/15px 100%,
@@ -98,7 +98,7 @@
   width: 80px;
   aspect-ratio: 1;
   display: grid;
-  color: #8d7958;
+  color: var(--loader-color, var(--loader-color, #8d7958));
   background:
     conic-gradient(from -153deg at right,#0000,currentColor 1deg 126deg,#0000 127deg) calc(50% + 5px) 0   /10px 50%,
     conic-gradient(from   27deg at left ,#0000,currentColor 1deg 126deg,#0000 127deg) calc(50% - 5px) 100%/10px 50%,
@@ -127,7 +127,7 @@
 .loader-shuriken-7 {
   width: 80px;
   aspect-ratio: 1;
-  color: #8d7958;
+  color: var(--loader-color, var(--loader-color, #8d7958));
   background:
     radial-gradient(150% 150% at left  -40% top    -40%,#0000 98%,currentColor) left  top,
     radial-gradient(150% 150% at right -40% top    -40%,#0000 98%,currentColor) right top,
@@ -146,7 +146,7 @@
 .loader-shuriken-8 {
   width: 80px;
   aspect-ratio: 1;
-  --c: #8d7958 91%,#0000;
+  --c: var(--loader-color, var(--loader-color, #8d7958)) 91%,#0000;
   background:
     radial-gradient(30% 50% at -3px             55%, var(--c)) top    right,
     radial-gradient(30% 50% at -3px             45%, var(--c)) bottom right,
@@ -169,7 +169,7 @@
 .loader-shuriken-9 {
   width: 80px;
   aspect-ratio: 1;
-  --c:#8d7958 98%,#0000;
+  --c:var(--loader-color, var(--loader-color, #8d7958)) 98%,#0000;
   background:
     radial-gradient(50% 70% at 50% 120%, var(--c)) top,
     radial-gradient(70% 50% at -20% 50%, var(--c)) right,
@@ -189,7 +189,7 @@
   width: 80px;
   aspect-ratio: 1;
   display: grid;
-  color: #8d7958;
+  color: var(--loader-color, var(--loader-color, #8d7958));
   background: radial-gradient(circle 16px,currentColor 94%,#0000);
   -webkit-mask: radial-gradient(circle 5px,#0000 90%,#000);
   animation: l10 1.5s infinite linear;

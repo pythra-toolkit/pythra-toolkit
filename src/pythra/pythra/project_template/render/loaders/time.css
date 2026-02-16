@@ -113,8 +113,8 @@
 /* --- loader-time-5 --- */
 /* HTML: <div class="loader-time-5"></div> */
 .loader-time-5 {
-  --c1:#673b14;
-  --c2:#f8b13b;
+  --c1:var(--loader-color-2, var(--loader-color-2, #673b14));
+  --c2:var(--loader-color-5, var(--loader-color-5, #f8b13b));
   width: 40px;
   height: 80px;
   border-top: 4px solid var(--c1);
@@ -196,15 +196,15 @@
   background-repeat: no-repeat;
 }
 @keyframes l6 {
-  0%   {background: conic-gradient(#77a4bd 0     ,#0000 0)}
-  12.5%{background: conic-gradient(#77a4bd 45deg ,#0000 46deg)}
-  25%  {background: conic-gradient(#77a4bd 90deg ,#0000 91deg)}
-  37.5%{background: conic-gradient(#77a4bd 135deg,#0000 136deg)}
-  50%  {background: conic-gradient(#77a4bd 180deg,#0000 181deg)}
-  62.5%{background: conic-gradient(#77a4bd 225deg,#0000 226deg)}
-  75%  {background: conic-gradient(#77a4bd 270deg,#0000 271deg)}
-  87.5%{background: conic-gradient(#77a4bd 315deg,#0000 316deg)}
-  100% {background: conic-gradient(#77a4bd 360deg,#0000 360deg)}
+  0%   {background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 0     ,#0000 0)}
+  12.5%{background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 45deg ,#0000 46deg)}
+  25%  {background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 90deg ,#0000 91deg)}
+  37.5%{background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 135deg,#0000 136deg)}
+  50%  {background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 180deg,#0000 181deg)}
+  62.5%{background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 225deg,#0000 226deg)}
+  75%  {background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 270deg,#0000 271deg)}
+  87.5%{background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 315deg,#0000 316deg)}
+  100% {background: conic-gradient(var(--loader-color-3, var(--loader-color-3, #77a4bd)) 360deg,#0000 360deg)}
 }
 /* --- loader-time-7 --- */
 /* HTML: <div class="loader-time-7"></div> */
@@ -261,7 +261,7 @@
   inset: auto auto 100% 10px;
   height: 5px;
   width: 40%;
-  background: linear-gradient(90deg,red 40%,#0000 0 60%,#444 0);
+  background: linear-gradient(90deg,var(--loader-color-8, red) 40%,#0000 0 60%,var(--loader-color, var(--loader-color, #444)) 0);
 }
 @keyframes l8 {
   100% {content: "  :  "}
@@ -271,7 +271,7 @@
 .loader-time-9 {
   width: 50px;
   aspect-ratio: 1;
-  color: #ce0800;
+  color: var(--loader-color-4, var(--loader-color-4, #ce0800));
   border: 7px solid;
   box-sizing: border-box;
   border-radius: 50%;
@@ -315,10 +315,10 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(farthest-side at bottom   ,#ffc10a 92%,#0000)   top          /30px 15px,
-    radial-gradient(farthest-side at top left ,#0000   92%,#ffc10a) bottom left / 15px 20px,
-    radial-gradient(farthest-side at top right,#0000   92%,#ffc10a) bottom right/ 15px 20px,
-    linear-gradient(#ffc10a 0 0) bottom/30px 26px;
+    radial-gradient(farthest-side at bottom   ,var(--loader-color-7, var(--loader-color-7, #ffc10a)) 92%,#0000)   top          /30px 15px,
+    radial-gradient(farthest-side at top left ,#0000   92%,var(--loader-color-7, var(--loader-color-7, #ffc10a))) bottom left / 15px 20px,
+    radial-gradient(farthest-side at top right,#0000   92%,var(--loader-color-7, var(--loader-color-7, #ffc10a))) bottom right/ 15px 20px,
+    linear-gradient(var(--loader-color-7, var(--loader-color-7, #ffc10a)) 0 0) bottom/30px 26px;
   background-repeat: no-repeat;
   transform-origin: 50% -3px;
   animation: l10-1 .5s infinite alternate linear;
@@ -328,8 +328,8 @@
   position: absolute;
   inset: -6px calc(50% - 10px) -10px;
   background: 
-     radial-gradient(farthest-side,#ff9f04 90%,#0000) top   /10px 10px, 
-     radial-gradient(farthest-side,#ff9f04 90%,#0000) bottom/20px 20px;
+     radial-gradient(farthest-side,var(--loader-color-6, var(--loader-color-6, #ff9f04)) 90%,#0000) top   /10px 10px, 
+     radial-gradient(farthest-side,var(--loader-color-6, var(--loader-color-6, #ff9f04)) 90%,#0000) bottom/20px 20px;
   background-repeat: no-repeat;
   transform-origin: 50% 3px;
   animation: l10-2 .5s infinite alternate linear;

@@ -13,14 +13,14 @@
 }
 .loader-rolling-1:before {
   margin: 25%;
-  background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   transform: rotate(0turn) translate(50%) rotate(0turn);
   animation: l1 3s linear infinite;
 }
 .loader-rolling-1:after {
   padding: 10%;
   margin: -10%;
-  background: repeating-conic-gradient(from -15deg,#C02942 0 30deg,#0B486B 0 60deg);
+  background: repeating-conic-gradient(from -15deg,var(--loader-color-2, var(--loader-color-2, #C02942)) 0 30deg,var(--loader-color, var(--loader-color, #0B486B)) 0 60deg);
   mask:conic-gradient(#000 0 0) content-box exclude,conic-gradient(#000 0 0);
 }
 @keyframes l1 {to{transform: rotate(1turn) translate(50%) rotate(-2turn)}}
@@ -39,14 +39,14 @@
 }
 .loader-rolling-2:before {
   margin: 25%;
-  background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   transform: rotate(0turn) translate(50%) rotate(0turn);
   animation: l2 2s alternate infinite ease-in-out;
 }
 .loader-rolling-2:after {
   padding: 10%;
   margin: -10%;
-  background: repeating-conic-gradient(from -15deg,#C02942 0 30deg,#0B486B 0 60deg);
+  background: repeating-conic-gradient(from -15deg,var(--loader-color-2, var(--loader-color-2, #C02942)) 0 30deg,var(--loader-color, var(--loader-color, #0B486B)) 0 60deg);
   mask:conic-gradient(from 75deg,#000 210deg,#0000 0) content-box exclude,conic-gradient(from 75deg,#000 210deg,#0000 0);
 }
 @keyframes l2 {to{transform: rotate(.5turn) translate(50%) rotate(-1turn)}}
@@ -66,14 +66,14 @@
 }
 .loader-rolling-3:before {
   margin: 25%;
-  background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   translate: 0 50%;
   rotate: -150deg;
 }
 .loader-rolling-3:after {
   padding: 10%;
   margin: -10%;
-  background: repeating-conic-gradient(#0B486B 0 30deg,#C02942 0 60deg);
+  background: repeating-conic-gradient(var(--loader-color, var(--loader-color, #0B486B)) 0 30deg,var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg);
   mask:linear-gradient(#0000 50%,#000 0) content-box exclude,linear-gradient(#0000 50%,#000 0);
   rotate: -75deg;
   animation-name: l3-1;
@@ -88,13 +88,13 @@
   aspect-ratio: 2;
   overflow: hidden;
   border-image: 1 0/0 0 8px/0 0 8px 
-    repeating-linear-gradient(90deg,#0B486B 0 26%,#C02942 0 52%);
+    repeating-linear-gradient(90deg,var(--loader-color, var(--loader-color, #0B486B)) 0 26%,var(--loader-color-2, var(--loader-color-2, #C02942)) 0 52%);
 }
 .loader-rolling-4:before {
   content:"";
   margin: 0 25%;
   border-radius: 50%;
-  background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   transform: translate(-154%,0) rotate(0turn);
   animation: l4 3s linear infinite;
 }
@@ -111,7 +111,7 @@
   content:"";
   grid-area: 1/1;
   border-radius: 50%;
-  background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
 }
 .loader-rolling-5:before {
   transform: rotate(0turn) translate(100%) rotate(0turn);
@@ -135,7 +135,7 @@
   content:"";
   grid-area: 1/1;
   border-radius: 50%;
-  background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   animation: l6 4s linear infinite;
 }
 .loader-rolling-6:before {
@@ -159,7 +159,7 @@
   content:"";
   grid-area: 1/1;
   border-radius: 50%;
-  background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   animation: l7 2s infinite alternate ease-in-out;
   rotate: 90deg;
 }
@@ -181,7 +181,7 @@
   box-sizing: content-box;
   border-bottom: 8px solid #0000; 
   background: 
-    linear-gradient(90deg,#0B486B 50%,#C02942 0) 
+    linear-gradient(90deg,var(--loader-color, var(--loader-color, #0B486B)) 50%,var(--loader-color-2, var(--loader-color-2, #C02942)) 0) 
     50% 100%/52% 8px border-box repeat-x;
   animation: l8-0 1s linear infinite;
 }
@@ -189,7 +189,7 @@
   content:"";
   margin: 0 25%;
   border-radius: 50%;
-  background: repeating-conic-gradient(#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   animation: l8-1 1s linear infinite;
 }
 @keyframes l8-0 {to{background-position: -58% 100%}}
@@ -201,7 +201,7 @@
   width: 40px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: repeating-conic-gradient(from 30deg,#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(from 30deg,var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   animation: l9-0 3s linear infinite;
 }
 .loader-rolling-9:before,
@@ -225,7 +225,7 @@
   width: 40px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: repeating-conic-gradient(from 30deg,#C02942 0 60deg,#0B486B 0 120deg);
+  background: repeating-conic-gradient(from 30deg,var(--loader-color-2, var(--loader-color-2, #C02942)) 0 60deg,var(--loader-color, var(--loader-color, #0B486B)) 0 120deg);
   animation: l10-0 2s linear infinite;
 }
 .loader-rolling-10:before,

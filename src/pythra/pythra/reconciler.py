@@ -472,6 +472,19 @@ class Reconciler:
             }
             result.js_initializers.append(initializer_data)
 
+        if "init_virtual_grid" in new_props:
+            print("VIRTUAL-GRID INIT: for ", html_id)
+            debug_print("VIRTUAL-GRID INIT: for ", html_id)
+            if html_id != new_id:
+                old_id, new_id = new_id, html_id
+            initializer_data = {
+                "type": "virtual_grid",
+                "target_id": html_id,
+                "data": new_props,
+                "before_id": old_id,
+            }
+            result.js_initializers.append(initializer_data)
+
         if "init_gradient_clip_border" in new_props:
             print("GRADIENT-CLIP-BORDER INIT")
             debug_print("GRADIENT-CLIP-BORDER INIT")

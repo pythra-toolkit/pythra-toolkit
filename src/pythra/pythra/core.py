@@ -378,6 +378,8 @@ class Framework:
         title: str = config.get("app_name"),
         width: int = config.get("win_width"),
         height: int = config.get("win_height"),
+        min_width: int = config.get("min_win_width"),
+        min_height: int = config.get("min_win_height"),
         frameless: bool = config.get("frameless"),
         maximized: bool = config.get("maximixed"),
         fixed_size: bool = config.get("fixed_size"),
@@ -425,6 +427,8 @@ class Framework:
             self.api,
             width,
             height,
+            min_width=min_width,
+            min_height=min_height,
             frameless=frameless,
             maximized = maximized,
             fixed_size = fixed_size,
@@ -520,6 +524,7 @@ class Framework:
             'PythraGestureDetector': "render/js/gesture_detector.js",
             'PythraGradientClipPath': "render/js/gradient_border.js",
             'PythraVirtualList': "render/js/virtual_list.js",
+            'PythraVirtualGrid': "render/js/virtual_grid.js",
             #'PythraMarkdownEditor': "render/js/dropdown.js", # Placeholder key to suppress warning, actual loaded via plugin
         }
         # Build a cache key. None means 'ALL' engines load; use a stable frozenset.
@@ -584,6 +589,7 @@ class Framework:
                         if (typeof PythraGestureDetector !== 'undefined') window.PythraGestureDetector = PythraGestureDetector;\n
                         if (typeof PythraGradientClipPath !== 'undefined') window.PythraGradientClipPath = PythraGradientClipPath;\n
                         if (typeof PythraVirtualList !== 'undefined') window.PythraVirtualList = PythraVirtualList;\n
+                        if (typeof PythraVirtualGrid !== 'undefined') window.PythraVirtualGrid = PythraVirtualGrid;\n
                         if (typeof generateRoundedPath !== 'undefined') window.generateRoundedPath = generateRoundedPath;\n
                         if (typeof scalePathAbsoluteMLA !== 'undefined') window.scalePathAbsoluteMLA = scalePathAbsoluteMLA;\n
                     }} catch (e) {{ console.error('Error loading {filename}:', e); }}"""
@@ -666,6 +672,8 @@ class Framework:
                 required_engines.add('PythraGradientClipPath')
             if props.get("init_virtual_list"):
                 required_engines.add('PythraVirtualList')
+            if props.get("init_virtual_grid"):
+                required_engines.add('PythraVirtualGrid')
             if props.get("responsive_clip_path"):
                 required_engines.update(['ResponsiveClipPath', 'generateRoundedPath', 'scalePathAbsoluteMLA'])
                 
@@ -1324,7 +1332,7 @@ class Framework:
             # --- ADD THIS BLOCK ---
             # --- SIMPLIFIED VLIST LOGIC ---
             if props.get("init_virtual_list"):
-                print("Initializing Virtual List...")
+                # print("Initializing Virtual List...")
                 imports.add("import { PythraVirtualList } from './js/virtual_list.js';")
                 options = props.get("virtual_list_options", {})
                 options_json = _dumps(options)
@@ -1352,6 +1360,35 @@ class Framework:
                         }});
                 """)
             # --- END OF CHANGE ---
+
+            # --- VIRTUAL GRID LOGIC ---
+            if props.get("init_virtual_grid"):
+                print("Initializing Virtual Grid...")
+                imports.add("import { PythraVirtualGrid } from './js/virtual_grid.js';")
+                options = props.get("virtual_grid_options", {})
+                # print("options", options)
+                options_json = _dumps(options)
+                # Use the stable key for the instance name
+                instance_name = f"{widget_key_val}_vgrid"
+
+                js_commands.append(f"""
+                console.log('Initializing Virtual Grid...');
+                function waitForAndInit(className, initCallback) {{
+                            const interval = setInterval(() => {{
+                                if (typeof window[className] === 'function') {{
+                                    clearInterval(interval); 
+                                    initCallback(); 
+                                }}
+                            }}, 100); 
+                        }}
+                        waitForAndInit('PythraVirtualGrid', () => {{
+                            window._pythra_instances['{instance_name}'] = new PythraVirtualGrid(
+                                '{html_id}', 
+                                {options_json}
+                                );
+                        }});
+                """)
+            # --- END VIRTUAL GRID LOGIC ---
             # --- END OF BLOCK ---
 
             # --- ADD THIS BLOCK ---
@@ -1438,6 +1475,32 @@ class Framework:
 
                     new VirtualList(
                     VlistId,
+                    count,
+                    estimate,
+                    (i) => {{
+                        // reconciler will create the actual DOM for row `i`
+                        // we just need the component to be ready; reconciler patches
+                        // the inner content later.
+                        const div = document.createElement("div");
+                        div.dataset.index = i;
+                        return div;
+                    }}
+                    );
+                """
+                )
+
+            if init["type"] == "VirtualGrid":
+                target_id = init["target_id"]
+                estimated_height = init["estimated_height"]
+                item_count = init["item_count"]
+                js_commands.append(
+                    f"""
+                    const VgridId = "{target_id}";          // same key used above
+                    const count = {item_count};             // reconciler can inject this
+                    const estimate = {estimated_height};                        // same as Python
+
+                    new VirtualGrid(
+                    VgridId,
                     count,
                     estimate,
                     (i) => {{
@@ -1584,13 +1647,13 @@ class Framework:
                         b64_str = base64.b64encode(f.read()).decode("utf-8")
                     
                     rule = f"""
-                    @font-face {{
-                        font-family: '{font_family}';
-                        font-style: normal;
-                        font-weight: 100 700;
-                        font-display: block; /* Hides text until icon is ready */
-                        src: url(data:font/truetype;charset=utf-8;base64,{b64_str}) format('truetype');
-                    }}
+@font-face {{
+    font-family: '{font_family}';
+    font-style: normal;
+    font-weight: 100 700;
+    font-display: block; /* Hides text until icon is ready */
+    src: url(data:font/truetype;charset=utf-8;base64,{b64_str}) format('truetype');
+}}
                     """
                     css_rules.append(rule)
                     # print(f"   ✅ Embedded {filename}")
@@ -1602,12 +1665,12 @@ class Framework:
                 print(f"   ⚠️ Font file missing: {filename}. Falling back to network URL.")
                 port = self.config.get('assets_server_port')
                 rule = f"""
-                @font-face {{
-                   font-family: '{font_family}';
-                   font-style: normal;
-                   font-weight: 100 700;
-                   src: url(http://localhost:{port}/fonts/{filename}) format('truetype');
-                }}
+@font-face {{
+    font-family: '{font_family}';
+    font-style: normal;
+    font-weight: 100 700;
+    src: url(http://localhost:{port}/fonts/{filename}) format('truetype');
+}}
                 """
                 css_rules.append(rule)
 
@@ -1653,31 +1716,51 @@ class Framework:
         #    src: url(http://localhost:{self.config.get('assets_server_port')}/fonts/MaterialSymbolsSharp.ttf) format('truetype');
         #  }}
         #  """
-        # --- END OF NEW FONT CSS ---
+        # --- END OF DEPRECATED FONT CSS ---
         base_css = """
-         body { margin: 0; font-family: sans-serif; background-color: #f0f0f0; overflow: hidden;}
-         * { box-sizing: border-box; }
-         #root-container, #overlay-container { height: 100vh; width: 100vw; overflow: hidden; position: relative;}
-         #overlay-container { position: absolute; top: 0; left: 0; pointer-events: none; }
-         #overlay-container > * { pointer-events: auto; }
-         .custom-scrollbar::-webkit-scrollbar {
-             display: none; /* for Chrome, Safari, and Opera */
-         }
-         .custom-scrollbar {
-             -ms-overflow-style: none;  /* for IE and Edge */
-             scrollbar-width: none;  /* for Firefox */
-         }
-         
-         /* Fix deprecated inset-area warnings by suppressing and using position-area */
-         * {
-             inset-area: unset !important;  /* Remove deprecated inset-area */
-         }
-         
-         /* If any elements need positioning, use position-area instead */
-         [style*="inset-area"] {
-             inset-area: unset !important;
-             /* Add position-area equivalent if needed */
-         }
+body { 
+    margin: 0; 
+    font-family: sans-serif; 
+    background-color: #f0f0f0; 
+    overflow: hidden;
+    user-select: none;
+}
+* { 
+    box-sizing: border-box; 
+}
+#root-container, #overlay-container { 
+    height: 100vh; 
+    width: 100vw; 
+    overflow: hidden; 
+    position: relative;
+}
+#overlay-container { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    pointer-events: none; 
+}
+#overlay-container > * { 
+    pointer-events: auto; 
+}
+.custom-scrollbar::-webkit-scrollbar {
+    display: none; /* for Chrome, Safari, and Opera */
+}
+.custom-scrollbar {
+    -ms-overflow-style: none;  /* for IE and Edge */
+    scrollbar-width: none;  /* for Firefox */
+}
+
+/* Fix deprecated inset-area warnings by suppressing and using position-area */
+* {
+    inset-area: unset !important;  /* Remove deprecated inset-area */
+}
+
+/* If any elements need positioning, use position-area instead */
+[style*="inset-area"] {
+    inset-area: unset !important;
+    /* Add position-area equivalent if needed */
+}
          """
         # Prepare the strings we may write
         css_output = base_css + font_face_rules

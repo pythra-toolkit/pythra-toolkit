@@ -7,8 +7,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  background: conic-gradient(#000 0 0) 0/0% 100% no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  background: conic-gradient(var(--loader-color, #000) 0 0) 0/0% 100% no-repeat text;
   animation: l1 1s linear infinite;
 }
 .loader-filling-1:before {
@@ -26,9 +26,9 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
   background: 
-    linear-gradient(90deg,#0000 33%,#000 0 67%,#0000 0) 
+    linear-gradient(90deg,#0000 33%,var(--loader-color, #000) 0 67%,#0000 0) 
     0/300% 100% no-repeat text;
   animation: l2 2s linear infinite;
 }
@@ -47,9 +47,9 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
   background: 
-    linear-gradient(-60deg,#0000 45%,#000 0 55%,#0000 0) 
+    linear-gradient(-60deg,#0000 45%,var(--loader-color, #000) 0 55%,#0000 0) 
     0/300% 100% no-repeat text;
   animation: l3 2s linear infinite;
 }
@@ -68,8 +68,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  background: conic-gradient(#000 0 0) 50%/0 100% no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  background: conic-gradient(var(--loader-color, #000) 0 0) 50%/0 100% no-repeat text;
   animation: l4 1.5s linear infinite;
 }
 .loader-filling-4:before {
@@ -87,8 +87,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  --g:conic-gradient(#000 0 0) no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  --g:conic-gradient(var(--loader-color, #000) 0 0) no-repeat text;
   background: var(--g) 0,var(--g) 100%,var(--g) 0 0,var(--g) 0 100%;
   animation: l5 2s linear infinite;
 }
@@ -109,10 +109,10 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
   background: 
-    conic-gradient(from -135deg at 100% 50%,#000 90deg,#0000 0) text no-repeat,
-    conic-gradient(from -135deg at 1lh  50%,#0000 90deg,#000 0) text no-repeat;
+    conic-gradient(from -135deg at 100% 50%,var(--loader-color, #000) 90deg,#0000 0) text no-repeat,
+    conic-gradient(from -135deg at 1lh  50%,#0000 90deg,var(--loader-color, #000) 0) text no-repeat;
   animation: l6 2s linear infinite;
 }
 .loader-filling-6:before {
@@ -133,8 +133,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  --l:#0000 45%,#000 0 55%,#0000 0;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  --l:#0000 45%,var(--loader-color, #000) 0 55%,#0000 0;
   --g:0/300% 100% no-repeat text;
   background: 
     linear-gradient(-60deg,var(--l)) var(--g),
@@ -158,8 +158,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  background: conic-gradient(#000 0 0) text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  background: conic-gradient(var(--loader-color, #000) 0 0) text;
   animation: l8 2s linear infinite;
 }
 .loader-filling-8:before {
@@ -179,10 +179,10 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
   background:
-    radial-gradient(1.13em at 50% 1.6em,#000 99%,#0000 101%) calc(50% - 1.6em) 0/3.2em 100% text,
-    radial-gradient(1.13em at 50% -0.8em,#0000 99%,#000 101%) 50% .8em/3.2em 100% repeat-x  text;
+    radial-gradient(1.13em at 50% 1.6em,var(--loader-color, #000) 99%,#0000 101%) calc(50% - 1.6em) 0/3.2em 100% text,
+    radial-gradient(1.13em at 50% -0.8em,#0000 99%,var(--loader-color, #000) 101%) 50% .8em/3.2em 100% repeat-x  text;
   animation: l9 2s linear infinite;
 }
 .loader-filling-9:before {
@@ -200,10 +200,10 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
   background:
-    radial-gradient(0.71em at 50% 1em,#000 99%,#0000 101%) calc(50% - 1em) 1em/2em 200% repeat-x text,
-    radial-gradient(0.71em at 50% -0.5em,#0000 99%,#000 101%) 50% 1.5em/2em 200% repeat-x text;
+    radial-gradient(0.71em at 50% 1em,var(--loader-color, #000) 99%,#0000 101%) calc(50% - 1em) 1em/2em 200% repeat-x text,
+    radial-gradient(0.71em at 50% -0.5em,#0000 99%,var(--loader-color, #000) 101%) 50% 1.5em/2em 200% repeat-x text;
   animation: 
     l10-0 .8s linear infinite alternate,
     l10-1  4s linear infinite;
@@ -226,8 +226,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  background: conic-gradient(#000 0 0) 0/0 100% no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  background: conic-gradient(var(--loader-color, #000) 0 0) 0/0 100% no-repeat text;
   animation: l11 2s steps(8,jump-none) infinite;
 }
 .loader-filling-11:before {
@@ -245,8 +245,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  background: linear-gradient(90deg,#0000 33%,#000 0 67%,#0000 0) 100%/300% 100% no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  background: linear-gradient(90deg,#0000 33%,var(--loader-color, #000) 0 67%,#0000 0) 100%/300% 100% no-repeat text;
   animation: l12 4s steps(14) infinite;
 }
 .loader-filling-12:before {
@@ -264,8 +264,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  background: conic-gradient(#000 0 0) -1ch/1ch 100% no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  background: conic-gradient(var(--loader-color, #000) 0 0) -1ch/1ch 100% no-repeat text;
   animation: l13 2s steps(8,jump-none) infinite;
 }
 .loader-filling-13:before {
@@ -283,8 +283,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  background: conic-gradient(#000 0 0) 0/1ch 100% no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  background: conic-gradient(var(--loader-color, #000) 0 0) 0/1ch 100% no-repeat text;
   animation: l14 1.5s steps(7,jump-none) infinite alternate;
 }
 .loader-filling-14:before {
@@ -302,8 +302,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  --g:conic-gradient(#000 0 0) no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  --g:conic-gradient(var(--loader-color, #000) 0 0) no-repeat text;
   background:var(--g) 0,var(--g) 1ch,var(--g) 2ch,var(--g) 3ch,var(--g) 4ch,var(--g) 5ch,var(--g) 6ch;
   background-position-y: 100%;
   animation: l15 3s infinite;
@@ -330,8 +330,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  --g:conic-gradient(#000 0 0) no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  --g:conic-gradient(var(--loader-color, #000) 0 0) no-repeat text;
   background:var(--g) 0,var(--g) 1ch,var(--g) 2ch,var(--g) 3ch,var(--g) 4ch,var(--g) 5ch,var(--g) 6ch;
   background-position-y: 100%,0;
   animation: l16 2s linear infinite alternate;
@@ -358,8 +358,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  --g:conic-gradient(#000 0 0) no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  --g:conic-gradient(var(--loader-color, #000) 0 0) no-repeat text;
   background:var(--g) 0,var(--g) 1ch,var(--g) 2ch,var(--g) 3ch,var(--g) 4ch,var(--g) 5ch,var(--g) 6ch;
   animation: 
     l17-0 1s linear infinite alternate,
@@ -385,8 +385,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  --g:conic-gradient(#000 0 0) no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  --g:conic-gradient(var(--loader-color, #000) 0 0) no-repeat text;
   background:var(--g) 0,var(--g) 1ch,var(--g) 2ch,var(--g) 3ch,var(--g) 4ch,var(--g) 5ch,var(--g) 6ch;
   animation: 
     l18-0 2s linear infinite alternate,
@@ -418,8 +418,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  --g:conic-gradient(#000 0 0) no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  --g:conic-gradient(var(--loader-color, #000) 0 0) no-repeat text;
   background:var(--g) 0,var(--g) 1ch,var(--g) 2ch,var(--g) 3ch,var(--g) 4ch,var(--g) 5ch,var(--g) 6ch;
   background-position-y: 100%;
   animation: l19 1.5s linear infinite alternate;
@@ -443,8 +443,8 @@
   font-weight: bold;
   text-transform: uppercase;
   color: #0000;
-  -webkit-text-stroke: 1px #000;
-  --g:conic-gradient(#000 0 0) no-repeat text;
+  -webkit-text-stroke: 1px var(--loader-color, #000);
+  --g:conic-gradient(var(--loader-color, #000) 0 0) no-repeat text;
   background:var(--g) 0,var(--g) 1ch,var(--g) 2ch,var(--g) 3ch,var(--g) 4ch,var(--g) 5ch,var(--g) 6ch;
   animation: 
     l20-0 1.5s linear infinite alternate,

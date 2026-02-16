@@ -3,7 +3,7 @@
 .loader-line-1 {
   width: 35px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background:
     var(--c) 0 0,
     var(--c) 100% 0,
@@ -24,7 +24,7 @@
 .loader-line-2 {
   width: 35px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background:
     var(--c) 0 0,
     var(--c) 100% 0,
@@ -55,8 +55,8 @@
 .loader-line-3 {
   width: 35px;
   aspect-ratio: 1;
-  --c1:linear-gradient(90deg,#0000 calc(100%/3),#046D8B 0 calc(2*100%/3),#0000 0);
-  --c2:linear-gradient( 0deg,#0000 calc(100%/3),#046D8B 0 calc(2*100%/3),#0000 0);
+  --c1:linear-gradient(90deg,#0000 calc(100%/3),var(--loader-color, var(--loader-color, #046D8B)) 0 calc(2*100%/3),#0000 0);
+  --c2:linear-gradient( 0deg,#0000 calc(100%/3),var(--loader-color, var(--loader-color, #046D8B)) 0 calc(2*100%/3),#0000 0);
   background: var(--c1),var(--c2),var(--c1),var(--c2);
   background-size: 300% 4px,4px 300%;
   background-repeat: no-repeat;
@@ -75,7 +75,7 @@
 .loader-line-4 {
   width: 80px;
   aspect-ratio: 2;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background: var(--c),var(--c),var(--c),var(--c),var(--c),var(--c),var(--c);
   animation: 
     l4-1 1.5s infinite,
@@ -108,7 +108,7 @@
 .loader-line-5 {
   width: 40px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background:
     var(--c) 0 50%,
     var(--c) right 0 bottom 20px,
@@ -133,7 +133,7 @@
 .loader-line-6 {
   width: 40px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background: var(--c),var(--c),var(--c),var(--c),var(--c),var(--c);
   animation: 
     l6-1 2s infinite,
@@ -164,7 +164,7 @@
 .loader-line-7 {
   width: 60px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background:
     var(--c) 0 38px,
     var(--c) right 18px bottom 18px,
@@ -193,7 +193,7 @@
 .loader-line-8 {
   width: 60px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background:
     var(--c) 0 38px,
     var(--c) right 18px bottom 18px,
@@ -236,7 +236,7 @@
 .loader-line-9 {
   width: 60px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background: var(--c),var(--c),var(--c),var(--c);
   animation: 
     l9-1 1.5s infinite,
@@ -265,7 +265,7 @@
 .loader-line-10::after {
   content: "";
   grid-area: 1/1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background:
     var(--c) 0 0,
     var(--c) 100% 0,
@@ -307,7 +307,7 @@
 .loader-line-11:after {
   content: "";
   grid-area: 1/1;
-  --c:#0000 calc(100%/3),#046D8B 0 calc(2*100%/3),#0000 0;
+  --c:#0000 calc(100%/3),var(--loader-color, var(--loader-color, #046D8B)) 0 calc(2*100%/3),#0000 0;
   --c1:linear-gradient(90deg,var(--c));
   --c2:linear-gradient( 0deg,var(--c));
   background: var(--c1),var(--c2),var(--c1),var(--c2);
@@ -340,7 +340,7 @@
   content: "";
   grid-area: 1/1;
   margin: 0 0 15px 15px;
-  --c:#0000 calc(100%/3),#046D8B 0 calc(2*100%/3),#0000 0;
+  --c:#0000 calc(100%/3),var(--loader-color, var(--loader-color, #046D8B)) 0 calc(2*100%/3),#0000 0;
   --c1:linear-gradient(90deg,var(--c));
   --c2:linear-gradient( 0deg,var(--c));
   background: var(--c1),var(--c2),var(--c1),var(--c2);
@@ -372,7 +372,7 @@
   content: "";
   margin:0 -2px 0 0;
   flex: 1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   animation: l13-1 1s infinite linear, l13-2 1s infinite linear;
 }
@@ -409,7 +409,7 @@
 .loader-line-14:after {
   content: "";
   grid-area: 1/1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background: var(--c), var(--c), var(--c);
   animation: l14-1 1s infinite linear, l14-2 1s infinite linear;
 }
@@ -438,13 +438,13 @@
   width: 60px;
   height: 20px;
   display: grid;
-  color: #046D8B;
+  color: var(--loader-color, var(--loader-color, #046D8B));
 }
 .loader-line-15:before,
 .loader-line-15:after {
   content: "";
   grid-area: 1/1;
-  --c:#0000 calc(100%/3),#046D8B 0 calc(2*100%/3),#0000 0;
+  --c:#0000 calc(100%/3),var(--loader-color, var(--loader-color, #046D8B)) 0 calc(2*100%/3),#0000 0;
   --c1:linear-gradient(90deg,var(--c));
   --c2:linear-gradient( 0deg,var(--c));
   background: var(--c1),var(--c2),var(--c1),var(--c2);
@@ -474,7 +474,7 @@
 .loader-line-16:after {
   content: "";
   grid-area: 1/1;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background: var(--c), var(--c), var(--c);
   animation: l16-1 1.5s infinite linear, l16-2 1.5s infinite linear;
   transform: scale(var(--s,1)) translate(3px,-3px);
@@ -510,7 +510,7 @@
   content: "";
   flex: 1;
   margin: 0 0 0 -2px;
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background: 
     var(--c) 0    0, 
     var(--c) 100% 0, 
@@ -545,7 +545,7 @@
 .loader-line-18,
 .loader-line-18:before,
 .loader-line-18:after {
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   animation: l18-1 1.5s infinite  cubic-bezier(0,0,1,1), l18-2 1.5s infinite;
 }
@@ -581,7 +581,7 @@
 .loader-line-19,
 .loader-line-19:before,
 .loader-line-19:after {
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background:var(--c), var(--c), var(--c), var(--c);
   animation: l19-1 1.5s infinite, l19-2 1.5s infinite;
 }
@@ -617,7 +617,7 @@
 .loader-line-20,
 .loader-line-20:before,
 .loader-line-20:after {
-  --c:no-repeat linear-gradient(#046D8B 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #046D8B)) 0 0);
   background:var(--c), var(--c), var(--c), var(--c);
   animation: l20-1 1.5s infinite linear, l20-2 1.5s infinite linear;
 }

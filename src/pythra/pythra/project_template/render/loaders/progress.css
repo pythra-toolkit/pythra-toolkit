@@ -5,7 +5,7 @@
   height: 20px;
   background:
    linear-gradient(#000 0 0) 0/0% no-repeat
-   #ddd;
+   var(--loader-color-8, var(--loader-color-8, #ddd));
   animation: l1 2s infinite linear;
 }
 @keyframes l1 {
@@ -18,7 +18,7 @@
   height: 20px;
   border-radius: 20px;
   background:
-   linear-gradient(orange 0 0) 0/0% no-repeat
+   linear-gradient(var(--loader-color-14, orange) 0 0) 0/0% no-repeat
    lightblue;
   animation: l2 2s infinite steps(10);
 }
@@ -32,8 +32,8 @@
   height: 20px;
   border-radius: 20px;
   background:
-   repeating-linear-gradient(135deg,#f03355 0 10px,#ffa516 0 20px) 0/0%   no-repeat,
-   repeating-linear-gradient(135deg,#ddd    0 10px,#eee    0 20px) 0/100%;
+   repeating-linear-gradient(135deg,var(--loader-color-10, var(--loader-color-10, #f03355)) 0 10px,var(--loader-color-11, var(--loader-color-11, #ffa516)) 0 20px) 0/0%   no-repeat,
+   repeating-linear-gradient(135deg,var(--loader-color-8, var(--loader-color-8, #ddd))    0 10px,var(--loader-color-9, var(--loader-color-9, #eee))    0 20px) 0/100%;
   animation: l3 2s infinite;
 }
 @keyframes l3 {
@@ -47,7 +47,7 @@
   -webkit-mask:linear-gradient(90deg,#000 70%,#0000 0) 0/20%;
   background:
    linear-gradient(#000 0 0) 0/0% no-repeat
-   #ddd;
+   var(--loader-color-8, var(--loader-color-8, #ddd));
   animation: l4 2s infinite steps(6);
 }
 @keyframes l4 {
@@ -93,7 +93,7 @@
   width: 120px;
   height: 22px;
   border-radius: 20px;
-  color: #514b82;
+  color: var(--loader-color-3, var(--loader-color-3, #514b82));
   border: 2px solid;
   position: relative;
 }
@@ -118,8 +118,8 @@
     radial-gradient(circle closest-side,#000 94%,#0000) 0 0/25% 100%,
     linear-gradient(#000 0 0) center/calc(100% - 12px) calc(100% - 12px) no-repeat;
   background:
-   linear-gradient(#25b09b 0 0) 0/0% no-repeat
-   #ddd;
+   linear-gradient(var(--loader-color, var(--loader-color, #25b09b)) 0 0) 0/0% no-repeat
+   var(--loader-color-8, var(--loader-color-8, #ddd));
   animation: l7 2s infinite linear;
 }
 @keyframes l7 {
@@ -133,8 +133,8 @@
   border-radius: 50%;
   -webkit-mask:linear-gradient(0deg,#000 55%,#0000 0) bottom/100% 18.18%;
   background:
-   linear-gradient(#f03355 0 0) bottom/100% 0% no-repeat
-   #ddd;
+   linear-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 0 0) bottom/100% 0% no-repeat
+   var(--loader-color-8, var(--loader-color-8, #ddd));
   animation: l8 2s infinite steps(7);
 }
 @keyframes l8 {
@@ -149,10 +149,10 @@
   aspect-ratio: 1;
   border-radius: 50%; 
   background:
-    radial-gradient(var(--r1) var(--r2) at top   ,#0000 79.5%,#269af2 80%),
-    radial-gradient(var(--r1) var(--r2) at bottom,#269af2 79.5%,#0000 80%),
-    radial-gradient(var(--r1) var(--r2) at top   ,#0000 79.5%,#269af2 80%),
-    #ccc;
+    radial-gradient(var(--r1) var(--r2) at top   ,#0000 79.5%,var(--loader-color-2, var(--loader-color-2, #269af2)) 80%),
+    radial-gradient(var(--r1) var(--r2) at bottom,var(--loader-color-2, var(--loader-color-2, #269af2)) 79.5%,#0000 80%),
+    radial-gradient(var(--r1) var(--r2) at top   ,#0000 79.5%,var(--loader-color-2, var(--loader-color-2, #269af2)) 80%),
+    var(--loader-color-5, var(--loader-color-5, #ccc));
   background-size: 50.5% 220%;
   background-position: -100% 0%,0% 0%,100% 0%;
   background-repeat:no-repeat;
@@ -171,8 +171,8 @@
   border-radius: 200px 200px 0 0;
   -webkit-mask: repeating-radial-gradient(farthest-side at bottom ,#0000 0,#000 1px 12%,#0000 calc(12% + 1px) 20%);
   background:
-   radial-gradient(farthest-side at bottom,#514b82 0 95%,#0000 0) bottom/0% 0% no-repeat
-   #ddd;
+   radial-gradient(farthest-side at bottom,var(--loader-color-3, var(--loader-color-3, #514b82)) 0 95%,#0000 0) bottom/0% 0% no-repeat
+   var(--loader-color-8, var(--loader-color-8, #ddd));
   animation: l10 2s infinite steps(6);
 }
 @keyframes l10 {
@@ -187,15 +187,15 @@
   animation: l11 2s infinite;
 }
 @keyframes l11 {
-  0%   {background: conic-gradient(#f03355 0     ,#0000 0)}
-  12.5%{background: conic-gradient(#f03355 45deg ,#0000 46deg)}
-  25%  {background: conic-gradient(#f03355 90deg ,#0000 91deg)}
-  37.5%{background: conic-gradient(#f03355 135deg,#0000 136deg)}
-  50%  {background: conic-gradient(#f03355 180deg,#0000 181deg)}
-  62.5%{background: conic-gradient(#f03355 225deg,#0000 226deg)}
-  75%  {background: conic-gradient(#f03355 270deg,#0000 271deg)}
-  87.5%{background: conic-gradient(#f03355 315deg,#0000 316deg)}
-  100% {background: conic-gradient(#f03355 360deg,#0000 360deg)}
+  0%   {background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 0     ,#0000 0)}
+  12.5%{background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 45deg ,#0000 46deg)}
+  25%  {background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 90deg ,#0000 91deg)}
+  37.5%{background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 135deg,#0000 136deg)}
+  50%  {background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 180deg,#0000 181deg)}
+  62.5%{background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 225deg,#0000 226deg)}
+  75%  {background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 270deg,#0000 271deg)}
+  87.5%{background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 315deg,#0000 316deg)}
+  100% {background: conic-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 360deg,#0000 360deg)}
 }
 /* --- loader-progress-12 --- */
 /* HTML: <div class="loader-progress-12"></div> */
@@ -209,7 +209,7 @@
     linear-gradient(#0000 50%,#000 0),
     linear-gradient(#000 50%,#0000 0),
     linear-gradient(#0000 50%,#000 0)
-    #ddd;
+    var(--loader-color-8, var(--loader-color-8, #ddd));
   background-size: calc(100%/6 + 1px) 200%;
   background-repeat: no-repeat;
   animation: l12 2s infinite;
@@ -233,7 +233,7 @@
     conic-gradient(from -45deg at bottom,#0000,#000 .5deg 90deg,#0000 90.5deg) 0 100%;
   -webkit-mask-size:25% 50%;
   -webkit-mask-repeat:repeat-x;
-  background: linear-gradient(#25b09b 0 0) left/0% 100% no-repeat #ddd;
+  background: linear-gradient(var(--loader-color, var(--loader-color, #25b09b)) 0 0) left/0% 100% no-repeat var(--loader-color-8, var(--loader-color-8, #ddd));
   animation: l13 2s infinite linear;
 }
 @keyframes l13 {
@@ -251,7 +251,7 @@
     var(--m) calc(2*100%/4) 100%/calc(100%/5) calc(3*100%/5),
     var(--m) calc(3*100%/4) 100%/calc(100%/5) calc(4*100%/5),
     var(--m) calc(4*100%/4) 100%/calc(100%/5) calc(5*100%/5);
-  background: linear-gradient(#514b82 0 0) left/0% 100% no-repeat #ddd;
+  background: linear-gradient(var(--loader-color-3, var(--loader-color-3, #514b82)) 0 0) left/0% 100% no-repeat var(--loader-color-8, var(--loader-color-8, #ddd));
   animation: l14 2s infinite steps(6);
 }
 @keyframes l14 {
@@ -263,7 +263,7 @@
   width: 80px;
   aspect-ratio: 1.154;
   clip-path: polygon(50% 0,100% 100%,0 100%);
-  --c:no-repeat linear-gradient(#f03355 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color-10, var(--loader-color-10, #f03355)) 0 0);
   background: var(--c),var(--c),var(--c),var(--c),var(--c);
   background-size: 100% calc(100%/5 + 1px);
   animation: l15 2s infinite;
@@ -281,8 +281,8 @@
 .loader-progress-16 {
   height: 4px;
   width: 130px;
-  --c:no-repeat linear-gradient(#6100ee 0 0);
-  background: var(--c),var(--c),#d7b8fc;
+  --c:no-repeat linear-gradient(var(--loader-color-4, var(--loader-color-4, #6100ee)) 0 0);
+  background: var(--c),var(--c),var(--loader-color-6, var(--loader-color-6, #d7b8fc));
   background-size: 60% 100%;
   animation: l16 3s infinite;
 }
@@ -297,7 +297,7 @@
   width: 120px;
   height: 20px;
   -webkit-mask: radial-gradient(circle closest-side,#000 94%,#0000) left/20% 100%;
-  background: linear-gradient(#000 0 0) left/0% 100% no-repeat #ddd;
+  background: linear-gradient(#000 0 0) left/0% 100% no-repeat var(--loader-color-8, var(--loader-color-8, #ddd));
   animation: l17 2s infinite steps(6);
 }
 @keyframes l17 {
@@ -308,7 +308,7 @@
 .loader-progress-18 {
   width: 60px;
   aspect-ratio: 1;
-  border: 15px solid #ddd;
+  border: 15px solid var(--loader-color-8, var(--loader-color-8, #ddd));
   border-radius: 50%;
   position: relative;
   transform: rotate(45deg);
@@ -318,7 +318,7 @@
   position: absolute;
   inset: -15px;
   border-radius: 50%;
-  border: 15px solid #514b82;
+  border: 15px solid var(--loader-color-3, var(--loader-color-3, #514b82));
   animation: l18 2s infinite linear;
 }
 @keyframes l18 {
@@ -333,7 +333,7 @@
 .loader-progress-19 {
   width: 60px;
   aspect-ratio: 1;
-  background: linear-gradient(#dc1818 0 0) bottom/100% 0% no-repeat #ccc;
+  background: linear-gradient(var(--loader-color-7, var(--loader-color-7, #dc1818)) 0 0) bottom/100% 0% no-repeat var(--loader-color-5, var(--loader-color-5, #ccc));
   -webkit-mask: 
     radial-gradient(circle at 60% 65%, #000 62%, #0000 65%) top left, 
     radial-gradient(circle at 40% 65%, #000 62%, #0000 65%) top right, 
@@ -363,7 +363,7 @@
   -webkit-mask-composite: xor,destination-over;
           mask-composite: exclude,add;
   -webkit-mask-repeat:repeat-x;
-  background:linear-gradient(#ffb940 0 0) left/0% 100% #ddd no-repeat;
+  background:linear-gradient(var(--loader-color-12, var(--loader-color-12, #ffb940)) 0 0) left/0% 100% var(--loader-color-8, var(--loader-color-8, #ddd)) no-repeat;
   animation: l20 2s infinite linear;
 }
 @keyframes l20 {

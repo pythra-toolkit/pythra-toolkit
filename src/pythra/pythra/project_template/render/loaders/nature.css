@@ -3,7 +3,7 @@
 .loader-nature-1 {
   width: 50px;
   aspect-ratio: 1;
-  background: #ffd738;
+  background: var(--loader-color-24, var(--loader-color-24, #ffd738));
   border-radius: 50%;
   display: grid;
 }
@@ -29,8 +29,8 @@
   aspect-ratio: 1;
   display: grid;
   border-radius: 50%;
-  background: radial-gradient(circle 15px, #ffd738 90%,#0000 );
-  filter: drop-shadow(0px 0px 1px #ffd738);
+  background: radial-gradient(circle 15px, var(--loader-color-24, var(--loader-color-24, #ffd738)) 90%,#0000 );
+  filter: drop-shadow(0px 0px 1px var(--loader-color-24, var(--loader-color-24, #ffd738)));
   animation: l2 1s infinite alternate linear;
 }
 .loader-nature-2::before, 
@@ -38,7 +38,7 @@
   content: "";
   grid-area: 1/1;
   border-radius: 50%;
-  --g:no-repeat linear-gradient(#ffd738 0 0) 50%;
+  --g:no-repeat linear-gradient(var(--loader-color-24, var(--loader-color-24, #ffd738)) 0 0) 50%;
   background: 
     var(--g)/100% 5px,
     var(--g)/5px 100%;
@@ -48,7 +48,7 @@
     transform: rotate(45deg);
 }
 @keyframes l2 {
-  100% {filter:drop-shadow(0px 0px 20px #ffd738)}
+  100% {filter:drop-shadow(0px 0px 20px var(--loader-color-24, var(--loader-color-24, #ffd738)))}
 }
 /* --- loader-nature-3 --- */
 /* HTML: <div class="loader-nature-3"></div> */
@@ -56,25 +56,25 @@
   width: 50px;
   aspect-ratio: 1;
   display: flex;
-  filter: drop-shadow(0px 0px 1px #8d847f);
+  filter: drop-shadow(0px 0px 1px var(--loader-color-12, var(--loader-color-12, #8d847f)));
   animation: l3 1s infinite alternate linear;
 }
 .loader-nature-3:before {
   content: "";
   flex: 1;
-  background: #8d847f;
+  background: var(--loader-color-12, var(--loader-color-12, #8d847f));
   border-radius: 50%;
   -webkit-mask: radial-gradient(circle closest-side at 66% 40%,#0000 115%,#000 118%);
 }
 @keyframes l3 {
-  100% {filter:drop-shadow(0px 0px 20px #8d847f)}
+  100% {filter:drop-shadow(0px 0px 20px var(--loader-color-12, var(--loader-color-12, #8d847f)))}
 }
 /* --- loader-nature-4 --- */
 /* HTML: <div class="loader-nature-4"></div> */
 .loader-nature-4 {
   width: 50px;
   aspect-ratio: 1;
-  background-color: #8d847f;
+  background-color: var(--loader-color-12, var(--loader-color-12, #8d847f));
   border-radius: 50%;
   animation: l4 3s infinite;
 }
@@ -101,10 +101,10 @@
   position: absolute;
   inset: 0 0 -100%;
   background: 
-    radial-gradient(farthest-side,#ffd738 80%,#0000) left 70% top    20%/15px 15px,
-    radial-gradient(farthest-side,#020308 92%,#0000) left 65% bottom 19%/12px 12px,
-    radial-gradient(farthest-side,#ecfefe 92%,#0000) left 70% bottom 20%/15px 15px,
-    linear-gradient(#9eddfe 50%,#020308 0);
+    radial-gradient(farthest-side,var(--loader-color-24, var(--loader-color-24, #ffd738)) 80%,#0000) left 70% top    20%/15px 15px,
+    radial-gradient(farthest-side,var(--loader-color-2, var(--loader-color-2, #020308)) 92%,#0000) left 65% bottom 19%/12px 12px,
+    radial-gradient(farthest-side,var(--loader-color-17, var(--loader-color-17, #ecfefe)) 92%,#0000) left 70% bottom 20%/15px 15px,
+    linear-gradient(var(--loader-color-14, var(--loader-color-14, #9eddfe)) 50%,var(--loader-color-2, var(--loader-color-2, #020308)) 0);
   background-repeat: no-repeat;
   animation: l5 2s infinite;
 }
@@ -126,7 +126,7 @@
     linear-gradient(90deg,#0000,#fff,#0000) 23% 44%,
     linear-gradient(0deg, #0000,#fff,#0000) 51% 54%,    
     linear-gradient(90deg,#0000,#fff,#0000) 51% 53% 
-    #020308;
+    var(--loader-color-2, var(--loader-color-2, #020308));
   background-size: 2px 10px,10px 2px;
   background-repeat: no-repeat;
   position: relative;
@@ -157,9 +157,9 @@
   width: 80px;
   height: 40px;
   background:
-    radial-gradient(circle 11px at top,#0000 94%,#b0e5f3) 0 20px,
-    radial-gradient(circle 11px at top,#0000 94%,#5dc1e4) 0 10px,
-    radial-gradient(circle 11px at top,#0000 94%,#008cd9) 0 0   ;
+    radial-gradient(circle 11px at top,#0000 94%,var(--loader-color-16, var(--loader-color-16, #b0e5f3))) 0 20px,
+    radial-gradient(circle 11px at top,#0000 94%,var(--loader-color-8, var(--loader-color-8, #5dc1e4))) 0 10px,
+    radial-gradient(circle 11px at top,#0000 94%,var(--loader-color, var(--loader-color, #008cd9))) 0 0   ;
   background-size: 20px 100%;
   background-repeat: repeat-x;
   animation: l7 1s infinite linear;
@@ -181,7 +181,7 @@
   content: "";
   position: absolute;
   inset: 0 0 -100%;
-  background: radial-gradient(farthest-side at top,#0000 35%,#aa47be,#039be6,#26c6dc,#459e44,#f9ec44,#f68524,#fa3536,#0000) bottom/100% 50% no-repeat;
+  background: radial-gradient(farthest-side at top,#0000 35%,var(--loader-color-15, var(--loader-color-15, #aa47be)),var(--loader-color-3, var(--loader-color-3, #039be6)),var(--loader-color-4, var(--loader-color-4, #26c6dc)),var(--loader-color-5, var(--loader-color-5, #459e44)),var(--loader-color-21, var(--loader-color-21, #f9ec44)),var(--loader-color-20, var(--loader-color-20, #f68524)),var(--loader-color-22, var(--loader-color-22, #fa3536)),#0000) bottom/100% 50% no-repeat;
   animation: l8 2s infinite;
 }
 @keyframes l8 {
@@ -194,7 +194,7 @@
 .loader-nature-9 {
   width: 80px;
   height: 40px;
-  background: #4dbefa;
+  background: var(--loader-color-6, var(--loader-color-6, #4dbefa));
   position: relative;
   overflow: hidden;
   animation: l9-0 1.5s infinite steps(10);
@@ -204,7 +204,7 @@
   content: "";
   position: absolute;
   inset: -50%;
-  --rad: radial-gradient(1px 4px,#eee 92%,#0000);
+  --rad: radial-gradient(1px 4px,var(--loader-color-18, var(--loader-color-18, #eee)) 92%,#0000);
   background: var(--rad) 20% 0, var(--rad) 70% 7%;
   background-size: var(--w,20px) var(--h,18px);
   animation: l9-1 0.2s linear infinite;
@@ -216,8 +216,8 @@
    animation-duration: 0.3s;
 }
 @keyframes l9-0{
-  0%,15%,20%,30%,100% {background:#4dbefa}
-  10%,22% {background:#7accf7}
+  0%,15%,20%,30%,100% {background:var(--loader-color-6, var(--loader-color-6, #4dbefa))}
+  10%,22% {background:var(--loader-color-9, var(--loader-color-9, #7accf7))}
 }
 @keyframes l9-1{
   100% {transform:skew(-10deg) translateY(var(--h,18px))}
@@ -228,8 +228,8 @@
   width: 80px;
   height: 40px;
   background:
-    radial-gradient(circle 25px at top right, #ffd738 40%,#0000 ),
-    #4dbefa;
+    radial-gradient(circle 25px at top right, var(--loader-color-24, var(--loader-color-24, #ffd738)) 40%,#0000 ),
+    var(--loader-color-6, var(--loader-color-6, #4dbefa));
   position: relative;
   overflow: hidden;
 }
@@ -264,7 +264,7 @@
   width: calc(6*30px);
   height: 50px;
   display: flex;
-  color: #8d7958;
+  color: var(--loader-color-11, var(--loader-color-11, #8d7958));
   filter: drop-shadow(30px 25px 0 currentColor) drop-shadow(60px 0 0 currentColor) drop-shadow(120px 0 0 currentColor);
   clip-path: inset(0 100% 0 0);
   animation: l11 2s infinite steps(7);
@@ -285,7 +285,7 @@
   width: calc(6*30px);
   height: 50px;
   display: flex;
-  color: #8d7958;
+  color: var(--loader-color-11, var(--loader-color-11, #8d7958));
   filter: drop-shadow(30px 25px 0 currentColor) drop-shadow(60px 0 0 currentColor) drop-shadow(120px 0 0 currentColor);
   clip-path: inset(0 100% 0 0);
   animation: l12 2s infinite steps(7);
@@ -310,7 +310,7 @@
   width: calc(6*30px);
   height: 50px;
   display: flex;
-  color: #8d7958;
+  color: var(--loader-color-11, var(--loader-color-11, #8d7958));
   filter: drop-shadow(30px 25px 0 currentColor) drop-shadow(60px 0 0 currentColor) drop-shadow(120px 0 0 currentColor);
   clip-path: inset(0 100% 0 0);
   animation: l13 2s infinite steps(7);
@@ -332,7 +332,7 @@
   width: calc(6*30px);
   height: 50px;
   display: grid;
-  color: #8d7958;
+  color: var(--loader-color-11, var(--loader-color-11, #8d7958));
   filter: drop-shadow(30px 25px 0 currentColor) drop-shadow(60px 0 0 currentColor) drop-shadow(120px 0 0 currentColor);
   clip-path: inset(0 100% 0 0);
   animation: l14 2s infinite steps(7);
@@ -362,7 +362,7 @@
 .loader-nature-15 {
   width: 80px;
   height: 40px;
-  background: #83def1;
+  background: var(--loader-color-10, var(--loader-color-10, #83def1));
   position: relative;
   overflow: hidden;
 }
@@ -375,8 +375,8 @@
   width: 30px;
   background: 
     radial-gradient(farthest-side,#000 50%,#fff 52% 80%,#0000) 78% 22%/5px 5px, 
-    radial-gradient(farthest-side, #fb4f05 92%,#0000) right/80% 100%, 
-    radial-gradient(farthest-side at left,#fb4f05 92%,#0000) left/35% 80%;
+    radial-gradient(farthest-side, var(--loader-color-23, var(--loader-color-23, #fb4f05)) 92%,#0000) right/80% 100%, 
+    radial-gradient(farthest-side at left,var(--loader-color-23, var(--loader-color-23, #fb4f05)) 92%,#0000) left/35% 80%;
   background-repeat: no-repeat;
   clip-path: polygon(0 0,100% 0,100% 40%,81% 50%,100% 60%,100% 100%,0 100%,20% 50%);
   animation: l15 1.5s infinite;
@@ -392,7 +392,7 @@
 .loader-nature-16 {
   width: 20px;
   height: 80px;
-  background: #935936;
+  background: var(--loader-color-13, var(--loader-color-13, #935936));
   position: relative;
 }
 .loader-nature-16:before {
@@ -404,11 +404,11 @@
   height: 60px;
   background: 
     radial-gradient(farthest-side,#fff 92%,#0000) 60% 6px/4px 4px,
-    radial-gradient(50% 60%,#53707b 92%,#0000) center/70% 55%,
-    radial-gradient(farthest-side,#53707b 92%,#0000) 50% 3px/14px 14px,
-    radial-gradient(142% 100% at bottom right,#0000 64%,#53707b 65%) bottom/57% 40%,
-    conic-gradient(from -120deg at right,#53707b 36deg,#0000 0)100% 3px/51% 12px,
-    conic-gradient(from 120deg at top left,#0000 ,#ef524a 2deg 40deg,#0000 43deg) top/100% 10px;
+    radial-gradient(50% 60%,var(--loader-color-7, var(--loader-color-7, #53707b)) 92%,#0000) center/70% 55%,
+    radial-gradient(farthest-side,var(--loader-color-7, var(--loader-color-7, #53707b)) 92%,#0000) 50% 3px/14px 14px,
+    radial-gradient(142% 100% at bottom right,#0000 64%,var(--loader-color-7, var(--loader-color-7, #53707b)) 65%) bottom/57% 40%,
+    conic-gradient(from -120deg at right,var(--loader-color-7, var(--loader-color-7, #53707b)) 36deg,#0000 0)100% 3px/51% 12px,
+    conic-gradient(from 120deg at top left,#0000 ,var(--loader-color-19, var(--loader-color-19, #ef524a)) 2deg 40deg,#0000 43deg) top/100% 10px;
   background-repeat: no-repeat;    
   transform: rotate(-26deg);
   transform-origin: 100% 80%;
@@ -422,7 +422,7 @@
   left: -6px;
   bottom: 15px;
   border-radius: 100px 0 0 100px;
-  background: #53707b;
+  background: var(--loader-color-7, var(--loader-color-7, #53707b));
 }
 @keyframes l16 {
   100% {transform: rotate(0)}

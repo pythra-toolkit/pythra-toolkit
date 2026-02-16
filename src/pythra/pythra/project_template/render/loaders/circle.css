@@ -4,8 +4,8 @@
   width: 65px;
   display: grid;
   --mask: 
-    radial-gradient(12px at left 15px top 50%, #0000 95%, #000),
-    radial-gradient(12px at right 15px top 50%, #0000 95%, #000);
+    radial-gradient(12px at left 15px top 50%, #0000 95%, var(--loader-color, #000)),
+    radial-gradient(12px at right 15px top 50%, #0000 95%, var(--loader-color, #000));
   -webkit-mask: var(--mask);
           mask: var(--mask);
   -webkit-mask-composite: source-in;
@@ -18,7 +18,7 @@
   grid-area: 1/1;
   height: 30px;
   aspect-ratio: 1;
-  background: #fff;
+  background: var(--loader-color, #fff);
   border-radius: 50%;
 }
 .loader-circle-1:after {
@@ -34,12 +34,12 @@
 .loader-circle-2 {
   width: 100px;
   display: grid;
-  background: radial-gradient(farthest-side, #fff 98%, #0000) center/30px 100%
+  background: radial-gradient(farthest-side, var(--loader-color, #fff) 98%, #0000) center/30px 100%
     no-repeat;
   --mask: 
-    radial-gradient(12px at left 15px top 50%, #0000 95%, #000),
-    radial-gradient(12px at center, #0000 95%, #000),
-    radial-gradient(12px at right 15px top 50%, #0000 95%, #000);
+    radial-gradient(12px at left 15px top 50%, #0000 95%, var(--loader-color, #000)),
+    radial-gradient(12px at center, #0000 95%, var(--loader-color, #000)),
+    radial-gradient(12px at right 15px top 50%, #0000 95%, var(--loader-color, #000));
   -webkit-mask: var(--mask);
           mask: var(--mask);
   -webkit-mask-composite: source-in;
@@ -52,7 +52,7 @@
   grid-area: 1/1;
   height: 30px;
   aspect-ratio: 1;
-  background: #fff;
+  background: var(--loader-color, #fff);
   border-radius: 50%;
 }
 .loader-circle-2:after {
@@ -74,7 +74,7 @@
   content: "";
   position: absolute;
   border-radius: 50px;
-  box-shadow: 0 0 0 3px inset #fff;
+  box-shadow: 0 0 0 3px inset var(--loader-color, #fff);
   animation: l3 0.75s infinite alternate;
 }
 @keyframes l3 {
@@ -100,7 +100,7 @@
   content: "";
   position: absolute;
   border-radius: 50px;
-  box-shadow: 0 0 0 3px inset #fff;
+  box-shadow: 0 0 0 3px inset var(--loader-color, #fff);
   animation: l4 2.5s infinite;
 }
 .loader-circle-4:after {
@@ -149,7 +149,7 @@
   inset: 0 auto auto 0;
   aspect-ratio: 1;
   border-radius: 50px;
-  box-shadow: 0 0 0 3px inset #fff;
+  box-shadow: 0 0 0 3px inset var(--loader-color, #fff);
   animation: l5 1s infinite linear alternate;
 }
 .loader-circle-5:after {
@@ -169,7 +169,7 @@
 .loader-circle-6 {
   width: 50px;
   aspect-ratio: 1;
-  box-shadow: 0 0 0 3px #fff inset;
+  box-shadow: 0 0 0 3px var(--loader-color, #fff) inset;
   border-radius: 50%;
   position: relative;
   animation: l6 1.5s linear infinite;
@@ -193,7 +193,7 @@
 .loader-circle-7 {
   width: 50px;
   aspect-ratio: 1;
-  box-shadow: 0 0 0 3px #fff inset;
+  box-shadow: 0 0 0 3px var(--loader-color, #fff) inset;
   border-radius: 50%;
   position: relative;
 }
@@ -225,7 +225,7 @@
 .loader-circle-8 {
   width: 50px;
   aspect-ratio: 1;
-  box-shadow: 0 0 0 3px #fff inset;
+  box-shadow: 0 0 0 3px var(--loader-color, #fff) inset;
   border-radius: 50%;
   position: relative;
   animation: l8-0 1.5s linear infinite;
@@ -268,7 +268,7 @@
 .loader-circle-9 {
   width: 100px;
   height: 40px;
-  --g: radial-gradient(farthest-side,#0000 calc(95% - 3px),#fff calc(100% - 3px) 98%,#0000 101%) no-repeat;
+  --g: radial-gradient(farthest-side,#0000 calc(95% - 3px),var(--loader-color, #fff) calc(100% - 3px) 98%,#0000 101%) no-repeat;
   background: var(--g), var(--g), var(--g);
   background-size: 30px 30px;
   animation: l9 1s infinite alternate;
@@ -298,7 +298,7 @@
 .loader-circle-10 {
   width: 65px;
   aspect-ratio: 1;
-  --g: radial-gradient(farthest-side,#0000 calc(95% - 3px),#fff calc(100% - 3px) 98%,#0000 101%) no-repeat;
+  --g: radial-gradient(farthest-side,#0000 calc(95% - 3px),var(--loader-color, #fff) calc(100% - 3px) 98%,#0000 101%) no-repeat;
   background: var(--g), var(--g), var(--g);
   background-size: 30px 30px;
   animation: l10 1.5s infinite;
@@ -325,7 +325,7 @@
 .loader-circle-11 {
   width: 50px;
   aspect-ratio: 1;
-  box-shadow: 0 0 0 3px #fff inset;
+  box-shadow: 0 0 0 3px var(--loader-color, #fff) inset;
   border-radius: 50%;
   position: relative;
   animation: l11 7s infinite;

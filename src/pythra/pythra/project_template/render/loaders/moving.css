@@ -3,7 +3,7 @@
 .loader-moving-1 {
   height: 40px;
   aspect-ratio: 1.5;
-  --c:no-repeat linear-gradient(#fff 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #fff) 0 0);
   background:var(--c), var(--c);
   background-size: 66% 50%;
   animation: l1 1.5s infinite linear;
@@ -21,7 +21,7 @@
 .loader-moving-2 {
   height: 60px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#fff 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #fff) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 33.4% 33.4%;
   animation: l2 2s infinite linear;
@@ -42,7 +42,7 @@
 .loader-moving-3 {
   height: 40px;
   aspect-ratio: 1.5;
-  --c:no-repeat linear-gradient(#fff 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #fff) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 33.4% 50%;
   animation: l3 2s infinite linear;
@@ -68,7 +68,7 @@
 .loader-moving-4:before,
 .loader-moving-4:after {
   content: "";
-  --c:no-repeat linear-gradient(#fff 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #fff) 0 0);
   background: var(--c), var(--c);
   background-size: 25% 50%;
   animation: l4 1.5s infinite linear;
@@ -93,7 +93,7 @@
 .loader-moving-5:before,
 .loader-moving-5:after {
   content: "";
-  --c:no-repeat linear-gradient(#fff 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #fff) 0 0);
   background: var(--c), var(--c);
   background-size: 25% 50%;
   animation: l5 1.5s infinite linear;
@@ -115,7 +115,7 @@
 .loader-moving-6 {
   height: 40px;
   aspect-ratio: 1.5;
-  --c:no-repeat linear-gradient(#fff 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #fff) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 33.4% 50%;
   animation: l6 2s infinite linear;
@@ -136,7 +136,7 @@
 .loader-moving-7 {
   height: 60px;
   aspect-ratio: 1;
-  --c:no-repeat linear-gradient(#fff 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #fff) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 33.4% 33.4%;
   animation: l7 1.5s infinite linear;
@@ -155,7 +155,7 @@
 .loader-moving-8 {
   height: 60px;
   aspect-ratio: 2/3;
-  --c:no-repeat linear-gradient(#fff 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #fff) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 50% 33.4%;
   animation: l8 1.5s infinite linear;
@@ -173,7 +173,7 @@
 .loader-moving-9 {
   height: 40px;
   aspect-ratio: 1.5;
-  --c: #fff 96%,#0000;
+  --c: var(--loader-color, #fff) 96%,#0000;
   background:
     radial-gradient(farthest-side at 100% 100%,var(--c)),
     radial-gradient(farthest-side at 0    100%,var(--c)),
@@ -204,7 +204,7 @@
 .loader-moving-10:before,
 .loader-moving-10:after {
   content: "";
-  background: #fff;
+  background: var(--loader-color, #fff);
   border-radius: 80px 80px 0 0;
   animation: l10 1s infinite alternate both;
 }

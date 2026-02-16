@@ -15,7 +15,7 @@ build/
 /src/pythra.egg-info
 /src/pythra/pythra/pythra.egg-info
 /.pytest_cache
-/config.yaml
+# /config.yaml
 /venv
 /new-app
 *__pycache__

@@ -3,7 +3,7 @@
 .loader-thin-1 {
   height: 9px;
   width: 60px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 26% 3px;
   animation: l1 1s infinite;
@@ -23,7 +23,7 @@
 .loader-thin-2 {
   height: 9px;
   width: 60px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 26% 3px;
   animation: l2 1s infinite;
@@ -42,7 +42,7 @@
 .loader-thin-3 {
   height: 9px;
   width: 60px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 26% 3px;
   animation: l3 1s infinite;
@@ -66,7 +66,7 @@
 .loader-thin-4 {
   height: 15px;
   width: 60px;
-  --c:no-repeat repeating-linear-gradient(#0000 0 6px,#000 0 9px,#0000 0 15px);
+  --c:no-repeat repeating-linear-gradient(#0000 0 6px,var(--loader-color, #000) 0 9px,#0000 0 15px);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 26% 200%;
   animation: l4 1.5s infinite linear;
@@ -85,7 +85,7 @@
 .loader-thin-5 {
   height: 9px;
   width: 60px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 26% 3px;
   animation: l5 1s infinite;
@@ -105,7 +105,7 @@
 .loader-thin-6 {
   height: 9px;
   width: 60px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 26% 3px;
   animation: l6 1s infinite;
@@ -123,7 +123,7 @@
 .loader-thin-7 {
   height: 3px;
   width: 75px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 21% 100%;
   animation: l7 1s infinite alternate;
@@ -142,7 +142,7 @@
 .loader-thin-8 {
   height: 12px;
   width: 60px;
-  --c:no-repeat linear-gradient(#000 0 0);
+  --c:no-repeat linear-gradient(var(--loader-color, #000) 0 0);
   background: var(--c), var(--c), var(--c), var(--c);
   background-size: 26% 3px;
   animation: l8 1s infinite;
@@ -160,7 +160,7 @@
 .loader-thin-9 {
   height: 6px;
   width: 60px;
-  --c:no-repeat repeating-linear-gradient(90deg,#000 0 3px,#0000 0 6px);
+  --c:no-repeat repeating-linear-gradient(90deg,var(--loader-color, #000) 0 3px,#0000 0 6px);
   background: var(--c), var(--c);
   background-size: 100% 3px;
   animation: l9 1s infinite;
@@ -178,7 +178,7 @@
 .loader-thin-10 {
   height: 3px;
   width: 60px;
-  background: linear-gradient(#000 0 0) right/51% 100% no-repeat;
+  background: linear-gradient(var(--loader-color, #000) 0 0) right/51% 100% no-repeat;
   display: flex;
   animation: l10-0 2s linear infinite;
 }
@@ -186,7 +186,7 @@
 .loader-thin-10:after {
   content: "";
   width: 15px;
-  background: #000;
+  background: var(--loader-color, var(--loader-color, #000));
   animation: l10-1 2s linear infinite;
 }
 .loader-thin-10:after {

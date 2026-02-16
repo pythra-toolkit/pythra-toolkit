@@ -7,7 +7,7 @@
 }
 .loader-growing-1:before {
   content: "";
-  border: 8px solid #BD1550;
+  border: 8px solid var(--loader-color, var(--loader-color, #BD1550));
   box-sizing: content-box;
   margin: auto;
   aspect-ratio: 1;
@@ -26,7 +26,7 @@
 }
 .loader-growing-2:before {
   content: "";
-  border: 8px solid #BD1550;
+  border: 8px solid var(--loader-color, var(--loader-color, #BD1550));
   border-radius: 50%;
   box-sizing: content-box;
   margin: auto;
@@ -47,7 +47,7 @@
 }
 .loader-growing-3:before {
   content: "";
-  background: #BD1550;
+  background: var(--loader-color, var(--loader-color, #BD1550));
   aspect-ratio: inherit;
   clip-path: polygon(50% 0,100% 100%,0 100%,50% 0,50% var(--b),calc(var(--b)*cos(30deg)) calc(100% - var(--b)/2),calc(100% - var(--b)*cos(30deg)) calc(100% - var(--b)/2),50% var(--b));
   margin: auto;
@@ -67,7 +67,7 @@
 }
 .loader-growing-4:before {
   content: "";
-  background: #BD1550;
+  background: var(--loader-color, var(--loader-color, #BD1550));
   aspect-ratio: inherit;
   clip-path: 
     polygon(0 50%,50% -50%,100% 50%,50% 150%,0 50%,
@@ -94,7 +94,7 @@
 }
 .loader-growing-5:before {
   content: "";
-  background: #BD1550;
+  background: var(--loader-color, var(--loader-color, #BD1550));
   aspect-ratio: inherit;
   aspect-ratio: 1;
   clip-path:  polygon(79.39% 90.45%,50% 69%,20.61% 90.45%,31.93% 55.87%,2.45% 34.55%,38.83% 34.63%,50% 0%,61.17% 34.63%,97.55% 34.55%,68.07% 55.87%,79.39% 90.45%,50% 69%,calc(50% - 0px) calc(69% - 6.84px),calc(79.39% - 10.58px) calc(90.45% - 14.56px),calc(68.07% - 6.51px) calc(55.87% - 2.11px),calc(97.55% - 17.12px) calc(34.55% - -5.56px),calc(61.17% - 4.02px) calc(34.63% - -5.53px),calc(50% - 0px) calc(0% - -18px),calc(38.83% - -4.02px) calc(34.63% - -5.53px),calc(2.45% - -17.12px) calc(34.55% - -5.56px),calc(31.93% - -6.51px) calc(55.87% - 2.11px),calc(20.61% - -10.58px) calc(90.45% - 14.56px),calc(50% - 0px) calc(69% - 6.84px),calc(79.39% - 10.58px) calc(90.45% - 14.56px));
@@ -114,7 +114,7 @@
 }
 .loader-growing-6:before {
   content: "";
-  background: #BD1550;
+  background: var(--loader-color, var(--loader-color, #BD1550));
   aspect-ratio: inherit;
   aspect-ratio: 1;
   clip-path: polygon(91.57% 77.78%,65.56% 73.28%,59.75% 99.04%,44.54% 77.46%,22.22% 91.57%,26.72% 65.56%,0.96% 59.75%,22.54% 44.54%,8.43% 22.22%,34.44% 26.72%,40.25% 0.96%,55.46% 22.54%,77.78% 8.43%,73.28% 34.44%,99.04% 40.25%,77.46% 55.46%,91.57% 77.78%,65.56% 73.28%,calc(65.56% - 5.6px) calc(73.28% - 8.38px),calc(91.57% - 14.97px) calc(77.78% - 10px),calc(77.46% - 9.89px) calc(55.46% - 1.97px),calc(99.04% - 17.65px) calc(40.25% - -3.51px),calc(73.28% - 8.38px) calc(34.44% - -5.6px),calc(77.78% - 10px) calc(8.43% - -14.97px),calc(55.46% - 1.97px) calc(22.54% - -9.89px),calc(40.25% - -3.51px) calc(0.96% - -17.65px),calc(34.44% - -5.6px) calc(26.72% - -8.38px),calc(8.43% - -14.97px) calc(22.22% - -10px),calc(22.54% - -9.89px) calc(44.54% - -1.97px),calc(0.96% - -17.65px) calc(59.75% - 3.51px),calc(26.72% - -8.38px) calc(65.56% - 5.6px),calc(22.22% - -10px) calc(91.57% - 14.97px),calc(44.54% - -1.97px) calc(77.46% - 9.89px),calc(59.75% - 3.51px) calc(99.04% - 17.65px),calc(65.56% - 5.6px) calc(73.28% - 8.38px),calc(91.57% - 14.97px) calc(77.78% - 10px));
@@ -134,7 +134,7 @@
 }
 .loader-growing-7:before {
   content: "";
-  border: 8px solid #BD1550;
+  border: 8px solid var(--loader-color, var(--loader-color, #BD1550));
   box-sizing: content-box;
   margin: auto;
   aspect-ratio: 1;
@@ -155,7 +155,7 @@
 .loader-growing-8:after {
   content: "";
   grid-area: 1/1;
-  border: 8px solid #BD1550;
+  border: 8px solid var(--loader-color, var(--loader-color, #BD1550));
   box-sizing: content-box;
   margin: auto;
   aspect-ratio: 1;
@@ -180,7 +180,7 @@
 .loader-growing-9:before,
 .loader-growing-9:after {
   content: "";
-  border: 8px solid #BD1550;
+  border: 8px solid var(--loader-color, var(--loader-color, #BD1550));
   border-radius: 50%;
   box-sizing: content-box;
   margin: auto;
@@ -205,7 +205,7 @@
 .loader-growing-10:before,
 .loader-growing-10:after {
   content: "";
-  border: 8px solid #BD1550;
+  border: 8px solid var(--loader-color, var(--loader-color, #BD1550));
   box-sizing: content-box;
   margin: auto;
   aspect-ratio: 1;

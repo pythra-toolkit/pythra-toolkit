@@ -3,6 +3,7 @@ from enum import Enum
 from dataclasses import dataclass, field
 from typing import Optional, Union, Tuple, List, Dict, Any
 import re # For hex validation
+import math # For Matrix4 calculations
 
 from .base import make_hashable
 
@@ -743,6 +744,11 @@ class CrossAxisAlignment:
     STRETCH = 'stretch' # Make children fill the cross axis.
     BASELINE = 'baseline' # Align children along their text baseline.
 
+class Double:
+    INFINITY = '-webkit-fill-available'
+    INHERIT = 'inherit'
+    INITIAL = 'initial'
+
 class TextStyle:
     """
     Holds styling information for text (font, color, decoration, etc.).
@@ -914,6 +920,7 @@ class BorderStyle:
     INSET = 'inset'
     OUTSET = 'outset'
     HIDDEN = 'hidden'
+
 
 
 # --- BorderRadius Refactored ---
@@ -1123,7 +1130,93 @@ class BorderSide:
     # Removed borderRadius - Belongs on BoxDecoration/BorderRadius.
     # Removed border_to_css() - Replaced by to_css_shorthand_value().
 
-# framework/styles.py
+class Border:
+    """
+    A border of a box, comprised of four sides: top, right, bottom, left.
+    """
+    def __init__(self, top: BorderSide = None, right: BorderSide = None, bottom: BorderSide = None, left: BorderSide = None):
+        """
+        Creates a border with the given sides.
+        If a side is None, it defaults to a border with no style (no width).
+        """
+        self.top = top if top else BorderSide(width=0, style=BorderStyle.NONE)
+        self.right = right if right else BorderSide(width=0, style=BorderStyle.NONE)
+        self.bottom = bottom if bottom else BorderSide(width=0, style=BorderStyle.NONE)
+        self.left = left if left else BorderSide(width=0, style=BorderStyle.NONE)
+
+    @classmethod
+    def all(cls, color=Colors.black, width=1.0, style=BorderStyle.SOLID):
+        """Creates a uniform border with the same style on all sides."""
+        side = BorderSide(color=color, width=width, style=style)
+        return cls(top=side, right=side, bottom=side, left=side)
+
+    @classmethod
+    def symmetric(cls, vertical: BorderSide = None, horizontal: BorderSide = None):
+        """Creates a border with symmetrical vertical and horizontal sides."""
+        return cls(
+            top=vertical, 
+            right=horizontal, 
+            bottom=vertical, 
+            left=horizontal
+        )
+    
+    @classmethod
+    def fromBorderSide(cls, side: BorderSide):
+        """Creates a border with the same side on all four edges."""
+        return cls(top=side, right=side, bottom=side, left=side)
+
+    def to_css_dict(self) -> Dict[str, str]:
+        """Returns the CSS properties for the individual border sides."""
+        styles = {}
+        # Optimization: check if all sides are identical
+        if self.top == self.right == self.bottom == self.left:
+             # Use shorthand 'border' property
+             shorthand = self.top.to_css_shorthand_value()
+             if shorthand != 'none':
+                 styles['border'] = shorthand
+             return styles
+
+        # Otherwise, apply individual sides
+        # Helper to apply side rules
+        def apply_side(side, prefix):
+            side_dict = side.to_css_dict()
+            for k, v in side_dict.items():
+                # k is like 'border-width', 'border-color'
+                # we need 'border-top-width', etc.
+                suffix = k.split('-')[1] # width, style, color
+                styles[f"{prefix}-{suffix}"] = v
+
+        apply_side(self.top, 'border-top')
+        apply_side(self.right, 'border-right')
+        apply_side(self.bottom, 'border-bottom')
+        apply_side(self.left, 'border-left')
+        
+        return styles
+
+    def __eq__(self, other):
+        if not isinstance(other, Border):
+            return NotImplemented
+        return (self.top == other.top and 
+                self.right == other.right and 
+                self.bottom == other.bottom and 
+                self.left == other.left)
+
+    def __hash__(self):
+        return hash((self.top, self.right, self.bottom, self.left))
+
+    def __repr__(self):
+        return f"Border(top={self.top}, right={self.right}, bottom={self.bottom}, left={self.left})"
+
+    def to_dict(self):
+         return {
+             'top': self.top.to_dict(),
+             'right': self.right.to_dict(),
+             'bottom': self.bottom.to_dict(),
+             'left': self.left.to_dict()
+         }
+
+    def to_tuple(self):
+         return (self.top.to_tuple(), self.right.to_tuple(), self.bottom.to_tuple(), self.left.to_tuple())
 
 from typing import Optional, Union, Tuple, Dict, Any
 
@@ -1589,7 +1682,7 @@ class BoxDecoration:
     def __init__(self,
                  color: Optional[str] = None,
                  # image: Optional[DecorationImage] = None, # TODO: If image backgrounds needed
-                 border: Optional[Union[str, BorderSide]] = None, # Allow BorderSide object or CSS string? Prefer object.
+                 border: Optional[Union[str, BorderSide, Border]] = None, # Allow BorderSide, Border object or CSS string.
                  borderRadius: Optional[Union[int, float, BorderRadius]] = None, # Allow number or BorderRadius obj
                  boxShadow: Optional[Union[BoxShadow, List[BoxShadow]]] = None, # Allow single or list
                  # gradient: Optional[Gradient] = None, # TODO: If gradients needed
@@ -1604,7 +1697,7 @@ class BoxDecoration:
 
         Args:
             color: Background color.
-            border: Border definition (BorderSide object preferred).
+            border: Border definition (BorderSide or Border object preferred).
             borderRadius: Corner radius (number for all corners or BorderRadius object).
             boxShadow: BoxShadow object or list of BoxShadow objects.
             transform: CSS transform string (e.g., 'rotate(45deg)').
@@ -1630,10 +1723,12 @@ class BoxDecoration:
         if self.color:
             styles['background'] = self.color
         if self.border:
-            if isinstance(self.border, BorderSide):
+            if isinstance(self.border, Border):
+                 styles.update(self.border.to_css_dict())
+            elif isinstance(self.border, BorderSide):
                  # Assumes BorderSide has a way to generate full border property
-                 if hasattr(self.border, 'border_to_css_shorthand'):
-                      styles['border'] = self.border.border_to_css_shorthand() # Example method name
+                 if hasattr(self.border, 'to_css_shorthand_value'):
+                      styles['border'] = self.border.to_css_shorthand_value()
                  else: # Fallback using individual properties if needed
                       border_dict = self.border.to_css_dict() # Assume BorderSide returns dict
                       styles.update(border_dict)
@@ -2897,3 +2992,184 @@ class LoaderStyle(Enum):
 
     def __str__(self) -> str:
         return self.value
+
+
+# --- Matrix4 Implementation for Transform Widget ---
+class Matrix4:
+    """
+    Represents a 4x4 matrix for 3D transformations.
+    Compatible with reconciliation.
+    Stored in column-major order (like OpenGL/Flutter/CSS matrix3d).
+    """
+    def __init__(self, storage: Optional[List[float]] = None):
+        """
+        Initializes Matrix4.
+        Args:
+            storage: List of 16 floats in column-major order. Defaults to identity.
+        """
+        if storage:
+            if len(storage) != 16:
+                raise ValueError("Matrix4 storage must have 16 values.")
+            self.storage = list(storage)
+        else:
+            self.storage = [
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0
+            ]
+
+    @staticmethod
+    def identity() -> 'Matrix4':
+        return Matrix4()
+
+    @staticmethod
+    def rotationZ(radians: float) -> 'Matrix4':
+        """Returns a rotation matrix around the Z axis."""
+        c = math.cos(radians)
+        s = math.sin(radians)
+        # Column-major
+        return Matrix4([
+             c,  s, 0.0, 0.0,
+            -s,  c, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ])
+    
+    @staticmethod
+    def rotationX(radians: float) -> 'Matrix4':
+        """Returns a rotation matrix around the X axis."""
+        c = math.cos(radians)
+        s = math.sin(radians)
+        return Matrix4([
+            1.0, 0.0, 0.0, 0.0,
+            0.0,  c,  s, 0.0,
+            0.0, -s,  c, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ])
+
+    @staticmethod
+    def rotationY(radians: float) -> 'Matrix4':
+        """Returns a rotation matrix around the Y axis."""
+        c = math.cos(radians)
+        s = math.sin(radians)
+        return Matrix4([
+             c, 0.0, -s, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+             s, 0.0,  c, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ])
+
+    @staticmethod
+    def translationValues(x: float, y: float, z: float) -> 'Matrix4':
+        """Returns a translation matrix."""
+        return Matrix4([
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+              x,   y,   z, 1.0
+        ])
+
+    @staticmethod
+    def diagonal3Values(x: float, y: float, z: float) -> 'Matrix4':
+        """Returns a scaling matrix."""
+        return Matrix4([
+              x, 0.0, 0.0, 0.0,
+            0.0,   y, 0.0, 0.0,
+            0.0, 0.0,   z, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ])
+    
+    @staticmethod
+    def skew(alpha: float, beta: float) -> 'Matrix4':
+        """
+        Returns a skew matrix.
+        alpha: Skew along X axis (radians/tan value usually, but here simplifies to tan for standard CSS skew)
+        beta: Skew along Y axis
+        Note: CSS matrix3d uses tan(alpha) for skew.
+        """
+        tan_alpha = math.tan(alpha)
+        tan_beta = math.tan(beta)
+        return Matrix4([
+               1.0, tan_beta, 0.0, 0.0,
+            tan_alpha,      1.0, 0.0, 0.0,
+               0.0,      0.0, 1.0, 0.0,
+               0.0,      0.0, 0.0, 1.0
+        ])
+
+    @staticmethod
+    def compose(translation: Tuple[float, float, float], 
+                rotation: 'Matrix4', 
+                scale: Tuple[float, float, float]) -> 'Matrix4':
+        """
+        Composes a matrix from translation, rotation, and scale.
+        Order: Translation * Rotation * Scale (T * R * S)
+        """
+        t = Matrix4.translationValues(*translation)
+        s = Matrix4.diagonal3Values(*scale)
+        return t.multiply(rotation).multiply(s)
+
+    def multiply(self, other: 'Matrix4') -> 'Matrix4':
+        """Returns the result of satisfying this * other."""
+        a = self.storage
+        b = other.storage
+        result = [0.0] * 16
+        
+        # 4x4 Matrix multiplication (Column-Major)
+        # C = A * B
+        # C_col_k = A * B_col_k
+        
+        for r in range(4): # Row
+            for c in range(4): # Column
+                sum_val = 0.0
+                for k in range(4):
+                    # A accesses: row r, col k -> index k*4 + r
+                    # B accesses: row k, col c -> index c*4 + k
+                    sum_val += a[k*4 + r] * b[c*4 + k]
+                result[c*4 + r] = sum_val
+        
+        return Matrix4(result)
+        
+    def __mul__(self, other: 'Matrix4') -> 'Matrix4':
+        return self.multiply(other)
+
+    def scale(self, x: float, y: float = None, z: float = None) -> 'Matrix4':
+        """Post-multiplies this matrix by a scale matrix."""
+        if y is None: y = x
+        if z is None: z = 1.0 # 2D scale usually ignores Z
+        s = Matrix4.diagonal3Values(x, y, z)
+        return self.multiply(s) # Post-multiply: this * s
+
+    def translate(self, x: float, y: float, z: float = 0.0) -> 'Matrix4':
+        """Post-multiplies this matrix by a translation matrix."""
+        t = Matrix4.translationValues(x, y, z)
+        return self.multiply(t) # Post-multiply: this * t
+    
+    def rotateZ(self, radians: float) -> 'Matrix4':
+        """Post-multiplies this matrix by a Z-rotation matrix."""
+        r = Matrix4.rotationZ(radians)
+        return self.multiply(r)
+
+    # --- CSS Conversion ---
+    def to_css(self) -> str:
+        """Returns the CSS matrix3d string."""
+        # CSS matrix3d takes 16 values in column-major order, comma-separated.
+        # Ensure values are floats
+        vals = [f"{v:.6f}" for v in self.storage] # Limit precision
+        return f"matrix3d({', '.join(vals)})"
+
+    # --- Compatibility ---
+    def __eq__(self, other):
+        if not isinstance(other, Matrix4):
+            return NotImplemented
+        # Allow small epsilon for float comparison? Keeping it strict for now for styles
+        return self.storage == other.storage
+
+    def __hash__(self):
+        return hash(tuple(self.storage))
+
+    def __repr__(self):
+        return f"Matrix4({self.storage})"
+
+    def to_tuple(self):
+        return tuple(self.storage)

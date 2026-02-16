@@ -564,6 +564,8 @@ class WebWindow(QWidget):
         js_api=None,
         width=800,
         height=600,
+        min_width=400,
+        min_height=300,
         window_state="normal",
         frameless=False,
         on_top=False,
@@ -575,9 +577,11 @@ class WebWindow(QWidget):
         self.fixed_size = fixed_size
         if not maximized and not fixed_size:
             self.setGeometry(100, 100, width, height)
+            self.setMinimumSize(QSize(min_width, min_height))
 
         if fixed_size and not maximized:
             self.setFixedSize(QSize(width, height))
+            self.setMinimumSize(QSize(min_width, min_height))
 
         if on_top:
             # Make the window stay on top
@@ -1056,6 +1060,8 @@ def create_window(
     js_api: Api = None,
     width: int = 800,
     height: int = 600,
+    min_width: int = 400,
+    min_height: int = 300,
     window_state: str = "normal",
     frameless: bool = True,
     maximized: bool =False,
@@ -1072,7 +1078,8 @@ def create_window(
         frameless=frameless,
         maximized=maximized,
         fixed_size=fixed_size,
-        
+        min_width=min_width,
+        min_height=min_height,
     )
     if maximized:
         window.show_max_window()

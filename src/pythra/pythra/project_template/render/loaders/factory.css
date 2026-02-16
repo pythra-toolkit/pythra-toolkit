@@ -52,7 +52,7 @@
   animation: l3 1s infinite linear;
 }
 .loader-factory-3:after{
-  --c: red; 
+  --c: var(--loader-color-3, red); 
   clip-path: inset(0 0 0 50%);
 }
 @keyframes l3 {
@@ -70,7 +70,7 @@
 .loader-factory-4:after{
   content: "";
   grid-area: 1/1;
-  background: radial-gradient(circle closest-side,var(--c,red) 92%,#0000) 0 0/calc(100%/4) 100%;
+  background: radial-gradient(circle closest-side,var(--c,var(--loader-color-3, red)) 92%,#0000) 0 0/calc(100%/4) 100%;
   animation: l4 1s infinite linear;
 }
 .loader-factory-4:after{
@@ -99,7 +99,7 @@
   aspect-ratio: 1;
   background:
     radial-gradient(farthest-side,lightblue 98%,#0000) bottom/14px 14px,
-    radial-gradient(farthest-side,red       98%,#0000) top   /14px 14px,
+    radial-gradient(farthest-side,var(--loader-color-3, red)       98%,#0000) top   /14px 14px,
     linear-gradient(#fff 0 0) 50%/4px 95%;
   background-repeat: no-repeat;
   animation: l5 1.5s infinite linear;   
@@ -125,7 +125,7 @@
 .loader-factory-6:after {
   content: "";
   position: relative;
-  background: repeating-linear-gradient(90deg,#0000 0 calc(50% - 8px), #ccc 0 calc(50% + 8px), #0000 0 100%) 0 0/calc(100%/3) 100%;
+  background: repeating-linear-gradient(90deg,#0000 0 calc(50% - 8px), var(--loader-color, var(--loader-color, #ccc)) 0 calc(50% + 8px), #0000 0 100%) 0 0/calc(100%/3) 100%;
   animation: l6-1 1s infinite;
 } 
 .loader-factory-6:before {
@@ -159,7 +159,7 @@
   position: absolute;
   inset: auto calc(50% - 17px) 0;
   height: 50px;
-  --g:no-repeat linear-gradient(#ccc 0 0);
+  --g:no-repeat linear-gradient(var(--loader-color, var(--loader-color, #ccc)) 0 0);
   background: var(--g),var(--g),var(--g),var(--g);
   background-size: 16px 14px;
   animation:
@@ -185,7 +185,7 @@
   width: 90px;
   height: 30px;
   box-shadow: 0 3px 0 #fff;
-  --g:repeat-x repeating-linear-gradient(90deg,#ccc 0 16px,#0000 0 18px,#ccc 0 34px,#0000 0 100%);
+  --g:repeat-x repeating-linear-gradient(90deg,var(--loader-color, var(--loader-color, #ccc)) 0 16px,#0000 0 18px,var(--loader-color, var(--loader-color, #ccc)) 0 34px,#0000 0 100%);
   background: var(--g),var(--g);
   background-size: 60px 14px,60px 14px;
   animation: l8 1s infinite linear;

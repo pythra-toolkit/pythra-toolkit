@@ -25,7 +25,9 @@ from .controllers import (
     TextEditingController,
     SliderController,
     VirtualListController,
+    VirtualGridController,
     DropdownController,
+    ProgressIndicatorController,
 )
 from .events import TapDetails, PanUpdateDetails
 from .derived_widgets.dropdown.dropdown import DerivedDropdown
@@ -73,6 +75,10 @@ from .styles import (
     DropdownTheme,
     GradientBorderTheme,
     GradientTheme,
+    Loader,
+    LoaderStyle,
+    Double,
+    Matrix4,
 )
 
 from .drawing import (
@@ -155,6 +161,12 @@ from .widgets import (
     GradientBorderContainer,
     GradientClipPathBorder,
     # Add any other core widgets you want easily accessible...
+    ProgressIndicator,
+    BarsProgressIndicator,
+    DotsProgressIndicator,
+    ThreeDLoader,
+    Transform,
+    VirtualGridView,
 )
 
 # --- Define __all__ for explicit export control ---
@@ -170,6 +182,7 @@ __all__ = [
     "StatefulWidget",
     "StatelessWidget",
     # --- Styling ---
+    "Double",
     "EdgeInsets",
     "Alignment",
     "TextAlign",
@@ -227,6 +240,7 @@ __all__ = [
     "IconData",
     # '_VirtualListViewState',
     "VirtualListView",
+    "VirtualGridView",
     "ListView",
     "GridView",
     "Stack",
@@ -282,10 +296,24 @@ __all__ = [
     "TextEditingController",
     "SliderController",
     "VirtualListController",
+    "VirtualGridController",
     "DropdownController",
     "DerivedDropdownController",
     "TapDetails",
     "PanUpdateDetails",
+
+    "ProgressIndicator",
+    "ProgressIndicatorController",
+    "Loader",
+    "LoaderStyle",
+
+    "BarsProgressIndicator",
+    "DotsProgressIndicator",
+    "ThreeDLoader",
+
+    "Matrix4",
+    "Transform",
+    "VirtualGridView"
 ]
 
 
