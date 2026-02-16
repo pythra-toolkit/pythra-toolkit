@@ -358,3 +358,5 @@ Please feel free to open an issue to discuss any changes or ideas.
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
+
+Support the developerr: [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B61UDPB9)
