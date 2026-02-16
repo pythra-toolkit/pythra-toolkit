@@ -6,6 +6,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.20] - 2026-02-16
+
+Feature updates: VirtualGridView, Responsive Layouts, and Core Enhancements
+
+- **VirtualGridView**:
+    - Implemented `VirtualGridView` widget for high-performance rendering of large grids.
+    - Added `VirtualGridController` for programmatic control.
+    - Created `PythraVirtualGrid` JS engine (`virtual_grid.js`) for client-side virtualization.
+    - Added `childMinWidth` support for responsive grid layouts.
+
+- **GridView**:
+    - Added `childMinWidth` support to enabling responsive column calculations using CSS Grid `minmax`.
+
+- **Scrollbar**:
+    - Updated `render_props` to support `VirtualGridView` initialization.
+
+- **Transform**:
+    - Implemented `Transform` widget and `Matrix4` helper class.
+
+- **VirtualListView**:
+    - Applied fixes and improvements to virtualization logic.
+
+- **ProgressIndicator**:
+    - Fixed initialization and visibility toggling issues.
+
+- **Core**:
+    - Updated `core.py` to correctly analyze and load required JS engines.
+    - Fixed JS engine loading logic in `_analyze_required_js_engines`.
+
+- **Window**:
+    - Added support for `min_win_width` and `min_win_height` configuration.
+
+- **Styles**:
+    - Added `Double` class for CSS constants.
+    - Implemented `Border` class.
+    - Updated `BoxDecoration` to support `Border`.
+    - Added `Matrix4` helper.
+
+- **State Management**:
+    - Refactored `State` class to use `@property` for `widget` access.
+
+- **Config**:
+    - Added `min_win_width` and `min_win_height` to `config.yaml`.
+
 ## [0.1.19] - 2026-01-06
 
 This release implements a major architectural overhaul of the bridge communication system, implementing a "Data-Driven" approach for vastly improved performance and stability during dynamic UI updates.
