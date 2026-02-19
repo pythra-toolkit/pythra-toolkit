@@ -2694,6 +2694,10 @@ class ClipPath(Widget):
         self.height = height
         self.aspectRatio = aspectRatio # <-- STORE IT
 
+        import hashlib
+        geometry_data = f"{self.viewBox}_{self.points}_{self.radius}_{self.width}_{self.height}_{self.aspectRatio}"
+        self.blueprint_class = f"pythra-clip-bp-{hashlib.md5(geometry_data.encode()).hexdigest()[:10]}"
+
     def render_props(self) -> Dict[str, Any]:
         """
         Passes its layout properties and the raw data needed for
@@ -2707,16 +2711,17 @@ class ClipPath(Widget):
             'width': width_css,
             'height': height_css,
             'aspectRatio': self.aspectRatio, # <-- PASS IT TO PROPS
+            'css_class': self.blueprint_class,
             'responsive_clip_path': {
                 'viewBox': self.viewBox,
                 'points': self.points,
                 'radius': self.radius,
+                'blueprint_class': self.blueprint_class,
             }
         }
 
     def get_required_css_classes(self) -> Set[str]:
-        # Styles are applied dynamically via JS, no shared class needed.
-        return set()
+        return {self.blueprint_class}
 
 
 

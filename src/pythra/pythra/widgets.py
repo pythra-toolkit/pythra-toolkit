@@ -3470,10 +3470,23 @@ class _VirtualListViewState(State):
         for name, func in callbacks.items():
             self.framework.api.register_callback(name, func)
 
+        # Generate JS for initializers
+        js_code_list = []
+        imports = set()
+        for init in result.js_initializers:
+             self.framework._generate_js_for_initializer(init, js_code_list, imports)
+
+        # Analyze required engines to pass to client (so it knows if it needs to load anything)
+        required_engines = self.framework._analyze_required_js_engines(built_tree, result)
+
+        js_code_string = "\n".join(js_code_list)
+
         return {
             "html": html_string,
             "css": css_string,
-            "callback_names": list(callbacks.keys())
+            "callback_names": list(callbacks.keys()),
+            "js": js_code_string,
+            "required_engines": list(required_engines)
         }
 
 
@@ -3511,6 +3524,7 @@ class _VirtualGridViewState(State):
         super().__init__()
         self.item_builder_name = None
         self._virtualization_options = None
+        self._virtualItemsEngines = None
 
     def initState(self):
         widget = self.get_widget()
@@ -3537,7 +3551,8 @@ class _VirtualGridViewState(State):
             "mainAxisSpacing": widget.mainAxisSpacing, # type: ignore
             "crossAxisSpacing": widget.crossAxisSpacing, # type: ignore
             "itemBuilderName": self.item_builder_name,
-            "initialItems": initial_items_html
+            "initialItems": initial_items_html,
+            "virtualItemsEngines": self._virtualItemsEngines 
         }
 
     def dispose(self):
@@ -3601,20 +3616,25 @@ class _VirtualGridViewState(State):
         for name, func in callbacks.items():
             self.framework.api.register_callback(name, func)
 
-        # NEW: Generate JS code for initializers using the Framework's generic helper
+        # Generate JS for initializers
         js_code_list = []
         imports = set()
         for init in result.js_initializers:
              self.framework._generate_js_for_initializer(init, js_code_list, imports)
         
+        # Analyze required engines
+        required_engines = self.framework._analyze_required_js_engines(built_tree, result)
+        self._virtualItemsEngines = list(required_engines)
+
         js_code_string = "\n".join(js_code_list)
-        print(js_code_string)
+        # print(js_code_string)
 
         return {
             "html": html_string,
             "css": css_string,
             "callback_names": list(callbacks.keys()),
-            "js": js_code_string # Pass executable JS string
+            "js": js_code_string,
+            "required_engines": list(required_engines)
         }
 
     def build(self) -> Widget:

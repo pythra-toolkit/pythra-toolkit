@@ -317,6 +317,6 @@ __all__ = [
 ]
 
 
-__version__ = "0.1.20"  # Example version
+__version__ = "0.1.21"  # Example version
 
 print("PyThra Toolkit Initialized")  # Optional: Confirmation message

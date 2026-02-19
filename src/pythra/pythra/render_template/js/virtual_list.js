@@ -38,6 +38,17 @@ export class PythraVirtualList {
                 if (itemData.css) {
                     initialCss.add(itemData.css);
                 }
+                // 3. Execute item Javascript
+                if (itemData.js) {
+                    try {
+                        setTimeout(() => {
+                            const initFunc = new Function(itemData.js);
+                            initFunc();
+                        }, 0);
+                    } catch (e) {
+                        console.error(`Error executing JS for initial list item ${index}:`, e);
+                    }
+                }
             }
             // 3. Inject all collected CSS into the dynamic stylesheet in one go.
             if (initialCss.size > 0) {
@@ -137,7 +148,7 @@ export class PythraVirtualList {
                     if (window.pywebview && this.options.itemBuilderName) {
                         window.pywebview.build_list_item(this.options.itemBuilderName, item.index)
                             .then(response => {
-                                const { html, css } = response;
+                                const { html, css, js } = response;
                                 this.itemCache[item.index] = html;
 
                                 if (css) {
@@ -151,6 +162,18 @@ export class PythraVirtualList {
                                     el.innerHTML = html;
                                     // Attach event listeners to the newly created DOM nodes.
                                     this.attachEventListeners(el);
+
+                                    // Execute JS initializers for this item
+                                    if (js) {
+                                        try {
+                                            setTimeout(() => {
+                                                const initFunc = new Function(js);
+                                                initFunc();
+                                            }, 0);
+                                        } catch (e) {
+                                            console.error(`Error executing JS for item ${item.index}:`, e);
+                                        }
+                                    }
                                 }
                             })
                             .catch(e => {

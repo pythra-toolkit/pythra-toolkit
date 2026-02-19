@@ -50,6 +50,16 @@ export class PythraVirtualGrid {
                 if (itemData.css) {
                     initialCss.add(itemData.css);
                 }
+                if (itemData.js) {
+                    try {
+                        setTimeout(() => {
+                            const initFunc = new Function(itemData.js);
+                            initFunc();
+                        }, 0);
+                    } catch (e) {
+                        console.error(`Error executing JS for initial grid item ${index}:`, e);
+                    }
+                }
             }
             if (initialCss.size > 0) {
                 const styleSheet = document.getElementById('dynamic-styles');
@@ -87,17 +97,30 @@ export class PythraVirtualGrid {
         const containerWidth = this.scrollEl.clientWidth;
         if (containerWidth === 0) return; // Not visible yet?
 
-        const crossAxisCount = this.options.crossAxisCount || 2;
+        let crossAxisCount = this.options.crossAxisCount || 2;
         const mainAxisSpacing = this.options.mainAxisSpacing || 0;
         const crossAxisSpacing = this.options.crossAxisSpacing || 0;
         const childAspectRatio = this.options.childAspectRatio || 1.0;
+        const childMinWidth = this.options.childMinWidth;
+
+        if (childMinWidth && childMinWidth > 0) {
+            // How many items of at least childMinWidth can fit in the container, accounting for spacing?
+            // (count * childMinWidth) + ((count - 1) * spacing) <= containerWidth
+            // count * (childMinWidth + spacing) - spacing <= containerWidth
+            // count <= (containerWidth + spacing) / (childMinWidth + spacing)
+
+            const calculatedCount = Math.floor((containerWidth + crossAxisSpacing) / (childMinWidth + crossAxisSpacing));
+            crossAxisCount = Math.max(1, calculatedCount);
+        }
+
+        this.activeCrossAxisCount = crossAxisCount;
 
         // Calculate item width
         // Total width = (itemWidth * count) + (spacing * (count - 1))
         // itemWidth * count = Total width - (spacing * (count - 1))
         // itemWidth = (Total width - (spacing * (count - 1))) / count
-        const totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
-        this.itemWidth = (containerWidth - totalSpacing) / crossAxisCount;
+        const totalSpacing = crossAxisSpacing * (this.activeCrossAxisCount - 1);
+        this.itemWidth = (containerWidth - totalSpacing) / this.activeCrossAxisCount;
 
         // Calculate item height based on aspect ratio
         this.itemHeight = this.itemWidth / childAspectRatio;
@@ -108,7 +131,7 @@ export class PythraVirtualGrid {
 
     updateSizerHeight() {
         const itemCount = this.options.itemCount;
-        const crossAxisCount = this.options.crossAxisCount || 2;
+        const crossAxisCount = this.activeCrossAxisCount || this.options.crossAxisCount || 2;
         const rowCount = Math.ceil(itemCount / crossAxisCount);
         const totalHeight = (rowCount * this.rowHeight) - (this.options.mainAxisSpacing || 0); // Subtract last spacing
 
@@ -141,7 +164,7 @@ export class PythraVirtualGrid {
 
         const scrollTop = this.scrollEl.scrollTop;
         const viewportHeight = this.scrollEl.clientHeight;
-        const crossAxisCount = this.options.crossAxisCount || 2;
+        const crossAxisCount = this.activeCrossAxisCount || this.options.crossAxisCount || 2;
         const crossAxisSpacing = this.options.crossAxisSpacing || 0;
 
         // Calculate visible rows
@@ -211,7 +234,7 @@ export class PythraVirtualGrid {
                     if (window.pywebview && this.options.itemBuilderName) {
                         window.pywebview.build_list_item(this.options.itemBuilderName, item.index)
                             .then(response => {
-                                const { html, css } = response;
+                                const { html, css, js } = response;
                                 this.itemCache[item.index] = html;
 
                                 if (css) {
@@ -224,6 +247,19 @@ export class PythraVirtualGrid {
                                 if (el.dataset.index === String(item.index)) {
                                     el.innerHTML = html;
                                     this.attachEventListeners(el);
+
+                                    // Execute JS initializers for this item
+                                    if (js) {
+                                        try {
+                                            // Execute in the next tick to ensure DOM is fully ready
+                                            setTimeout(() => {
+                                                const initFunc = new Function(js);
+                                                initFunc();
+                                            }, 0);
+                                        } catch (e) {
+                                            console.error(`Error executing JS for item ${item.index}:`, e);
+                                        }
+                                    }
                                 }
                             })
                             .catch(e => {

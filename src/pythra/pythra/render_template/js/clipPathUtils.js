@@ -119,26 +119,115 @@ export class ResponsiveClipPath {
     this.update = this.update.bind(this);
     this.roList = [];
 
+    this.isClassSelector = typeof target === 'string' && target.startsWith('.');
+    this.selector = target;
+    this.styleTagId = this.isClassSelector ? `clip-style-${target.substring(1)}` : null;
+
+    if (this.isClassSelector) {
+      let styleTag = document.getElementById(this.styleTagId);
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = this.styleTagId;
+        document.head.appendChild(styleTag);
+      }
+      this.styleTag = styleTag;
+    }
+
     if (typeof target === 'string') {
       let selector = target;
       if (!selector.startsWith('#') && !selector.startsWith('.')) {
         const byId = document.getElementById(selector);
         selector = byId ? `#${selector}` : `.${selector}`;
       }
+
+      if (!this.isClassSelector && selector.startsWith('.')) {
+        this.isClassSelector = true;
+        this.selector = selector;
+        this.styleTagId = `clip-style-${selector.substring(1)}`;
+        let styleTag = document.getElementById(this.styleTagId);
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.id = this.styleTagId;
+          document.head.appendChild(styleTag);
+        }
+        this.styleTag = styleTag;
+      }
+
       const nodeList = document.querySelectorAll(selector);
       if (nodeList.length === 0) {
         console.warn(`ResponsiveClipPath: no elements found for selector "${selector}"`);
       }
       nodeList.forEach(el => this.elements.push(el));
-      console.log(`ResponsiveClipPath: Target "${target}" found ${this.elements.length} elements.`);
+      // console.log(`ResponsiveClipPath: Target "${target}" found ${this.elements.length} elements.`);
     } else if (target instanceof HTMLElement) {
       this.elements.push(target);
-      console.log(`ResponsiveClipPath: Target is HTMLElement. ID: ${target.id}`);
+      // console.log(`ResponsiveClipPath: Target is HTMLElement. ID: ${target.id}`);
     } else {
       console.warn('ResponsiveClipPath: invalid target', target);
     }
 
-    this.elements.forEach(el => this.initElement(el));
+    if (this.isClassSelector) {
+      this.observeRepresentative();
+    } else {
+      this.elements.forEach(el => this.initElement(el));
+    }
+  }
+
+  observeRepresentative() {
+    if (this.classRo) return;
+
+    let measureEl = this.elements[0];
+    if (!measureEl || !measureEl.isConnected) {
+      measureEl = document.querySelector(this.selector);
+    }
+
+    if (!measureEl) {
+      setTimeout(() => this.observeRepresentative(), 100);
+      return;
+    }
+
+    if (window.ResizeObserver) {
+      this.classRo = new ResizeObserver(() => this.applyClassClip());
+      this.classRo.observe(measureEl);
+    } else {
+      window.addEventListener('resize', this.update);
+    }
+  }
+
+  applyClassClip() {
+    // Find an element to measure
+    let measureEl = this.elements[0];
+    if (!measureEl || !measureEl.isConnected) {
+      measureEl = document.querySelector(this.selector);
+    }
+    if (!measureEl) return;
+
+    const rect = measureEl.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    if (this.lastRect && this.lastRect.width === rect.width && this.lastRect.height === rect.height) {
+      return;
+    }
+    this.lastRect = { width: rect.width, height: rect.height };
+
+    const newPath = scalePathAbsoluteMLA(
+      this.orig,
+      this.refW,
+      this.refH,
+      rect.width,
+      rect.height,
+      this.options
+    );
+    this.currentPath = `path("${newPath}")`;
+
+    if (this.styleTag) {
+      this.styleTag.textContent = `
+              ${this.selector} {
+                  clip-path: ${this.currentPath} !important;
+                  -webkit-clip-path: ${this.currentPath} !important;
+              }
+          `;
+    }
   }
 
   initElement(el) {
@@ -154,7 +243,7 @@ export class ResponsiveClipPath {
 
   applyClip(el) {
     const rect = el.getBoundingClientRect();
-    console.log(`ResponsiveClipPath.applyClip: ${el.id} Rect: ${rect.width}x${rect.height}`);
+    // console.log(`ResponsiveClipPath.applyClip: ${el.id} Rect: ${rect.width}x${rect.height}`);
     const newPath = scalePathAbsoluteMLA(
       this.orig,
       this.refW,
@@ -170,13 +259,26 @@ export class ResponsiveClipPath {
   }
 
   update() {
-    this.elements.forEach(el => this.applyClip(el));
+    if (this.isClassSelector) {
+      this.applyClassClip();
+    } else {
+      this.elements.forEach(el => this.applyClip(el));
+    }
   }
 
   disconnect() {
     this.roList.forEach(({ el, ro }) => ro.unobserve(el));
     this.roList = [];
     window.removeEventListener('resize', this.update);
+
+    if (this.classRo) {
+      this.classRo.disconnect();
+      this.classRo = null;
+    }
+
+    if (this.styleTag && this.styleTag.parentNode) {
+      this.styleTag.parentNode.removeChild(this.styleTag);
+    }
   }
 
   // ✅ Your new method

@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.21] - 2026-02-20
+
+Performance updates: Optimized ClipPath generation and Responsive VirtualGridViews
+
+- **VirtualGridView**:
+    - **UI Responsiveness:** Virtual grids now fluidly shrink and expand their column capacity on the client-side based on the `childMinWidth` parameter, bypassing static limits.
+    - **Reconciliation Streamlining:** Converted grid element debug messages from standard `print` statements into wrapped `debug_print` commands, silencing heavy terminal spam while virtual items lazy load.
+
+- **ClipPath**:
+    - **Pro Blueprint Pattern**: Resolved massive client-side sluggishness and unstyled items loading from memory. The framework now serializes each ClipPath structure identically (hashing `viewBox`, `radius`, `points`, `width`, `height`), attaching exactly *one* shared layout ruleset `<style>` tag and *one* Javascript `ResizeObserver` per unique configuration.
+    - **Network Caching:** The core Python engine caches successfully transmitted rendering hashes inline via `_clip_blueprint_registry`, entirely terminating duplicate Javascript generation cycles across arbitrarily large datasets.
+
+---
 ## [0.1.20] - 2026-02-16
 
 Feature updates: VirtualGridView, Responsive Layouts, and Core Enhancements

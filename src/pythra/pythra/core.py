@@ -228,6 +228,9 @@ class Framework:
         self._cached_initial_html: Optional[str] = None
         self._cached_initial_css: Optional[str] = None
         self._cached_font_css: Optional[str] = None 
+        
+        # Tracks JS blueprint classes for clip-paths initialized in this exact instance to skip duplications.
+        self._clip_blueprint_registry: Set[str] = set()
 
         # STEP 7: Start the asset server and finalize setup
         self.asset_server.start()  # Begin serving static files
@@ -350,6 +353,13 @@ class Framework:
         )
         self._result = result # Store the result
 
+        _v_items_required_engines = []
+
+        for init in result.js_initializers:
+            if init['type'] == 'virtual_grid':
+                # for k in init['data']['virtual_grid_options']['initialItems']:
+                _v_items_required_engines = init['data']['virtual_grid_options']['virtualItemsEngines']
+
         # 3. Update framework state from the result
         self.reconciler.context_maps["main"] = result.new_rendered_map
         for cb_id, cb_func in result.registered_callbacks.items():
@@ -359,7 +369,7 @@ class Framework:
         required_engines = self._analyze_required_js_engines(built_tree_root, result)
         print(f"⚙️  PyThra Framework | Analysis Complete: {len(required_engines)} JS engines needed: {', '.join(required_engines) if required_engines else 'None'}")
 
-        self._loaded_js_engines = required_engines  # Store the initially loaded engines
+        self._loaded_js_engines = required_engines.update(_v_items_required_engines) if _v_items_required_engines else required_engines  # Store the initially loaded engines
         
         # 5. Generate initial HTML, CSS, and JS with optimized loading
         root_key = initial_tree_to_reconcile.get_unique_id() if initial_tree_to_reconcile else None
@@ -1040,7 +1050,7 @@ class Framework:
                 print(f"💥 ERROR generating CSS for class '{css_class}': {e}")
                 traceback.print_exc()
 
-        print(f"🪄  PyThra Framework | Generated CSS for {len(all_rules)} active shared classes.")
+        debug_print(f"🪄  PyThra Framework | Generated CSS for {len(all_rules)} active shared classes.")
         # print(f"Rules: {all_rules}")
         return "\n".join(all_rules)
 
@@ -1113,6 +1123,12 @@ class Framework:
                         # Generate JS for ResponsiveClipPath dynamic init
                         target_id = init["target_id"]
                         clip_data = init["data"]
+                        blueprint_class = clip_data.get("blueprint_class", target_id)
+                        
+                        if blueprint_class in self._clip_blueprint_registry:
+                            continue
+                        self._clip_blueprint_registry.add(blueprint_class)
+
                         points_json = _dumps(clip_data["points"])
                         radius_json = _dumps(clip_data["radius"])
                         ref_w_json = _dumps(clip_data["viewBox"][0])
@@ -1120,16 +1136,18 @@ class Framework:
 
                         processed_inits.append(f"""
                         (function() {{
-                            const points = {points_json}.map(p => ({{x: p[0], y: p[1]}}));
-                            const pathStr = window.generateRoundedPath(points, {radius_json});
-                            if (window.ResponsiveClipPath) {{
-                                window._pythra_instances['{target_id}'] = new window.ResponsiveClipPath(
-                                    '{target_id}', 
-                                    pathStr, 
-                                    {ref_w_json}, 
-                                    {ref_h_json}, 
-                                    {{ uniformArc: true, decimalPlaces: 2 }}
-                                );
+                            if (!window._pythra_instances['{blueprint_class}']) {{
+                                const points = {points_json}.map(p => ({{x: p[0], y: p[1]}}));
+                                const pathStr = window.generateRoundedPath(points, {radius_json});
+                                if (window.ResponsiveClipPath) {{
+                                    window._pythra_instances['{blueprint_class}'] = new window.ResponsiveClipPath(
+                                        '.{blueprint_class}', 
+                                        pathStr, 
+                                        {ref_w_json}, 
+                                        {ref_h_json}, 
+                                        {{ uniformArc: true, decimalPlaces: 2 }}
+                                    );
+                                }}
                             }}
                         }})();
                         """)
@@ -1430,127 +1448,7 @@ class Framework:
         # --- END OF NEW LOGIC ---
         # Your initializer logic for ClipPath etc. goes here if needed
         for init in result.js_initializers:
-            # --- ADD THIS BLOCK FOR SIMPLEBAR ---
-            if init["type"] == "SimpleBar":
-                target_id = init["target_id"]
-                # We can pass options from Python to the SimpleBar constructor
-                options_json = _dumps(init.get("options", {}))
-                js_commands.append(
-                    f"""
-                    const el_{target_id} = document.getElementById('{target_id}');
-                    if (el_{target_id} && !el_{target_id}.simplebar) {{ // Check if not already initialized
-                        new SimpleBar(el_{target_id}, {options_json} );
-                        console.log('SimpleBar initialized for #{target_id}');
-                        //console.log(!el_{target_id}.simplebar);
-                    }};
-                    
-                """
-                )
-            # --- END OF NEW BLOCK ---
-
-             # --- ADD THIS NEW BLOCK for the slider ---
-            if init.get("type") == "_RenderableSlider":
-                
-                target_id = init["target_id"]
-                options_json = _dumps(init.get("options", {}))
-                # This JS command creates a new instance of our slider engine
-                js_commands.append(f"""
-                    if (typeof PythraSlider !== 'undefined') {{
-                        window._pythra_instances['{target_id}'] = new PythraSlider('{target_id}', {options_json});
-                    }} else {{
-                        console.error('PythraSlider class not found. Make sure slider.js is included.');
-                    }}
-                """)
-            # --- END OF NEW SLIDER BLOCK ---
-
-            if init["type"] == "VirtualList":
-                target_id = init["target_id"]
-                estimated_height = init["estimated_height"]
-                item_count = init["item_count"]
-                js_commands.append(
-                    f"""
-                    const VlistId = "{target_id}";          // same key used above
-                    const count = {item_count};             // reconciler can inject this
-                    const estimate = {estimated_height};                        // same as Python
-
-                    new VirtualList(
-                    VlistId,
-                    count,
-                    estimate,
-                    (i) => {{
-                        // reconciler will create the actual DOM for row `i`
-                        // we just need the component to be ready; reconciler patches
-                        // the inner content later.
-                        const div = document.createElement("div");
-                        div.dataset.index = i;
-                        return div;
-                    }}
-                    );
-                """
-                )
-
-            if init["type"] == "VirtualGrid":
-                target_id = init["target_id"]
-                estimated_height = init["estimated_height"]
-                item_count = init["item_count"]
-                js_commands.append(
-                    f"""
-                    const VgridId = "{target_id}";          // same key used above
-                    const count = {item_count};             // reconciler can inject this
-                    const estimate = {estimated_height};                        // same as Python
-
-                    new VirtualGrid(
-                    VgridId,
-                    count,
-                    estimate,
-                    (i) => {{
-                        // reconciler will create the actual DOM for row `i`
-                        // we just need the component to be ready; reconciler patches
-                        // the inner content later.
-                        const div = document.createElement("div");
-                        div.dataset.index = i;
-                        return div;
-                    }}
-                    );
-                """
-                )
-
-            if init["type"] == "ResponsiveClipPath":
-                imports.add(
-                    "import { generateRoundedPath } from './js/pathGenerator.js';"
-                )
-                imports.add(
-                    "import { ResponsiveClipPath } from './js/clipPathUtils.js';"
-                )
-                target_id = init["target_id"]
-                clip_data = init["data"]
-                # print("target id: ", target_id, "Data: ", clip_data)
-
-                # Serialize the Python data into JSON strings for JS
-                points_json = _dumps(clip_data["points"])
-                radius_json = _dumps(clip_data["radius"])
-                ref_w_json = _dumps(clip_data["viewBox"][0])
-                ref_h_json = _dumps(clip_data["viewBox"][1])
-
-                # This JS code performs the exact two-step process you described.
-                js_commands.append(
-                    f"""
-                    // Step 0: Convert Python's array-of-arrays to JS's array-of-objects
-                    const pointsForGenerator_{target_id} = {points_json}.map(p => ({{x: p[0], y: p[1]}}));
-                    
-                    // Step 1: Call generateRoundedPath with the points and radius
-                    const initialPathString_{target_id} = window.generateRoundedPath(pointsForGenerator_{target_id}, {radius_json});
-                    
-                    // Step 2: Feed the generated path into ResponsiveClipPath
-                    window._pythra_instances['{target_id}'] = new window.ResponsiveClipPath(
-                        '{target_id}', 
-                        initialPathString_{target_id}, 
-                        {ref_w_json}, 
-                        {ref_h_json}, 
-                        {{ uniformArc: true, decimalPlaces: 2 }}
-                    );
-                """
-                )
+            self._generate_js_for_initializer(init, js_commands, imports)
 
         # --- INCLUDE JS UTILITIES IN INITIAL RENDER ---
         # Get JS utilities for initial render so all functions are available
@@ -1575,6 +1473,105 @@ class Framework:
         </script>
         """
         return full_script
+
+    def _generate_js_for_initializer(self, init: Dict[str, Any], js_commands: List[str], imports: Set[str]):
+        """Generates JS code for a single initializer."""
+        init_type = init.get("type")
+        target_id = init.get("target_id")
+        
+        # --- SIMPLEBAR ---
+        if init_type == "SimpleBar":
+            options_json = _dumps(init.get("options", {}))
+            js_commands.append(
+                f"""
+                const el_{target_id} = document.getElementById('{target_id}');
+                if (el_{target_id} && !el_{target_id}.simplebar) {{
+                    new SimpleBar(el_{target_id}, {options_json} );
+                }};
+            """
+            )
+        
+        # --- SLIDER ---
+        elif init_type == "_RenderableSlider":
+            options_json = _dumps(init.get("options", {}))
+            js_commands.append(f"""
+                if (typeof PythraSlider !== 'undefined') {{
+                    window._pythra_instances['{target_id}'] = new PythraSlider('{target_id}', {options_json});
+                }} else {{
+                    console.error('PythraSlider class not found.');
+                }}
+            """)
+
+        # --- VIRTUAL LIST ---
+        elif init_type == "VirtualList":
+            estimated_height = init["estimated_height"]
+            item_count = init["item_count"]
+            js_commands.append(
+                f"""
+                new VirtualList(
+                    "{target_id}",
+                    {item_count},
+                    {estimated_height},
+                    (i) => {{
+                        const div = document.createElement("div");
+                        div.dataset.index = i;
+                        return div;
+                    }}
+                );
+            """
+            )
+
+        # --- VIRTUAL GRID ---
+        elif init_type == "VirtualGrid":
+            estimated_height = init["estimated_height"]
+            item_count = init["item_count"]
+            js_commands.append(
+                f"""
+                new VirtualGrid(
+                    "{target_id}",
+                    {item_count},
+                    {estimated_height},
+                    (i) => {{
+                        const div = document.createElement("div");
+                        div.dataset.index = i;
+                        return div;
+                    }}
+                );
+            """
+            )
+
+        # --- CLIP PATH ---
+        elif init_type == "ResponsiveClipPath":
+            imports.add("import { generateRoundedPath } from './js/pathGenerator.js';")
+            imports.add("import { ResponsiveClipPath } from './js/clipPathUtils.js';")
+            
+            clip_data = init["data"]
+            blueprint_class = clip_data.get("blueprint_class", target_id)
+
+            if blueprint_class in self._clip_blueprint_registry:
+                return # Skip redundant initializations for identically sized ClipPaths
+            self._clip_blueprint_registry.add(blueprint_class)
+
+            points_json = _dumps(clip_data["points"])
+            radius_json = _dumps(clip_data["radius"])
+            ref_w_json = _dumps(clip_data["viewBox"][0])
+            ref_h_json = _dumps(clip_data["viewBox"][1])
+            bp_var = blueprint_class.replace("-", "_")
+
+            js_commands.append(f"""
+                if (!window._pythra_instances['{blueprint_class}']) {{
+                    const pointsForGenerator_{bp_var} = {points_json}.map(p => ({{x: p[0], y: p[1]}}));
+                    const initialPathString_{bp_var} = window.generateRoundedPath(pointsForGenerator_{bp_var}, {radius_json});
+                    
+                    window._pythra_instances['{blueprint_class}'] = new window.ResponsiveClipPath(
+                        '.{blueprint_class}', 
+                        initialPathString_{bp_var}, 
+                        {ref_w_json}, 
+                        {ref_h_json}, 
+                        {{ uniformArc: true, decimalPlaces: 2 }}
+                    );
+                }}
+            """)
 
     # Helper method to find JS modules from discovered plugins
     def _find_js_module(self, engine_name: str) -> Optional[Dict]:
