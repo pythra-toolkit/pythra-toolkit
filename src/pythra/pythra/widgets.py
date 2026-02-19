@@ -2292,7 +2292,6 @@ class Scrollbar(Widget):
                     /* Use a transparent border to create padding inside the thumb */
                     border: {thumb_padding}px solid transparent;
                     background-clip: content-box;
-                    opacity: 1; /* Override auto-hide opacity if needed */
                 }}
 
                 .{css_class} .simplebar-scrollbar::after {{
@@ -2301,7 +2300,6 @@ class Scrollbar(Widget):
                     /* Use a transparent border to create padding inside the thumb */
                     border: {thumb_padding}px solid transparent;
                     background-clip: content-box;
-                    opacity: 1; /* Override auto-hide opacity if needed */
                 }}
 
                 /* Style the thumb on hover */
