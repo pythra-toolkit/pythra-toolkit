@@ -1982,14 +1982,14 @@ class ScrollbarTheme:
     thumbColor: Optional[str] = "#888" # Color of the draggable thumb.
     thumbHoverColor: Optional[str] = "#555" # Color of the thumb on hover.
     
-    trackColor: Optional[str] = "#f1f1f1" # Color of the track (the groove).
+    trackColor: Optional[str] = "transparent" # Color of the track (the groove).
     
     # The radius of the corners on the thumb.
     radius: int = 6 
     trackRadius: int = 8 
     
     # Creates a "padding" effect around the thumb by using a transparent border.
-    thumbPadding: int = 3 
+    thumbPadding: int = 0 
     trackMargin: Optional[EdgeInsets] = 0 
 
     def to_tuple(self) -> Tuple:
