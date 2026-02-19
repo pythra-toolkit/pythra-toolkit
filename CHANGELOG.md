@@ -50,6 +50,7 @@ Feature updates: VirtualGridView, Responsive Layouts, and Core Enhancements
 - **Config**:
     - Added `min_win_width` and `min_win_height` to `config.yaml`.
 
+---
 ## [0.1.19] - 2026-01-06
 
 This release implements a major architectural overhaul of the bridge communication system, implementing a "Data-Driven" approach for vastly improved performance and stability during dynamic UI updates.

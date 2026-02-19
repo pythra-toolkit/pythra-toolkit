@@ -15,6 +15,7 @@ export class PythraVirtualGrid {
         console.log(`✅ PythraVirtualGrid engine is initializing for #${elementId}`);
 
         this.options = options;
+
         // options.itemCount
         // options.crossAxisCount (columns)
         // options.childAspectRatio (width / height)

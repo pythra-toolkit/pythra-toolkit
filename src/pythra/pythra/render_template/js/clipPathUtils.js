@@ -184,3 +184,6 @@ export class ResponsiveClipPath {
     return this.currentPath;
   }
 }
+
+window.ResponsiveClipPath = ResponsiveClipPath;
+window.scalePathAbsoluteMLA = scalePathAbsoluteMLA;

@@ -631,7 +631,16 @@ class Text(Widget):
             style_str = style if style else ''
             # print("Style str: ", style)
             text_align_str = f"text-align: {textAlign};" if textAlign else ''
-            overflow_str = f"overflow: {overflow}; white-space: nowrap; text-overflow: ellipsis;" if overflow == 'ellipsis' else (f"overflow: {overflow};" if overflow else '')
+            
+            # If overflow is 'ellipsis', force single line.
+            # Otherwise, or if overflow is specifically 'visible' (or None implied), use pre-wrap to respect \n
+            if overflow == 'ellipsis':
+                overflow_str = f"overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
+            elif overflow:
+                 overflow_str = f"overflow: {overflow};"
+            else:
+                # Default behavior: wrap text and respect newlines
+                overflow_str = "white-space: pre-wrap;"
 
 
             # Basic styling for <p> tag often used for Text
@@ -3592,10 +3601,20 @@ class _VirtualGridViewState(State):
         for name, func in callbacks.items():
             self.framework.api.register_callback(name, func)
 
+        # NEW: Generate JS code for initializers using the Framework's generic helper
+        js_code_list = []
+        imports = set()
+        for init in result.js_initializers:
+             self.framework._generate_js_for_initializer(init, js_code_list, imports)
+        
+        js_code_string = "\n".join(js_code_list)
+        print(js_code_string)
+
         return {
             "html": html_string,
             "css": css_string,
-            "callback_names": list(callbacks.keys())
+            "callback_names": list(callbacks.keys()),
+            "js": js_code_string # Pass executable JS string
         }
 
     def build(self) -> Widget:

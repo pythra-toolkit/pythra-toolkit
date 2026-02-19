@@ -16,12 +16,14 @@ export class PythraVirtualList {
         }
 
         console.log(`✅ PythraVirtualList engine is initializing for #${elementId}`);
-        
+
         this.options = options;
+
+
         this.simplebar = new SimpleBar(this.container, this.options.simplebarOptions || {});
         this.scrollEl = this.simplebar.getScrollElement();
         this.contentEl = this.simplebar.getContentElement();
-        
+
         this.itemCache = {}; // Cache will ONLY store HTML strings.
         this.visibleItemElements = [];
 
@@ -58,7 +60,7 @@ export class PythraVirtualList {
 
         this.render = this.render.bind(this);
         this.scrollEl.addEventListener('scroll', this.render);
-        
+
         this.render();
     }
 
@@ -71,7 +73,7 @@ export class PythraVirtualList {
         const clickableElements = element.querySelectorAll('[onclick]');
         clickableElements.forEach(clickable => {
             const onclickAttr = clickable.getAttribute('onclick');
-            
+
             // Regex to parse out the callback name from "handleClick('callback_name')"
             const match = onclickAttr.match(/handleClick\('([^']+)'\)/);
 
@@ -99,12 +101,12 @@ export class PythraVirtualList {
             this.options.itemCount - 1,
             Math.ceil((scrollTop + viewportHeight) / this.options.itemExtent)
         );
-        
+
         const itemsToRender = [];
         for (let i = startIndex; i <= endIndex; i++) {
             itemsToRender.push({ index: i, top: i * this.options.itemExtent });
         }
-        
+
         for (let i = 0; i < itemsToRender.length; i++) {
             const item = itemsToRender[i];
             let el = this.visibleItemElements[i];
@@ -120,10 +122,10 @@ export class PythraVirtualList {
             }
 
             el.style.transform = `translateY(${item.top}px)`;
-            
+
             if (el.dataset.index !== String(item.index)) {
                 el.dataset.index = item.index;
-                
+
                 if (this.itemCache[item.index]) {
                     // Item was pre-rendered or fetched before.
                     el.innerHTML = this.itemCache[item.index];
@@ -144,7 +146,7 @@ export class PythraVirtualList {
                                         styleSheet.textContent += `\n${css}`;
                                     }
                                 }
-                                
+
                                 if (el.dataset.index === String(item.index)) {
                                     el.innerHTML = html;
                                     // Attach event listeners to the newly created DOM nodes.
@@ -161,11 +163,13 @@ export class PythraVirtualList {
                 }
             }
         }
-        
+
         for (let i = itemsToRender.length; i < this.visibleItemElements.length; i++) {
             this.visibleItemElements[i].style.transform = 'translateY(-9999px)';
         }
     }
+
+
 
     /**
      * Called from Python when the underlying data for the list has changed.
@@ -175,12 +179,12 @@ export class PythraVirtualList {
         console.log(`Refreshing ALL visible items for #${this.container.id}`);
         // 1. Clear the entire HTML cache.
         this.itemCache = {};
-        
+
         // 2. Mark all currently visible DOM elements as "dirty" by resetting their data-index.
         this.visibleItemElements.forEach(el => {
             el.dataset.index = '-1'; // Set to an invalid index
         });
-        
+
         // 3. Trigger a render to fetch the new, updated content.
         this.render();
     }
@@ -198,10 +202,10 @@ export class PythraVirtualList {
             if (this.itemCache[index]) {
                 delete this.itemCache[index];
             }
-            
+
             // 2. Find if this item is currently visible in the DOM.
             const visibleElement = this.visibleItemElements.find(el => el.dataset.index === String(index));
-            
+
             if (visibleElement) {
                 // 3. If it's visible, mark it as dirty so the next render pass will update it.
                 visibleElement.dataset.index = '-1';
@@ -211,7 +215,7 @@ export class PythraVirtualList {
         // 4. Trigger a render pass to update any newly dirtied elements.
         this.render();
     }
-    
+
     // --- END OF NEW LOGIC ---
 
     destroy() {

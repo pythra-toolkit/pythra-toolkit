@@ -1,6 +1,6 @@
 import re
 
-file_path = "navigation.py"  # change to your actual file path
+file_path = "src/pythra/pythra/styles.py"  # change to your actual file path
 
 with open(file_path, "r", encoding="utf-8") as f:
     content = f.read()
