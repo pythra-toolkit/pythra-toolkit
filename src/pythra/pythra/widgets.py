@@ -156,10 +156,10 @@ class Container(Widget):
         gradient: Optional[GradientTheme] = None,
         zAxisIndex: int = 0,
         cssClass: Optional[Union[str, List[str]]] = None,
+        style: Optional[Dict[str, str]] = None,
         js_init={},
         pointerEvents: Optional[str] = None,  # New property for 'auto', 'none', etc.
     ):
-        # <-- NEW PARAMETER
 
         super().__init__(key=key, children=[child] if child else [])
 
@@ -176,6 +176,7 @@ class Container(Widget):
         self.visible = visible
         self.gradient = gradient
         self.zAxisIndex = zAxisIndex
+        self.style = style
         self.js_init = js_init
         self.pointerEvents = pointerEvents
 
@@ -202,6 +203,7 @@ class Container(Widget):
                 self.gradient,
                 self.zAxisIndex,
                 tuple(sorted(self.cssClass)),
+                tuple(sorted(self.style.items())) if self.style else None,
                 self.pointerEvents,  # Add to style key
             )
         )
@@ -218,6 +220,11 @@ class Container(Widget):
         if not self.visible:
             instance_styles["display"] = "none"
 
+        # Add local inline overrides so they animate dynamically!
+        if getattr(self, "style", None):
+            for k, v in self.style.items():
+                instance_styles[k] = v
+
         # Combine the shared CSS class with any custom classes
         css_classes = [self.css_class] + [cls for cls in self.cssClass if cls]
         css_class = " ".join(filter(None, css_classes))
@@ -225,7 +232,7 @@ class Container(Widget):
         return {
             "css_class": css_class,
             "style": instance_styles,
-            "_js_init": self.js_init,
+            "_js_init": getattr(self, "js_init", {}),
         }
 
     def get_required_css_classes(self) -> Set[str]:
@@ -252,6 +259,7 @@ class Container(Widget):
                 gradient_tuple,
                 z_axis_index,
                 css_classes_tuple,
+                style_dict_tuple,
                 pointerEvents,
             ) = style_key
 
@@ -370,6 +378,10 @@ class Container(Widget):
 
             if pointerEvents:
                 styles.append(f"pointer-events: {pointerEvents};")
+
+            if style_dict_tuple:
+                for k, v in style_dict_tuple:
+                    styles.append(f"{k}: {v};")
 
             # Assemble and return the final CSS rules.
             main_rule = f".{css_class} {{ {' '.join(filter(None, styles))} }}"
@@ -6719,12 +6731,15 @@ class TextField(Widget):
                 focusColor=style_key[4],
                 labelColor=style_key[5],
                 errorColor=style_key[6],
-                borderRadius=style_key[7],
+                borderRadius=BorderRadius(*style_key[7]) if style_key[7] else None,
                 # Re-create BorderSide objects from their tuple representations
                 border=BorderSide(*style_key[8]) if style_key[8] else None,
                 focusedBorder=BorderSide(*style_key[9]) if style_key[9] else None,
                 errorBorder=BorderSide(*style_key[10]) if style_key[10] else None,
-                filled=style_key[11],
+                contentPadding=EdgeInsets(*style_key[11]) if style_key[11] else None,
+                labelStyle=TextStyle(*style_key[12]) if style_key[12] else None,
+                hintStyle=TextStyle(*style_key[13]) if style_key[13] else None,
+                filled=style_key[14],
             )
         except (IndexError, TypeError) as e:
             print(
@@ -6734,26 +6749,93 @@ class TextField(Widget):
 
         # --- 2. Extract all style values from the decoration object ---
         fill_color = decoration.fillColor
-        # print(f">>>>Fill Color {fill_color}<<<>>>{decoration.label}<<<")
         focus_color = decoration.focusColor
         label_color = decoration.labelColor
         error_color = decoration.errorColor
 
+        # Custom Metrics via Style Objects
+        content_padding_css = (
+            decoration.contentPadding.to_css_value()
+            if hasattr(decoration, "contentPadding") and decoration.contentPadding
+            else "20px 16px 6px 16px"
+        )
+        label_font_size = (
+            decoration.labelStyle.fontSize
+            if hasattr(decoration, "labelStyle")
+            and decoration.labelStyle
+            and decoration.labelStyle.fontSize
+            else 16
+        )
+        label_font_family = (
+            f"font-family: {decoration.labelStyle.fontFamily};"
+            if hasattr(decoration, "labelStyle")
+            and decoration.labelStyle
+            and decoration.labelStyle.fontFamily
+            else ""
+        )
+        hint_font_size = (
+            decoration.hintStyle.fontSize
+            if hasattr(decoration, "hintStyle")
+            and decoration.hintStyle
+            and decoration.hintStyle.fontSize
+            else 16
+        )
+
         # Normal border
-        border_radius = decoration.borderRadius
-        border_width = decoration.border.width
-        border_style = decoration.border.style
-        border_color = decoration.border.color
+        border_radius_css = (
+            decoration.borderRadius.to_css()
+            if hasattr(decoration, "borderRadius") and decoration.borderRadius
+            else "border-radius: 4px;"
+        )
+        border_width = (
+            decoration.border.width
+            if hasattr(decoration, "border") and decoration.border
+            else 1
+        )
+        border_style = (
+            decoration.border.style
+            if hasattr(decoration, "border") and decoration.border
+            else "solid"
+        )
+        border_color = (
+            decoration.border.color
+            if hasattr(decoration, "border") and decoration.border
+            else "#757575"
+        )
 
         # Focused border
-        focused_border_width = decoration.focusedBorder.width
-        focused_border_style = decoration.focusedBorder.style  # Style might not change
-        focused_border_color = decoration.focusedBorder.color
+        focused_border_width = (
+            decoration.focusedBorder.width
+            if hasattr(decoration, "focusedBorder") and decoration.focusedBorder
+            else 2
+        )
+        focused_border_style = (
+            decoration.focusedBorder.style
+            if hasattr(decoration, "focusedBorder") and decoration.focusedBorder
+            else "solid"
+        )
+        focused_border_color = (
+            decoration.focusedBorder.color
+            if hasattr(decoration, "focusedBorder") and decoration.focusedBorder
+            else focus_color
+        )
 
         # Error border
-        error_border_width = decoration.errorBorder.width
-        error_border_style = decoration.errorBorder.style
-        error_border_color = decoration.errorBorder.color
+        error_border_width = (
+            decoration.errorBorder.width
+            if hasattr(decoration, "errorBorder") and decoration.errorBorder
+            else 2
+        )
+        error_border_style = (
+            decoration.errorBorder.style
+            if hasattr(decoration, "errorBorder") and decoration.errorBorder
+            else "solid"
+        )
+        error_border_color = (
+            decoration.errorBorder.color
+            if hasattr(decoration, "errorBorder") and decoration.errorBorder
+            else error_color
+        )
 
         # --- 3. Generate CSS rules using the extracted variables ---
         return f"""
@@ -6768,16 +6850,16 @@ class TextField(Widget):
         .textfield-root-container.{css_class} .textfield-container {{
             position: relative; padding-top: 0px;
             background-color: {fill_color or 'rgba(0, 0, 0, 0.04)'};
-            border-radius: 4px 4px 0 0;
+            {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius')} /* Top corners only generally for filled */
             cursor: text;
         }}
         .textfield-root-container.{css_class} .textfield-input {{
-            width: 100%; height: 56px; padding: 20px 16px 6px 16px; font-size: 16px;
-            color: inherit; font-family: inherit; background-color: transparent;
+            width: 100%; height: 56px; padding: {content_padding_css}; font-size: {label_font_size}px;
+            color: inherit; {label_font_family} background-color: transparent;
             border-top: none;
             border-left: none;
             border-right: none;
-            border-bottom:{border_width}px {border_style} {border_color or '#757575'}; outline: none; {border_radius} box-sizing: border-box;
+            border-bottom:{border_width}px {border_style} {border_color or '#757575'}; outline: none; box-sizing: border-box;
             transition: border-bottom-color 0.2s, background-color 0.2s;
         }}
         .textfield-root-container.{css_class} .textfield-input::placeholder {{
@@ -6786,9 +6868,10 @@ class TextField(Widget):
         }}
         .textfield-root-container.{css_class} .textfield-input:focus::placeholder {{
             color: {Colors.hex("#757575")}; /* show placeholder on focus */
+            font-size: {hint_font_size}px;
         }}
         .textfield-root-container.{css_class} .textfield-label {{
-            position: absolute; left: 16px; top: 18px; font-size: 16px;
+            position: absolute; left: 16px; top: 18px; font-size: {label_font_size}px; {label_font_family}
             color: {label_color or '#757575'}; pointer-events: none;
             transform-origin: left top; 
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
@@ -6810,7 +6893,7 @@ class TextField(Widget):
         }}
         .textfield-root-container.{css_class} .textfield-input:focus ~ .textfield-label,
         .textfield-root-container.{css_class} .textfield-input:not(:placeholder-shown) ~ .textfield-label {{
-            transform: translateY(-10px) scale(0.75);
+            transform: translateY(-{float(label_font_size) * 0.625}px) scale(0.75); /* Dynamic translation based on font base */
             color: {focus_color or '#FF94DA'};
         }}
         .textfield-root-container.{css_class}:focus-within .textfield-container {{

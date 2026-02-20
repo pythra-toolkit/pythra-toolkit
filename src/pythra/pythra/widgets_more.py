@@ -62,12 +62,11 @@ from .drawing import (
     ClosePath,
     ArcTo,
 ) # Import the new command widgets
-#from .drawing import Path
+# from .drawing import Path
 
 config = Config()
 assets_dir = config.get('assets_dir', 'assets')
 port = config.get('assets_server_port')
-
 
 
 # =============================================================================
@@ -198,7 +197,6 @@ class Divider(Widget):
     # No generate_css_rule needed
 
     # Removed instance methods: to_html(), get_children(), remove_all_children()
-
 
 
 # =============================================================================
@@ -408,7 +406,6 @@ class Drawer(Widget):
 
     # Removed: __new__, to_html(), to_css(), toggle()
     # State (is_open) and toggle logic moved outside the widget.
-
 
 
 # =============================================================================
@@ -832,7 +829,6 @@ class BottomSheet(Widget):
     # Removed: __new__, to_html(), toggle()
 
 
-
 # =============================================================================
 # SNACKBAR ACTION - The Action Button Inside a SnackBar
 # =============================================================================
@@ -1217,7 +1213,6 @@ class SnackBar(Widget):
     # Removed: __new__, to_html(), get_id(), toggle()
 
 
-
 # =============================================================================
 # CENTER WIDGET - The "Perfect Centering Machine" for Layout Alignment
 # =============================================================================
@@ -1374,7 +1369,6 @@ class Center(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
     # Removed instance methods: to_html()
-
 
 
 # =============================================================================
@@ -2612,9 +2606,6 @@ class Dialog(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
 
-
-
-
 # =============================================================================
 # CLIP PATH - The Widget for Creating Custom, Responsive Shapes
 # =============================================================================
@@ -2722,7 +2713,6 @@ class ClipPath(Widget):
 
     def get_required_css_classes(self) -> Set[str]:
         return {self.blueprint_class}
-
 
 
 # =============================================================================
@@ -2932,7 +2922,6 @@ class ListTile(Widget):
         except Exception as e:
             # ... error handling ...
             return f"/* Error generating rule for .{css_class} */"
-
 
 
 # =============================================================================
@@ -3193,7 +3182,6 @@ class Slider(Widget):
             box-shadow: 0 0 0 {overlay_size}px {overlay_color};
         }}
         """
-
 
 
 # =============================================================================
@@ -3719,7 +3707,6 @@ class Switch(Widget):
         """
 
 
-
 # =============================================================================
 # RADIO - The "Select One" Button
 # =============================================================================
@@ -4200,7 +4187,6 @@ class Dropdown(Widget):
             background-color: {dropdown_hover_color}; /* Hover color */
         }}
         """
-
 
 
 # =============================================================================
@@ -4884,7 +4870,6 @@ class BarsProgressIndicator(_BaseLoader):
         )
 
 
-
 class DotsProgressIndicator(_BaseLoader):
     def __init__(self, variant: int = 1, color: str = None, size: float = 45, **kwargs):
         super().__init__(
@@ -4894,7 +4879,6 @@ class DotsProgressIndicator(_BaseLoader):
             size=size,
             **kwargs
         )
-
 
 
 class ThreeDLoader(Widget):
@@ -4912,7 +4896,7 @@ class ThreeDLoader(Widget):
         shadow_1 (str, optional): Override the first shadow color (normally calculated automatically).
         shadow_2 (str, optional): Override the second shadow color.
     """
-    
+
     def __init__(self,
                  variant: int = 1,
                  size: float = 25.0,
@@ -4923,13 +4907,13 @@ class ThreeDLoader(Widget):
                  shadow_2: Optional[str] = None,
                  controller: Optional['ProgressIndicatorController'] = None,
                  key: Optional[Key] = None):
-        
+
         super().__init__(key=key)
-        
+
         # Validation
         if not (1 <= variant <= 12):
             raise ValueError("ThreeDLoader variant must be between 1 and 12")
-            
+
         self.variant = variant
         self.size = size
         self.color = color
@@ -4938,7 +4922,7 @@ class ThreeDLoader(Widget):
         self.shadow_1 = shadow_1
         self.shadow_2 = shadow_2
         self.controller = controller
-        
+
         if self.controller:
             self.controller.add_listener(self.mark_needs_build)
 
@@ -4946,22 +4930,21 @@ class ThreeDLoader(Widget):
         visible = self.controller.visible if self.controller else True
         style_class = f"loader-3d-{self.variant}"
 
-        
         # Prepare CSS variables mapping
         css_vars = {
             '--opt-size': f"{self.size}px",
             '--opt-color': self.color,
         }
-        
+
         if self.gap is not None:
             css_vars['--opt-gap'] = f"{self.gap}px"
-            
+
         if self.secondary_color:
             css_vars['--opt-accent'] = self.secondary_color
-            
+
         if self.shadow_1:
             css_vars['--opt-shadow-1'] = self.shadow_1
-            
+
         if self.shadow_2:
             css_vars['--opt-shadow-2'] = self.shadow_2
 
@@ -4973,7 +4956,7 @@ class ThreeDLoader(Widget):
                 fw = sys.modules['pythra.core'].Framework.instance()
                 if 'PythraProgressIndicator' not in fw.plugin_js_modules:
                     js_path = str(fw.project_root / "render" / "js" / "progress_indicator.js")
-                    
+
                     fw.plugin_js_modules['PythraProgressIndicator'] = {
                         'path': js_path,
                         'plugin': 'PythraCore_ProgressIndicator'
@@ -5008,3 +4991,172 @@ class ThreeDLoader(Widget):
     def multi_color(cls, size=25, primary=Colors.white, accent=Colors.red):
         """Variants 7-12 allow for two distinct colors."""
         return cls(variant=7, size=size, color=primary, secondary_color=accent)
+
+
+class ExpandableState(State):
+    def __init__(self):
+        super().__init__()
+        self.is_expanded = False
+
+    def on_init(self):
+        # Set the initial state based on the widget's property
+        self.is_expanded = self.widget.initiallyExpanded
+
+    def toggle(self, *args, **kwargs):
+        self.is_expanded = not self.is_expanded
+        print(f"is_expanded: {self.is_expanded}")
+        self.setState()
+
+    def build(self) -> Widget:
+        # Lazy import to avoid circular dependencies with widgets_more
+        from .widgets import Container, Column, Row, Expanded
+
+        # Determine the direction
+        direction = getattr(self.widget, "verticalDirection", VerticalDirection.DOWN)
+        is_up = direction == VerticalDirection.UP
+        theme = getattr(self.widget, "theme", None)
+
+        header_decor = None
+        body_decor = None
+        header_pad = None
+        body_pad = None
+        header_mar = None
+        body_mar = None
+        animation_duration = 300
+        show_icon = True
+        icon_color = "currentColor"
+        icon_size = 24
+
+        if theme:
+            header_decor = theme.headerDecoration
+            body_decor = theme.bodyDecoration
+            header_pad = theme.headerPadding
+            body_pad = theme.bodyPadding
+            header_mar = theme.headerMargin
+            body_mar = theme.bodyMargin
+            animation_duration = theme.animationDurationMs
+            show_icon = theme.showIcon
+            if theme.iconColor:
+                icon_color = theme.iconColor.to_css() if hasattr(theme.iconColor, "to_css") else theme.iconColor
+            icon_size = theme.iconSize
+
+        # Calculate grid transition
+        grid_rows = "1fr" if self.is_expanded else "0fr"
+        opacity = "1" if self.is_expanded else "0"
+
+        # The content body
+        content_body = Container(
+            key=Key(f"{self.widget.key.value}_body"),
+            decoration=body_decor or BoxDecoration(color="transparent"),
+            margin=body_mar,
+            child=Container(
+                key=Key(f"{self.widget.key.value}_inner_wrapper"),
+                style={"min-height": "0px"},
+                padding=body_pad,
+                cssClass="expandable-inner",
+                child=self.widget.child,
+            ),
+            # CSS magic for animating height using modern grid transition!
+            cssClass="expandable-body",
+            style={
+                "display": "grid",
+                "grid-template-rows": grid_rows,
+                "transition": f"grid-template-rows {animation_duration}ms ease-out, opacity {animation_duration}ms ease-out",
+                "opacity": opacity,
+                "overflow": "hidden"
+            }
+        )
+
+        header_content = self.widget.header
+        if show_icon:
+            from .widgets import Icon, Container
+            from .icons import Icons
+            
+            rotation = "180deg" if self.is_expanded else "0deg"
+            
+            icon_wrapper = Container(
+                key=Key(f"{self.widget.key.value}_icon_wrapper"),
+                child=Icon(Icons.keyboard_arrow_down, key=Key(f"{self.widget.key.value}_icon"),size=icon_size, color=icon_color),
+                style={
+                    "transition": f"transform {animation_duration}ms ease",
+                    "transform": f"rotate({rotation})",
+                    "display": "flex",
+                    "align-items": "center",
+                    "justify-content": "center",
+                }
+            )
+            
+            header_content = Row(
+                key=Key(f"{self.widget.key.value}_header_content"),
+                children=[
+                    self.widget.header,
+                    icon_wrapper
+                ],
+                crossAxisAlignment=CrossAxisAlignment.CENTER,
+                mainAxisAlignment=MainAxisAlignment.SPACE_BETWEEN
+            )
+
+        # The header
+        header_container = GestureDetector(
+            key=Key(f"{self.widget.key.value}_detector"),
+            onTap=self.toggle,
+            child=Container(
+                key=Key(f"{self.widget.key.value}_header"),
+                child=header_content,
+                decoration=header_decor or BoxDecoration(color="transparent"),
+                padding=header_pad,
+                margin=header_mar,
+                width="100%",
+                cssClass="expandable-header",
+                style={
+                    "cursor": "pointer",
+                    "user-select": "none",
+                    "display": "flex",
+                    "align-items": "center"
+                }
+            ),
+        )
+
+        # Assemble based on direction
+        layout_children = (
+            [content_body, header_container]
+            if is_up
+            else [header_container, content_body]
+        )
+
+        return Container(
+            key=Key(f"{self.widget.key.value}_root"),
+            child=Column(
+                crossAxisAlignment=CrossAxisAlignment.STRETCH,
+                mainAxisAlignment=MainAxisAlignment.START,
+                key=Key(f"{self.widget.key.value}_col"), children=layout_children
+            )
+        )
+
+
+class Expandable(StatefulWidget):
+    """
+    A widget that expands or collapses to reveal or hide its children.
+
+    The Expandable widget consists of a header and a body of children.
+    Tapping on the header will smoothly expand or collapse the body.
+    """
+
+    def __init__(
+        self,
+        header: Widget,
+        child: Widget,
+        initiallyExpanded: bool = True,
+        verticalDirection: str = VerticalDirection.DOWN,
+        theme: Optional['ExpandableTheme'] = None,
+        key: Optional[Key] = None,
+    ):
+        super().__init__(key=key)
+        self.header = header
+        self.child = child
+        self.initiallyExpanded = initiallyExpanded
+        self.verticalDirection = verticalDirection
+        self.theme = theme
+
+    def createState(self) -> State:
+        return ExpandableState()

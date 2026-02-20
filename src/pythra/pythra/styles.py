@@ -1,28 +1,36 @@
-#pythra/styles.py
+# pythra/styles.py
 from enum import Enum
 from dataclasses import dataclass, field
 from typing import Optional, Union, Tuple, List, Dict, Any
-import re # For hex validation
-import math # For Matrix4 calculations
+import re  # For hex validation
+import math  # For Matrix4 calculations
 
 from .base import make_hashable
 
-#Colors = Color()
+# Colors = Color()
 
 # framework/styles.py
 
 from typing import Union
 
+
 class EdgeInsets:
-    left_c=0
-    top_c=0
-    right_c=0 
-    bottom_c=0
+    left_c = 0
+    top_c = 0
+    right_c = 0
+    bottom_c = 0
     """
     Represents padding or margin for a widget's edges.
     Compatible with reconciliation (hashable).
     """
-    def __init__(self, left: float = 0.0, top: float = 0.0, right: float = 0.0, bottom: float = 0.0):
+
+    def __init__(
+        self,
+        left: float = 0.0,
+        top: float = 0.0,
+        right: float = 0.0,
+        bottom: float = 0.0,
+    ):
         """
         Initializes EdgeInsets. Values assumed to be pixels.
 
@@ -32,50 +40,56 @@ class EdgeInsets:
             right (float): Padding/margin value for the right side. Defaults to 0.
             bottom (float): Padding/margin value for the bottom side. Defaults to 0.
         """
-        self.left = max(-500.0, left)   # Ensure non-negative
+        self.left = max(-500.0, left)  # Ensure non-negative
         self.top = max(-500.0, top)
         self.right = max(-500.0, right)
         self.bottom = max(-500.0, bottom)
 
     # --- Static Constructors ---
     @staticmethod
-    def all(value: float) -> 'EdgeInsets':
+    def all(value: float) -> "EdgeInsets":
         """Creates EdgeInsets with the same value for all four sides."""
         val = max(-500.0, value)
         return EdgeInsets(left=val, top=val, right=val, bottom=val)
 
     @staticmethod
-    def symmetric(horizontal: float = 0.0, vertical: float = 0.0) -> 'EdgeInsets':
+    def symmetric(horizontal: float = 0.0, vertical: float = 0.0) -> "EdgeInsets":
         """Creates EdgeInsets with symmetric horizontal and vertical values."""
         h = max(-500.0, horizontal)
         v = max(-500.0, vertical)
         return EdgeInsets(left=h, right=h, top=v, bottom=v)
 
     @staticmethod
-    def only(left: float = 0.0, top: float = 0.0, right: float = 0.0, bottom: float = 0.0) -> 'EdgeInsets':
-         """Creates EdgeInsets with only the specified values set, others default to 0."""
-         # Alias for the main constructor with clearer intent
-         EdgeInsets.left_c=left
-         EdgeInsets.top_c=top
-         EdgeInsets.right_c=right
-         EdgeInsets.bottom_c=bottom
-         return EdgeInsets(left=left, top=top, right=right, bottom=bottom)
+    def only(
+        left: float = 0.0, top: float = 0.0, right: float = 0.0, bottom: float = 0.0
+    ) -> "EdgeInsets":
+        """Creates EdgeInsets with only the specified values set, others default to 0."""
+        # Alias for the main constructor with clearer intent
+        EdgeInsets.left_c = left
+        EdgeInsets.top_c = top
+        EdgeInsets.right_c = right
+        EdgeInsets.bottom_c = bottom
+        return EdgeInsets(left=left, top=top, right=right, bottom=bottom)
 
     @staticmethod
-    def edit(operation: str='+',left: float = 0.0, top: float = 0.0, right: float = 0.0, bottom: float = 0.0) -> 'EdgeInsets':
-        if operation == '+':
+    def edit(
+        operation: str = "+",
+        left: float = 0.0,
+        top: float = 0.0,
+        right: float = 0.0,
+        bottom: float = 0.0,
+    ) -> "EdgeInsets":
+        if operation == "+":
             left += EdgeInsets.left_c
             top += EdgeInsets.top_c
             right += EdgeInsets.right_c
             bottom += EdgeInsets.bottom_c
-        elif operation == '-':
-            left = EdgeInsets.left_c - left 
+        elif operation == "-":
+            left = EdgeInsets.left_c - left
             top = EdgeInsets.top_c - top
             right = EdgeInsets.right_c - right
             bottom = EdgeInsets.bottom_c - bottom
         return EdgeInsets(left=left, top=top, right=right, bottom=bottom)
-
-    
 
     # Deprecate or remove LRTB if 'only' is preferred for clarity
     # @staticmethod
@@ -89,11 +103,13 @@ class EdgeInsets:
         """
         # Check for simplifications
         if self.left == self.top == self.right == self.bottom:
-            return f"{self.top}px" # All same: top
+            return f"{self.top}px"  # All same: top
         if self.top == self.bottom and self.left == self.right:
-            return f"{self.top}px {self.right}px" # Vertical Horizontal
+            return f"{self.top}px {self.right}px"  # Vertical Horizontal
         if self.left == self.right:
-            return f"{self.top}px {self.right}px {self.bottom}px" # Top Horizontal Bottom
+            return (
+                f"{self.top}px {self.right}px {self.bottom}px"  # Top Horizontal Bottom
+            )
         # Full definition: Top Right Bottom Left
         return f"{self.top}px {self.right}px {self.bottom}px {self.left}px"
 
@@ -104,14 +120,14 @@ class EdgeInsets:
         NOTE: Property name ('padding' or 'margin') must be added by caller.
         """
         # Return only the value part, property name decided by context
-        return self.to_css_value() # Just return the value
+        return self.to_css_value()  # Just return the value
 
     # --- Calculations ---
-    def to_int_vertical(self) -> float: # Changed to float as inputs are float
+    def to_int_vertical(self) -> float:  # Changed to float as inputs are float
         """Calculates the total vertical padding/margin (top + bottom)."""
         return self.top + self.bottom
 
-    def to_int_horizontal(self) -> float: # Changed to float
+    def to_int_horizontal(self) -> float:  # Changed to float
         """Calculates the total horizontal padding/margin (left + right)."""
         return self.right + self.left
 
@@ -119,42 +135,55 @@ class EdgeInsets:
     def __eq__(self, other):
         if not isinstance(other, EdgeInsets):
             return NotImplemented
-        return (self.left == other.left and
-                self.top == other.top and
-                self.right == other.right and
-                self.bottom == other.bottom)
+        return (
+            self.left == other.left
+            and self.top == other.top
+            and self.right == other.right
+            and self.bottom == other.bottom
+        )
 
     def __hash__(self):
         return hash((self.left, self.top, self.right, self.bottom))
 
     def __repr__(self):
-         if self.left == self.top == self.right == self.bottom:
-              return f"EdgeInsets.all({self.left})"
-         if self.left == self.right and self.top == self.bottom:
-              # Handle case where horizontal and vertical are also equal (covered by all)
-              if self.left == self.top: return f"EdgeInsets.all({self.left})"
-              return f"EdgeInsets.symmetric(horizontal={self.left}, vertical={self.top})"
-         # Use 'only' for clarity if some values are 0
-         args = []
-         if self.left != 0.0: args.append(f"left={self.left}")
-         if self.top != 0.0: args.append(f"top={self.top}")
-         if self.right != 0.0: args.append(f"right={self.right}")
-         if self.bottom != 0.0: args.append(f"bottom={self.bottom}")
-         if not args: return "EdgeInsets()" # All zero
-         return f"EdgeInsets.only({', '.join(args)})"
-
+        if self.left == self.top == self.right == self.bottom:
+            return f"EdgeInsets.all({self.left})"
+        if self.left == self.right and self.top == self.bottom:
+            # Handle case where horizontal and vertical are also equal (covered by all)
+            if self.left == self.top:
+                return f"EdgeInsets.all({self.left})"
+            return f"EdgeInsets.symmetric(horizontal={self.left}, vertical={self.top})"
+        # Use 'only' for clarity if some values are 0
+        args = []
+        if self.left != 0.0:
+            args.append(f"left={self.left}")
+        if self.top != 0.0:
+            args.append(f"top={self.top}")
+        if self.right != 0.0:
+            args.append(f"right={self.right}")
+        if self.bottom != 0.0:
+            args.append(f"bottom={self.bottom}")
+        if not args:
+            return "EdgeInsets()"  # All zero
+        return f"EdgeInsets.only({', '.join(args)})"
 
     def to_dict(self) -> Dict[str, float]:
-         """Returns a simple dictionary representation."""
-         return {'left': self.left, 'top': self.top, 'right': self.right, 'bottom': self.bottom}
+        """Returns a simple dictionary representation."""
+        return {
+            "left": self.left,
+            "top": self.top,
+            "right": self.right,
+            "bottom": self.bottom,
+        }
 
     # --- ADDED to_tuple ---
     def to_tuple(self) -> Tuple[float, float, float, float]:
-         """Returns a hashable tuple representation (left, top, right, bottom)."""
-         return (self.left, self.top, self.right, self.bottom)
+        """Returns a hashable tuple representation (left, top, right, bottom)."""
+        return (self.left, self.top, self.right, self.bottom)
 
 
 # print("Edge Insets", EdgeInsets.only(top=40, left=20).edit(operation='-',top=10))
+
 
 class Alignment:
     """
@@ -165,6 +194,7 @@ class Alignment:
         justify_content (str): CSS value for justify-content (main axis alignment).
         align_items (str): CSS value for align-items (cross axis alignment).
     """
+
     def __init__(self, justify_content: str, align_items: str):
         """
         Initializes Alignment. It's recommended to use the static methods
@@ -183,44 +213,44 @@ class Alignment:
     # --- Static Constructors (Convenience Methods) ---
     @staticmethod
     def center():
-        return Alignment('center', 'center')
+        return Alignment("center", "center")
 
     @staticmethod
     def top_left():
-        return Alignment('flex-start', 'flex-start')
+        return Alignment("flex-start", "flex-start")
 
     @staticmethod
     def top_center():
-        return Alignment('center', 'flex-start')
+        return Alignment("center", "flex-start")
 
     @staticmethod
     def top_right():
-        return Alignment('flex-end', 'flex-start')
+        return Alignment("flex-end", "flex-start")
 
     @staticmethod
     def center_left():
-        return Alignment('flex-start', 'center')
+        return Alignment("flex-start", "center")
 
     @staticmethod
     def center_right():
-        return Alignment('flex-end', 'center')
+        return Alignment("flex-end", "center")
 
     @staticmethod
     def bottom_left():
-        return Alignment('flex-start', 'flex-end')
+        return Alignment("flex-start", "flex-end")
 
     @staticmethod
     def bottom_center():
-        return Alignment('center', 'flex-end')
+        return Alignment("center", "flex-end")
 
     @staticmethod
     def bottom_right():
-        return Alignment('flex-end', 'flex-end')
+        return Alignment("flex-end", "flex-end")
 
     # Add others if needed, e.g., space_between variants
     @staticmethod
-    def space_between_center(): # Example
-        return Alignment('space-between', 'center')
+    def space_between_center():  # Example
+        return Alignment("space-between", "center")
 
     # --- Compatibility Methods ---
 
@@ -230,9 +260,9 @@ class Alignment:
         or applying as inline styles. Includes display:flex.
         """
         return {
-            'display': 'flex',
-            'justify-content': self.justify_content,
-            'align-items': self.align_items
+            "display": "flex",
+            "justify-content": self.justify_content,
+            "align-items": self.align_items,
         }
 
     def to_css(self) -> str:
@@ -246,8 +276,10 @@ class Alignment:
     def __eq__(self, other):
         if not isinstance(other, Alignment):
             return NotImplemented
-        return (self.justify_content == other.justify_content and
-                self.align_items == other.align_items)
+        return (
+            self.justify_content == other.justify_content
+            and self.align_items == other.align_items
+        )
 
     def __hash__(self):
         # Hash a tuple of the relevant attributes
@@ -255,27 +287,31 @@ class Alignment:
 
     # --- Optional: Add representation for debugging ---
     def __repr__(self):
-         # Try to find matching static method name for cleaner repr (optional)
-         for name, method in Alignment.__dict__.items():
-             if isinstance(method, staticmethod):
-                 try:
-                     instance = method.__func__() # Call the static method
-                     if instance == self:
-                          return f"Alignment.{name}()"
-                 except Exception: # Catch potential errors during static method call
-                     pass
-         # Fallback representation
-         return f"Alignment(justify_content='{self.justify_content}', align_items='{self.align_items}')"
+        # Try to find matching static method name for cleaner repr (optional)
+        for name, method in Alignment.__dict__.items():
+            if isinstance(method, staticmethod):
+                try:
+                    instance = method.__func__()  # Call the static method
+                    if instance == self:
+                        return f"Alignment.{name}()"
+                except Exception:  # Catch potential errors during static method call
+                    pass
+        # Fallback representation
+        return f"Alignment(justify_content='{self.justify_content}', align_items='{self.align_items}')"
 
     # --- Optional: Add method for reconciler prop representation ---
     def to_dict(self):
-         """Returns a simple dictionary representation."""
-         return {'justify_content': self.justify_content, 'align_items': self.align_items}
+        """Returns a simple dictionary representation."""
+        return {
+            "justify_content": self.justify_content,
+            "align_items": self.align_items,
+        }
 
     # --- Optional: Add method for hashable tuple representation ---
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         return (self.justify_content, self.align_items)
+        """Returns a hashable tuple representation."""
+        return (self.justify_content, self.align_items)
+
 
 class TextAlign:
     """
@@ -284,13 +320,14 @@ class TextAlign:
     Attributes:
         value (str): The CSS text-align value (e.g., 'left', 'center', 'right', 'justify', 'start', 'end').
     """
+
     # Define constants for common values directly on the class
-    LEFT = 'left'
-    RIGHT = 'right'
-    CENTER = 'center'
-    JUSTIFY = 'justify'
-    START = 'start' # Respects LTR/RTL directionality
-    END = 'end'     # Respects LTR/RTL directionality
+    LEFT = "left"
+    RIGHT = "right"
+    CENTER = "center"
+    JUSTIFY = "justify"
+    START = "start"  # Respects LTR/RTL directionality
+    END = "end"  # Respects LTR/RTL directionality
 
     def __init__(self, value: str):
         """
@@ -300,31 +337,49 @@ class TextAlign:
             value (str): A valid CSS text-align value.
         """
         # Optional: Add validation for allowed CSS values
-        allowed_values = {self.LEFT, self.RIGHT, self.CENTER, self.JUSTIFY, self.START, self.END}
+        allowed_values = {
+            self.LEFT,
+            self.RIGHT,
+            self.CENTER,
+            self.JUSTIFY,
+            self.START,
+            self.END,
+        }
         if value not in allowed_values:
-             # Or raise ValueError('Invalid TextAlign value')
-             print(f"Warning: Using potentially invalid TextAlign value: '{value}'")
+            # Or raise ValueError('Invalid TextAlign value')
+            print(f"Warning: Using potentially invalid TextAlign value: '{value}'")
         self.value = value
 
     # --- Static Constructors (Optional, can use constants directly) ---
     @staticmethod
-    def center(): return TextAlign(TextAlign.CENTER)
+    def center():
+        return TextAlign(TextAlign.CENTER)
+
     @staticmethod
-    def left(): return TextAlign(TextAlign.LEFT)
+    def left():
+        return TextAlign(TextAlign.LEFT)
+
     @staticmethod
-    def right(): return TextAlign(TextAlign.RIGHT)
+    def right():
+        return TextAlign(TextAlign.RIGHT)
+
     @staticmethod
-    def justify(): return TextAlign(TextAlign.JUSTIFY)
+    def justify():
+        return TextAlign(TextAlign.JUSTIFY)
+
     @staticmethod
-    def start(): return TextAlign(TextAlign.START)
+    def start():
+        return TextAlign(TextAlign.START)
+
     @staticmethod
-    def end(): return TextAlign(TextAlign.END)
+    def end():
+        return TextAlign(TextAlign.END)
 
     # --- Compatibility Methods ---
 
     def to_css_dict(self) -> dict:
         """Returns the CSS property as a dictionary."""
-        return {'text-align': self.value}
+        return {"text-align": self.value}
 
     def to_css(self) -> str:
         """Returns the CSS property string (e.g., 'text-align: center;')."""
@@ -341,16 +396,20 @@ class TextAlign:
 
     # --- Representation ---
     def __repr__(self):
-         # Try matching constants for cleaner representation
-         for name, val in TextAlign.__dict__.items():
-             if isinstance(val, str) and val == self.value: # Check class constants
-                 return f"TextAlign.{name}"
-         # Fallback
-         return f"TextAlign('{self.value}')"
+        # Try matching constants for cleaner representation
+        for name, val in TextAlign.__dict__.items():
+            if isinstance(val, str) and val == self.value:  # Check class constants
+                return f"TextAlign.{name}"
+        # Fallback
+        return f"TextAlign('{self.value}')"
 
     # --- Reconciler Prop Representation ---
-    def to_dict(self): return {'value': self.value}
-    def to_tuple(self): return (self.value,) # Tuple for make_hashable
+    def to_dict(self):
+        return {"value": self.value}
+
+    def to_tuple(self):
+        return (self.value,)  # Tuple for make_hashable
+
 
 # --- BoxConstraints Refactored ---
 class BoxConstraints:
@@ -358,12 +417,14 @@ class BoxConstraints:
     Represents min/max width and height constraints for a widget.
     Compatible with reconciliation.
     """
-    def __init__(self,
-                 minWidth: Optional[float] = 0.0, # Default min width is 0
-                 maxWidth: Optional[float] = float('inf'), # Default max width is infinity
-                 minHeight: Optional[float] = 0.0, # Default min height is 0
-                 maxHeight: Optional[float] = float('inf') # Default max height is infinity
-                ):
+
+    def __init__(
+        self,
+        minWidth: Optional[float] = 0.0,  # Default min width is 0
+        maxWidth: Optional[float] = float("inf"),  # Default max width is infinity
+        minHeight: Optional[float] = 0.0,  # Default min height is 0
+        maxHeight: Optional[float] = float("inf"),  # Default max height is infinity
+    ):
         """
         Initializes BoxConstraints. Use float('inf') for unbounded max values.
         Units are assumed to be pixels for CSS conversion.
@@ -376,21 +437,31 @@ class BoxConstraints:
         """
         # Validate inputs (ensure non-negative, min <= max)
         self.minWidth = max(0.0, minWidth) if minWidth is not None else 0.0
-        self.maxWidth = max(self.minWidth, maxWidth) if maxWidth is not None else float('inf')
+        self.maxWidth = (
+            max(self.minWidth, maxWidth) if maxWidth is not None else float("inf")
+        )
         self.minHeight = max(0.0, minHeight) if minHeight is not None else 0.0
-        self.maxHeight = max(self.minHeight, maxHeight) if maxHeight is not None else float('inf')
+        self.maxHeight = (
+            max(self.minHeight, maxHeight) if maxHeight is not None else float("inf")
+        )
 
     # --- Static Constructors (Optional) ---
     @staticmethod
     def tight(width: float, height: float):
         """Creates constraints forcing a specific size."""
-        return BoxConstraints(minWidth=width, maxWidth=width, minHeight=height, maxHeight=height)
+        return BoxConstraints(
+            minWidth=width, maxWidth=width, minHeight=height, maxHeight=height
+        )
 
     @staticmethod
     def expand(width: Optional[float] = None, height: Optional[float] = None):
-         """Creates constraints forcing maximum size (infinity)."""
-         return BoxConstraints(minWidth=width or 0.0, maxWidth=float('inf'),
-                               minHeight=height or 0.0, maxHeight=float('inf'))
+        """Creates constraints forcing maximum size (infinity)."""
+        return BoxConstraints(
+            minWidth=width or 0.0,
+            maxWidth=float("inf"),
+            minHeight=height or 0.0,
+            maxHeight=float("inf"),
+        )
 
     # --- Compatibility Methods ---
 
@@ -398,10 +469,14 @@ class BoxConstraints:
         """Returns constraints as a dictionary of CSS properties."""
         styles = {}
         # Only include constraints that are not default (0 for min, inf for max)
-        if self.minWidth > 0.0: styles['min-width'] = f"{self.minWidth}px"
-        if self.maxWidth != float('inf'): styles['max-width'] = f"{self.maxWidth}px"
-        if self.minHeight > 0.0: styles['min-height'] = f"{self.minHeight}px"
-        if self.maxHeight != float('inf'): styles['max-height'] = f"{self.maxHeight}px"
+        if self.minWidth > 0.0:
+            styles["min-width"] = f"{self.minWidth}px"
+        if self.maxWidth != float("inf"):
+            styles["max-width"] = f"{self.maxWidth}px"
+        if self.minHeight > 0.0:
+            styles["min-height"] = f"{self.minHeight}px"
+        if self.maxHeight != float("inf"):
+            styles["max-height"] = f"{self.maxHeight}px"
         return styles
 
     def to_css(self) -> str:
@@ -413,10 +488,12 @@ class BoxConstraints:
     def __eq__(self, other):
         if not isinstance(other, BoxConstraints):
             return NotImplemented
-        return (self.minWidth == other.minWidth and
-                self.maxWidth == other.maxWidth and
-                self.minHeight == other.minHeight and
-                self.maxHeight == other.maxHeight)
+        return (
+            self.minWidth == other.minWidth
+            and self.maxWidth == other.maxWidth
+            and self.minHeight == other.minHeight
+            and self.maxHeight == other.maxHeight
+        )
 
     def __hash__(self):
         # Hash a tuple of the defining attributes
@@ -425,20 +502,29 @@ class BoxConstraints:
     # --- Representation ---
     def __repr__(self):
         props = []
-        if self.minWidth != 0.0: props.append(f"minWidth={self.minWidth}")
-        if self.maxWidth != float('inf'): props.append(f"maxWidth={self.maxWidth}")
-        if self.minHeight != 0.0: props.append(f"minHeight={self.minHeight}")
-        if self.maxHeight != float('inf'): props.append(f"maxHeight={self.maxHeight}")
+        if self.minWidth != 0.0:
+            props.append(f"minWidth={self.minWidth}")
+        if self.maxWidth != float("inf"):
+            props.append(f"maxWidth={self.maxWidth}")
+        if self.minHeight != 0.0:
+            props.append(f"minHeight={self.minHeight}")
+        if self.maxHeight != float("inf"):
+            props.append(f"maxHeight={self.maxHeight}")
         return f"BoxConstraints({', '.join(props)})"
 
     # --- Reconciler Prop Representation ---
     def to_dict(self):
-         return {'minWidth': self.minWidth, 'maxWidth': self.maxWidth,
-                 'minHeight': self.minHeight, 'maxHeight': self.maxHeight}
+        return {
+            "minWidth": self.minWidth,
+            "maxWidth": self.maxWidth,
+            "minHeight": self.minHeight,
+            "maxHeight": self.maxHeight,
+        }
 
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         return (self.minWidth, self.maxWidth, self.minHeight, self.maxHeight)
+        """Returns a hashable tuple representation."""
+        return (self.minWidth, self.maxWidth, self.minHeight, self.maxHeight)
+
 
 class Color:
     """
@@ -449,44 +535,44 @@ class Color:
         color = Colors.primary
         custom_hex = Colors.hex("#FF5733")
         transparent_red = Colors.rgba(255, 0, 0, 0.5)
-    """   
+    """
 
     # --- Material Design 3 Color Role Constants ---
     # Primary Palette
-    primary = 'var(--md-sys-color-primary)'
-    onPrimary = 'var(--md-sys-color-on-primary)'
-    primaryContainer = 'var(--md-sys-color-primary-container)'
-    onPrimaryContainer = 'var(--md-sys-color-on-primary-container)'
+    primary = "var(--md-sys-color-primary)"
+    onPrimary = "var(--md-sys-color-on-primary)"
+    primaryContainer = "var(--md-sys-color-primary-container)"
+    onPrimaryContainer = "var(--md-sys-color-on-primary-container)"
     # Secondary Palette
-    secondary = 'var(--md-sys-color-secondary)'
-    onSecondary = 'var(--md-sys-color-on-secondary)'
-    secondaryContainer = 'var(--md-sys-color-secondary-container)'
-    onSecondaryContainer = 'var(--md-sys-color-on-secondary-container)'
+    secondary = "var(--md-sys-color-secondary)"
+    onSecondary = "var(--md-sys-color-on-secondary)"
+    secondaryContainer = "var(--md-sys-color-secondary-container)"
+    onSecondaryContainer = "var(--md-sys-color-on-secondary-container)"
     # Tertiary Palette
-    tertiary = 'var(--md-sys-color-tertiary)'
-    onTertiary = 'var(--md-sys-color-on-tertiary)'
-    tertiaryContainer = 'var(--md-sys-color-tertiary-container)'
-    onTertiaryContainer = 'var(--md-sys-color-on-tertiary-container)'
+    tertiary = "var(--md-sys-color-tertiary)"
+    onTertiary = "var(--md-sys-color-on-tertiary)"
+    tertiaryContainer = "var(--md-sys-color-tertiary-container)"
+    onTertiaryContainer = "var(--md-sys-color-on-tertiary-container)"
     # Error Palette
-    error = 'var(--md-sys-color-error)'
-    onError = 'var(--md-sys-color-on-error)'
-    errorContainer = 'var(--md-sys-color-error-container)'
-    onErrorContainer = 'var(--md-sys-color-on-error-container)'
+    error = "var(--md-sys-color-error)"
+    onError = "var(--md-sys-color-on-error)"
+    errorContainer = "var(--md-sys-color-error-container)"
+    onErrorContainer = "var(--md-sys-color-on-error-container)"
     # Neutral Palette (Surface Tones)
-    background = 'var(--md-sys-color-background)'
-    onBackground = 'var(--md-sys-color-on-background)'
-    surface = 'var(--md-sys-color-surface)'
-    onSurface = 'var(--md-sys-color-on-surface)'
-    surfaceVariant = 'var(--md-sys-color-surface-variant)'
-    onSurfaceVariant = 'var(--md-sys-color-on-surface-variant)'
-    outline = 'var(--md-sys-color-outline)'
-    outlineVariant = 'var(--md-sys-color-outline-variant)'
-    shadow = 'var(--md-sys-color-shadow)'
-    scrim = 'var(--md-sys-color-scrim)'
+    background = "var(--md-sys-color-background)"
+    onBackground = "var(--md-sys-color-on-background)"
+    surface = "var(--md-sys-color-surface)"
+    onSurface = "var(--md-sys-color-on-surface)"
+    surfaceVariant = "var(--md-sys-color-surface-variant)"
+    onSurfaceVariant = "var(--md-sys-color-on-surface-variant)"
+    outline = "var(--md-sys-color-outline)"
+    outlineVariant = "var(--md-sys-color-outline-variant)"
+    shadow = "var(--md-sys-color-shadow)"
+    scrim = "var(--md-sys-color-scrim)"
     # Inverse Tones
-    inverseSurface = 'var(--md-sys-color-inverse-surface)'
-    inverseOnSurface = 'var(--md-sys-color-inverse-on-surface)'
-    inversePrimary = 'var(--md-sys-color-inverse-primary)'
+    inverseSurface = "var(--md-sys-color-inverse-surface)"
+    inverseOnSurface = "var(--md-sys-color-inverse-on-surface)"
+    inversePrimary = "var(--md-sys-color-inverse-primary)"
     # Fixed Tones (Less common in M3 theming but sometimes useful)
     # surfaceBright = '#FFFBFE'
     # surfaceDim = '#DED8E1'
@@ -498,21 +584,20 @@ class Color:
 
     # --- Common CSS Named Colors ---
     # Can be added if needed, but M3 roles are preferred
-    red = 'red'
-    blue = 'blue'
-    green = 'green'
-    white = 'white'
-    black = 'black'
-    grey = 'grey' # Or gray
-    lightgrey = 'lightgrey' # Or lightgray
-    darkgrey = 'darkgrey' # Or darkgray
-    transparent = 'transparent'
-
+    red = "red"
+    blue = "blue"
+    green = "green"
+    white = "white"
+    black = "black"
+    grey = "grey"  # Or gray
+    lightgrey = "lightgrey"  # Or lightgray
+    darkgrey = "darkgrey"  # Or darkgray
+    transparent = "transparent"
 
     def __getattr__(self, name):
         """
         Retrieves the color name as an attribute of the class.
-        
+
         Args:
             name (str): The name of the color attribute.
 
@@ -520,7 +605,6 @@ class Color:
             str: The color name.
         """
         return name
-
 
     # --- Utility Methods ---
     @staticmethod
@@ -539,12 +623,19 @@ class Color:
         """
         hex_code = hex_code.strip()
         # Basic validation for # followed by 3, 4, 6, or 8 hex digits
-        if not re.match(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$", hex_code):
-            raise ValueError(f"Invalid hex code format: '{hex_code}'. Should be #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.")
+        if not re.match(
+            r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$",
+            hex_code,
+        ):
+            raise ValueError(
+                f"Invalid hex code format: '{hex_code}'. Should be #RGB, #RGBA, #RRGGBB, or #RRGGBBAA."
+            )
         return hex_code
 
     @staticmethod
-    def gradient(direction: str, color, color2, color3=None, color4=None, color5=None) -> str:
+    def gradient(
+        direction: str, color, color2, color3=None, color4=None, color5=None
+    ) -> str:
         """
         Validates and returns a hexadecimal color code string (e.g., "#RRGGBB" or "#RGB").
 
@@ -561,7 +652,7 @@ class Color:
         # # Basic validation for # followed by 3, 4, 6, or 8 hex digits
         # if not re.match(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$", hex_code):
         #     raise ValueError(f"Invalid hex code format: '{hex_code}'. Should be #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.")
-        comma=", "
+        comma = ", "
         return f"linear-gradient({direction}, {color}, {color2+comma if color3 else color2}{color3+comma if color3 else ""}{color4+comma if color4 else ""}{color5+comma if color5 else ""})"
 
     @staticmethod
@@ -584,7 +675,7 @@ class Color:
         if not (0 <= red <= 255 and 0 <= green <= 255 and 0 <= blue <= 255):
             raise ValueError("RGB values must be between 0 and 255.")
         if not (0.0 <= alpha <= 1.0):
-             raise ValueError("Alpha value must be between 0.0 and 1.0.")
+            raise ValueError("Alpha value must be between 0.0 and 1.0.")
         # Corrected order: R, G, B, A
         return f"rgba({red}, {green}, {blue}, {alpha})"
 
@@ -595,39 +686,52 @@ class Color:
         Registers the values with ThemeManager and returns a CSS variable.
         """
         from .theme import ThemeManager
+
         return ThemeManager.instance().register_dynamic_color(light, dark)
 
     # --- Removed __getattr__ ---
     # def __getattr__(self, name): ...
+
+
 Colors = Color()
+
 
 # Assume Offset helper exists or define it here/import
 # Example definition if needed:
 class Offset:
-     def __init__(self, dx: float, dy: float):
-         self.dx = dx
-         self.dy = dy
-     def to_css(self):
-         return f"{self.dx}px {self.dy}px"
-     def __eq__(self, other):
-         return isinstance(other, Offset) and self.dx == other.dx and self.dy == other.dy
-     def __hash__(self):
-         return hash((self.dx, self.dy))
-     def __repr__(self):
-         return f"Offset({self.dx}, {self.dy})"
+    def __init__(self, dx: float, dy: float):
+        self.dx = dx
+        self.dy = dy
+
+    def to_css(self):
+        return f"{self.dx}px {self.dy}px"
+
+    def __eq__(self, other):
+        return isinstance(other, Offset) and self.dx == other.dx and self.dy == other.dy
+
+    def __hash__(self):
+        return hash((self.dx, self.dy))
+
+    def __repr__(self):
+        return f"Offset({self.dx}, {self.dy})"
+
+
 # End Example Offset definition
+
 
 class BoxShadow:
     """
     Represents a CSS box-shadow effect. Compatible with reconciliation.
     """
-    def __init__(self,
-                 color: str = 'rgba(0,0,0,0.2)', # Default shadow color
-                 offset: Offset = Offset(0, 2), # Default offset (dx, dy)
-                 blurRadius: float = 4.0, # Default blur
-                 spreadRadius: float = 0.0, # Default spread
-                 # Add inset keyword if needed later
-                 ):
+
+    def __init__(
+        self,
+        color: str = "rgba(0,0,0,0.2)",  # Default shadow color
+        offset: Offset = Offset(0, 2),  # Default offset (dx, dy)
+        blurRadius: float = 4.0,  # Default blur
+        spreadRadius: float = 0.0,  # Default spread
+        # Add inset keyword if needed later
+    ):
         """
         Initializes the box shadow.
 
@@ -639,9 +743,9 @@ class BoxShadow:
         """
         self.color = color
         if not isinstance(offset, Offset):
-             raise TypeError("offset must be an Offset instance.")
+            raise TypeError("offset must be an Offset instance.")
         self.offset = offset
-        self.blurRadius = max(0.0, blurRadius) # Ensure non-negative
+        self.blurRadius = max(0.0, blurRadius)  # Ensure non-negative
         self.spreadRadius = spreadRadius
 
     # --- Compatibility Methods ---
@@ -652,20 +756,22 @@ class BoxShadow:
         Format: offset-x offset-y blur-radius spread-radius color
         """
         # Format: h-offset v-offset blur spread color
-        return f'{self.offset.dx}px {self.offset.dy}px {self.blurRadius}px {self.spreadRadius}px {self.color}'
+        return f"{self.offset.dx}px {self.offset.dy}px {self.blurRadius}px {self.spreadRadius}px {self.color}"
 
     def to_css_dict(self) -> dict:
-         """Returns the CSS property as a dictionary."""
-         return {'box-shadow': self.to_css()}
+        """Returns the CSS property as a dictionary."""
+        return {"box-shadow": self.to_css()}
 
     # --- Hashability & Equality ---
     def __eq__(self, other):
         if not isinstance(other, BoxShadow):
             return NotImplemented
-        return (self.color == other.color and
-                self.offset == other.offset and
-                self.blurRadius == other.blurRadius and
-                self.spreadRadius == other.spreadRadius)
+        return (
+            self.color == other.color
+            and self.offset == other.offset
+            and self.blurRadius == other.blurRadius
+            and self.spreadRadius == other.spreadRadius
+        )
 
     def __hash__(self):
         # Hash a tuple of the relevant attributes
@@ -678,100 +784,136 @@ class BoxShadow:
 
     # --- Reconciler Prop Representation ---
     def to_dict(self):
-         return {'color': self.color, 'offset': {'dx': self.offset.dx, 'dy': self.offset.dy},
-                 'blurRadius': self.blurRadius, 'spreadRadius': self.spreadRadius}
+        return {
+            "color": self.color,
+            "offset": {"dx": self.offset.dx, "dy": self.offset.dy},
+            "blurRadius": self.blurRadius,
+            "spreadRadius": self.spreadRadius,
+        }
 
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         # Hash offset's tuple representation if Offset is complex
-         return (self.color, self.offset, self.blurRadius, self.spreadRadius)
-
+        """Returns a hashable tuple representation."""
+        # Hash offset's tuple representation if Offset is complex
+        return (self.color, self.offset, self.blurRadius, self.spreadRadius)
 
 
 # --- ClipBehavior Refactored (Using Enum) ---
 class ClipBehavior:
     """Specifies how content should be clipped."""
-    NONE = 'none' # CSS overflow: visible (effectively)
-    HARD_EDGE = 'hardEdge' # CSS overflow: hidden
-    ANTI_ALIAS = 'antiAlias' # CSS overflow: hidden (visual effect not guaranteed)
-    ANTI_ALIAS_WITH_SAVE_LAYER = 'antiAliasWithSaveLayer' # CSS overflow: hidden (effect not CSS)
+
+    NONE = "none"  # CSS overflow: visible (effectively)
+    HARD_EDGE = "hardEdge"  # CSS overflow: hidden
+    ANTI_ALIAS = "antiAlias"  # CSS overflow: hidden (visual effect not guaranteed)
+    ANTI_ALIAS_WITH_SAVE_LAYER = (
+        "antiAliasWithSaveLayer"  # CSS overflow: hidden (effect not CSS)
+    )
 
     def to_css_overflow(self) -> Optional[str]:
-         """Maps enum value to CSS overflow property value."""
-         if self == ClipBehavior.NONE:
-              return 'visible' # Or None if default is desired
-         elif self in [ClipBehavior.HARD_EDGE, ClipBehavior.ANTI_ALIAS, ClipBehavior.ANTI_ALIAS_WITH_SAVE_LAYER]:
-              return 'hidden'
-         return None # Default or unmapped
+        """Maps enum value to CSS overflow property value."""
+        if self == ClipBehavior.NONE:
+            return "visible"  # Or None if default is desired
+        elif self in [
+            ClipBehavior.HARD_EDGE,
+            ClipBehavior.ANTI_ALIAS,
+            ClipBehavior.ANTI_ALIAS_WITH_SAVE_LAYER,
+        ]:
+            return "hidden"
+        return None  # Default or unmapped
+
 
 # --- ImageFit (Keep as String Constants) ---
 class ImageFit:
     """CSS object-fit values."""
-    CONTAIN = 'contain'
-    COVER = 'cover'
-    FILL = 'fill'
-    NONE = 'none'
-    SCALE_DOWN = 'scale-down'
+
+    CONTAIN = "contain"
+    COVER = "cover"
+    FILL = "fill"
+    NONE = "none"
+    SCALE_DOWN = "scale-down"
+
 
 # --- MainAxisSize (Keep as conceptual values) ---
 class MainAxisSize:
     """Conceptual sizing behavior for main axis in Flex/Row/Column."""
-    MIN = 'min' # Wrap content size
-    MAX = 'max' # Fill available space
+
+    MIN = "min"  # Wrap content size
+    MAX = "max"  # Fill available space
+
 
 # --- Axis Constants ---
 class Axis:
     """Specifies the primary direction for layout widgets like Flex, ListView."""
-    VERTICAL = 'vertical'
-    HORIZONTAL = 'horizontal'
+
+    VERTICAL = "vertical"
+    HORIZONTAL = "horizontal"
+
 
 # --- MainAxisAlignment Constants (for Flexbox justify-content) ---
 class MainAxisAlignment:
     """How children should be placed along the main axis in a flex layout."""
-    START = 'flex-start'
-    END = 'flex-end'
-    CENTER = 'center'
-    SPACE_BETWEEN = 'space-between'
-    SPACE_AROUND = 'space-around'
-    SPACE_EVENLY = 'space-evenly'
+
+    START = "flex-start"
+    END = "flex-end"
+    CENTER = "center"
+    SPACE_BETWEEN = "space-between"
+    SPACE_AROUND = "space-around"
+    SPACE_EVENLY = "space-evenly"
+
 
 # --- CrossAxisAlignment Constants (for Flexbox align-items) ---
 class CrossAxisAlignment:
     """How children should be placed along the cross axis in a flex layout."""
-    START = 'flex-start'
-    END = 'flex-end'
-    CENTER = 'center'
-    STRETCH = 'stretch' # Make children fill the cross axis.
-    BASELINE = 'baseline' # Align children along their text baseline.
+
+    START = "flex-start"
+    END = "flex-end"
+    CENTER = "center"
+    STRETCH = "stretch"  # Make children fill the cross axis.
+    BASELINE = "baseline"  # Align children along their text baseline.
+
 
 class Double:
-    INFINITY = '-webkit-fill-available'
-    INHERIT = 'inherit'
-    INITIAL = 'initial'
+    INFINITY = "-webkit-fill-available"
+    INHERIT = "inherit"
+    INITIAL = "initial"
+
 
 class TextStyle:
     """
     Holds styling information for text (font, color, decoration, etc.).
     Compatible with reconciliation.
     """
-    def __init__(self,
-                 color: Optional[str] = None,
-                 # Font properties
-                 fontFamily: Optional[str] = None, # e.g., 'Roboto', 'Arial', sans-serif
-                 fontSize: Optional[Union[int, float]] = None, # Assumed px
-                 fontWeight: Optional[Union[str, int]] = None, # e.g., 'bold', 'normal', 400, 700
-                 fontStyle: Optional[str] = None, # e.g., 'italic', 'normal'
-                 # Spacing
-                 letterSpacing: Optional[Union[int, float, str]] = None, # number (px) or string ('normal')
-                 wordSpacing: Optional[Union[int, float, str]] = None, # number (px) or string ('normal')
-                 lineHeight: Optional[Union[int, float, str]] = None, # number (multiplier), px, or 'normal'
-                 # Decoration
-                 textDecoration: Optional[str] = None, # e.g., 'underline', 'line-through', 'none'
-                 decorationColor: Optional[str] = None, # Color of the decoration line
-                 decorationStyle: Optional[str] = None, # e.g., 'solid', 'wavy', 'dotted'
-                 decorationThickness: Optional[Union[int, float, str]] = None, # number (px) or string ('auto')
-                 # Add other properties like textShadow, fontFeatures, etc. if needed
-                 ):
+
+    def __init__(
+        self,
+        color: Optional[str] = None,
+        # Font properties
+        fontFamily: Optional[str] = None,  # e.g., 'Roboto', 'Arial', sans-serif
+        fontSize: Optional[Union[int, float]] = None,  # Assumed px
+        fontWeight: Optional[
+            Union[str, int]
+        ] = None,  # e.g., 'bold', 'normal', 400, 700
+        fontStyle: Optional[str] = None,  # e.g., 'italic', 'normal'
+        # Spacing
+        letterSpacing: Optional[
+            Union[int, float, str]
+        ] = None,  # number (px) or string ('normal')
+        wordSpacing: Optional[
+            Union[int, float, str]
+        ] = None,  # number (px) or string ('normal')
+        lineHeight: Optional[
+            Union[int, float, str]
+        ] = None,  # number (multiplier), px, or 'normal'
+        # Decoration
+        textDecoration: Optional[
+            str
+        ] = None,  # e.g., 'underline', 'line-through', 'none'
+        decorationColor: Optional[str] = None,  # Color of the decoration line
+        decorationStyle: Optional[str] = None,  # e.g., 'solid', 'wavy', 'dotted'
+        decorationThickness: Optional[
+            Union[int, float, str]
+        ] = None,  # number (px) or string ('auto')
+        # Add other properties like textShadow, fontFeatures, etc. if needed
+    ):
         """
         Initializes the TextStyle object.
 
@@ -804,30 +946,46 @@ class TextStyle:
 
     # --- Compatibility Methods ---
 
-    def _format_css_value(self, value: Any, default_unit: str = 'px') -> Optional[str]:
+    def _format_css_value(self, value: Any, default_unit: str = "px") -> Optional[str]:
         """Helper to format values for CSS, adding units if needed."""
         if value is None:
             return None
         if isinstance(value, (int, float)):
             return f"{value}{default_unit}"
-        return str(value) # Assume string values are already correct CSS values
+        return str(value)  # Assume string values are already correct CSS values
 
     def to_css_dict(self) -> Dict[str, str]:
         """Converts text style properties to a dictionary of CSS styles."""
         styles = {}
-        if self.color: styles['color'] = self.color
-        if self.fontFamily: styles['font-family'] = self.fontFamily
-        if self.fontSize: styles['font-size'] = self._format_css_value(self.fontSize)
-        if self.fontWeight: styles['font-weight'] = str(self.fontWeight)
-        if self.fontStyle: styles['font-style'] = self.fontStyle
-        if self.letterSpacing: styles['letter-spacing'] = self._format_css_value(self.letterSpacing)
-        if self.wordSpacing: styles['word-spacing'] = self._format_css_value(self.wordSpacing)
-        if self.lineHeight: styles['line-height'] = self._format_css_value(self.lineHeight, default_unit='') # Unitless multiplier is common
+        if self.color:
+            styles["color"] = self.color
+        if self.fontFamily:
+            styles["font-family"] = self.fontFamily
+        if self.fontSize:
+            styles["font-size"] = self._format_css_value(self.fontSize)
+        if self.fontWeight:
+            styles["font-weight"] = str(self.fontWeight)
+        if self.fontStyle:
+            styles["font-style"] = self.fontStyle
+        if self.letterSpacing:
+            styles["letter-spacing"] = self._format_css_value(self.letterSpacing)
+        if self.wordSpacing:
+            styles["word-spacing"] = self._format_css_value(self.wordSpacing)
+        if self.lineHeight:
+            styles["line-height"] = self._format_css_value(
+                self.lineHeight, default_unit=""
+            )  # Unitless multiplier is common
         # Combine text-decoration properties if possible
-        if self.textDecoration: styles['text-decoration-line'] = self.textDecoration
-        if self.decorationColor: styles['text-decoration-color'] = self.decorationColor
-        if self.decorationStyle: styles['text-decoration-style'] = self.decorationStyle
-        if self.decorationThickness: styles['text-decoration-thickness'] = self._format_css_value(self.decorationThickness)
+        if self.textDecoration:
+            styles["text-decoration-line"] = self.textDecoration
+        if self.decorationColor:
+            styles["text-decoration-color"] = self.decorationColor
+        if self.decorationStyle:
+            styles["text-decoration-style"] = self.decorationStyle
+        if self.decorationThickness:
+            styles["text-decoration-thickness"] = self._format_css_value(
+                self.decorationThickness
+            )
         # Could try to combine into shorthand `text-decoration` but it's complex
         return styles
 
@@ -841,34 +999,57 @@ class TextStyle:
         if not isinstance(other, TextStyle):
             return NotImplemented
         # Compare all attributes
-        return (self.color == other.color and
-                self.fontFamily == other.fontFamily and
-                self.fontSize == other.fontSize and
-                self.fontWeight == other.fontWeight and
-                self.fontStyle == other.fontStyle and
-                self.letterSpacing == other.letterSpacing and
-                self.wordSpacing == other.wordSpacing and
-                self.lineHeight == other.lineHeight and
-                self.textDecoration == other.textDecoration and
-                self.decorationColor == other.decorationColor and
-                self.decorationStyle == other.decorationStyle and
-                self.decorationThickness == other.decorationThickness)
+        return (
+            self.color == other.color
+            and self.fontFamily == other.fontFamily
+            and self.fontSize == other.fontSize
+            and self.fontWeight == other.fontWeight
+            and self.fontStyle == other.fontStyle
+            and self.letterSpacing == other.letterSpacing
+            and self.wordSpacing == other.wordSpacing
+            and self.lineHeight == other.lineHeight
+            and self.textDecoration == other.textDecoration
+            and self.decorationColor == other.decorationColor
+            and self.decorationStyle == other.decorationStyle
+            and self.decorationThickness == other.decorationThickness
+        )
 
     def __hash__(self):
         # Hash a tuple of all attributes
-        return hash((
-            self.color, self.fontFamily, self.fontSize, self.fontWeight,
-            self.fontStyle, self.letterSpacing, self.wordSpacing, self.lineHeight,
-            self.textDecoration, self.decorationColor, self.decorationStyle,
-            self.decorationThickness
-        ))
+        return hash(
+            (
+                self.color,
+                self.fontFamily,
+                self.fontSize,
+                self.fontWeight,
+                self.fontStyle,
+                self.letterSpacing,
+                self.wordSpacing,
+                self.lineHeight,
+                self.textDecoration,
+                self.decorationColor,
+                self.decorationStyle,
+                self.decorationThickness,
+            )
+        )
 
     # --- Representation ---
     def __repr__(self):
         props = []
-        for attr in ['color', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
-                     'letterSpacing', 'wordSpacing', 'lineHeight', 'textDecoration',
-                     'decorationColor', 'decorationStyle', 'decorationThickness']:
+        for attr in [
+            "color",
+            "fontFamily",
+            "fontSize",
+            "fontWeight",
+            "fontStyle",
+            "letterSpacing",
+            "wordSpacing",
+            "lineHeight",
+            "textDecoration",
+            "decorationColor",
+            "decorationStyle",
+            "decorationThickness",
+        ]:
             value = getattr(self, attr)
             if value is not None:
                 props.append(f"{attr}={value!r}")
@@ -877,25 +1058,51 @@ class TextStyle:
     # --- Reconciler Prop Representation ---
     def to_dict(self):
         """Returns a simple dictionary representation."""
-        return {attr: getattr(self, attr) for attr in [
-            'color', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
-            'letterSpacing', 'wordSpacing', 'lineHeight', 'textDecoration',
-            'decorationColor', 'decorationStyle', 'decorationThickness'
-        ] if getattr(self, attr) is not None}
+        return {
+            attr: getattr(self, attr)
+            for attr in [
+                "color",
+                "fontFamily",
+                "fontSize",
+                "fontWeight",
+                "fontStyle",
+                "letterSpacing",
+                "wordSpacing",
+                "lineHeight",
+                "textDecoration",
+                "decorationColor",
+                "decorationStyle",
+                "decorationThickness",
+            ]
+            if getattr(self, attr) is not None
+        }
 
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         return tuple(getattr(self, attr) for attr in [
-            'color', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
-            'letterSpacing', 'wordSpacing', 'lineHeight', 'textDecoration',
-            'decorationColor', 'decorationStyle', 'decorationThickness'
-        ])
+        """Returns a hashable tuple representation."""
+        return tuple(
+            getattr(self, attr)
+            for attr in [
+                "color",
+                "fontFamily",
+                "fontSize",
+                "fontWeight",
+                "fontStyle",
+                "letterSpacing",
+                "wordSpacing",
+                "lineHeight",
+                "textDecoration",
+                "decorationColor",
+                "decorationStyle",
+                "decorationThickness",
+            ]
+        )
+
 
 # --- BorderStyle Constants ---
 class BorderStyle:
     """
     A class representing various border styles.
-    
+
     This class defines the different types of border styles that can be applied to widgets.
 
     Attributes:
@@ -910,17 +1117,17 @@ class BorderStyle:
         OUTSET (str): Outset border.
         HIDDEN (str): Hidden border.
     """
-    NONE = 'none'
-    DOTTED = 'dotted'
-    DASHED = 'dashed'
-    SOLID = 'solid'
-    DOUBLE ='double'
-    GROOVE = 'groove'
-    RIDGE = 'ridge'
-    INSET = 'inset'
-    OUTSET = 'outset'
-    HIDDEN = 'hidden'
 
+    NONE = "none"
+    DOTTED = "dotted"
+    DASHED = "dashed"
+    SOLID = "solid"
+    DOUBLE = "double"
+    GROOVE = "groove"
+    RIDGE = "ridge"
+    INSET = "inset"
+    OUTSET = "outset"
+    HIDDEN = "hidden"
 
 
 # --- BorderRadius Refactored ---
@@ -928,11 +1135,14 @@ class BorderRadius:
     """
     Represents the radius for the corners of a box. Compatible with reconciliation.
     """
-    def __init__(self,
-                 topLeft: float = 0.0,
-                 topRight: float = 0.0,
-                 bottomRight: float = 0.0,
-                 bottomLeft: float = 0.0):
+
+    def __init__(
+        self,
+        topLeft: float = 0.0,
+        topRight: float = 0.0,
+        bottomRight: float = 0.0,
+        bottomLeft: float = 0.0,
+    ):
         """
         Initializes BorderRadius. Values are typically in pixels.
 
@@ -942,36 +1152,55 @@ class BorderRadius:
             bottomRight (float): Radius for the bottom-right corner.
             bottomLeft (float): Radius for the bottom-left corner.
         """
-        self.topLeft = max(0.0, topLeft) # Ensure non-negative
+        self.topLeft = max(0.0, topLeft)  # Ensure non-negative
         self.topRight = max(0.0, topRight)
         self.bottomRight = max(0.0, bottomRight)
         self.bottomLeft = max(0.0, bottomLeft)
 
     # --- Static Constructors ---
     @staticmethod
-    def all(value: float) -> 'BorderRadius':
+    def all(value: float) -> "BorderRadius":
         """Creates a BorderRadius with the same radius for all corners."""
         radius = max(0.0, value)
         return BorderRadius(radius, radius, radius, radius)
 
     @staticmethod
-    def circular(radius: float) -> 'BorderRadius':
-         """Creates a BorderRadius with the same radius for all corners (alias for all)."""
-         return BorderRadius.all(radius)
+    def circular(radius: float) -> "BorderRadius":
+        """Creates a BorderRadius with the same radius for all corners (alias for all)."""
+        return BorderRadius.all(radius)
 
     @staticmethod
-    def vertical(top: float = 0.0, bottom: float = 0.0) -> 'BorderRadius':
-         """Creates a BorderRadius with the same radius for top-left/top-right and bottom-left/bottom-right."""
-         top_r = max(0.0, top)
-         bottom_r = max(0.0, bottom)
-         return BorderRadius(topLeft=top_r, topRight=top_r, bottomRight=bottom_r, bottomLeft=bottom_r)
+    def vertical(top: float = 0.0, bottom: float = 0.0) -> "BorderRadius":
+        """Creates a BorderRadius with the same radius for top-left/top-right and bottom-left/bottom-right."""
+        top_r = max(0.0, top)
+        bottom_r = max(0.0, bottom)
+        return BorderRadius(
+            topLeft=top_r, topRight=top_r, bottomRight=bottom_r, bottomLeft=bottom_r
+        )
 
     @staticmethod
-    def horizontal(left: float = 0.0, right: float = 0.0) -> 'BorderRadius':
-         """Creates a BorderRadius with the same radius for top-left/bottom-left and top-right/bottom-right."""
-         left_r = max(0.0, left)
-         right_r = max(0.0, right)
-         return BorderRadius(topLeft=left_r, topRight=right_r, bottomRight=right_r, bottomLeft=left_r)
+    def horizontal(left: float = 0.0, right: float = 0.0) -> "BorderRadius":
+        """Creates a BorderRadius with the same radius for top-left/bottom-left and top-right/bottom-right."""
+        left_r = max(0.0, left)
+        right_r = max(0.0, right)
+        return BorderRadius(
+            topLeft=left_r, topRight=right_r, bottomRight=right_r, bottomLeft=left_r
+        )
+
+    @staticmethod
+    def only(
+        topLeft: float = 0.0,
+        topRight: float = 0.0,
+        bottomRight: float = 0.0,
+        bottomLeft: float = 0.0,
+    ) -> "BorderRadius":
+        """Creates a BorderRadius with only the specified corners rounded."""
+        return BorderRadius(
+            topLeft=topLeft,
+            topRight=topRight,
+            bottomRight=bottomRight,
+            bottomLeft=bottomLeft,
+        )
 
     # --- Compatibility Methods ---
 
@@ -982,17 +1211,17 @@ class BorderRadius:
         """
         # Check for simplifications
         if self.topLeft == self.topRight == self.bottomRight == self.bottomLeft:
-            return f"{self.topLeft}px" # All same
+            return f"{self.topLeft}px"  # All same
         if self.topLeft == self.bottomRight and self.topRight == self.bottomLeft:
-            return f"{self.topLeft}px {self.topRight}px" # Top-left/bottom-right, Top-right/bottom-left
+            return f"{self.topLeft}px {self.topRight}px"  # Top-left/bottom-right, Top-right/bottom-left
         if self.topRight == self.bottomLeft:
-             return f"{self.topLeft}px {self.topRight}px {self.bottomRight}px" # Top-left, Top-right/bottom-left, Bottom-right
+            return f"{self.topLeft}px {self.topRight}px {self.bottomRight}px"  # Top-left, Top-right/bottom-left, Bottom-right
         # Full definition
         return f"{self.topLeft}px {self.topRight}px {self.bottomRight}px {self.bottomLeft}px"
 
     def to_css_dict(self) -> dict:
-         """Returns the CSS property as a dictionary."""
-         return {'border-radius': self.to_css_value()}
+        """Returns the CSS property as a dictionary."""
+        return {"border-radius": self.to_css_value()}
 
     def to_css(self) -> str:
         """Returns the full CSS property string (e.g., 'border-radius: 10px;')."""
@@ -1002,29 +1231,36 @@ class BorderRadius:
     def __eq__(self, other):
         if not isinstance(other, BorderRadius):
             return NotImplemented
-        return (self.topLeft == other.topLeft and
-                self.topRight == other.topRight and
-                self.bottomRight == other.bottomRight and
-                self.bottomLeft == other.bottomLeft)
+        return (
+            self.topLeft == other.topLeft
+            and self.topRight == other.topRight
+            and self.bottomRight == other.bottomRight
+            and self.bottomLeft == other.bottomLeft
+        )
 
     def __hash__(self):
         return hash((self.topLeft, self.topRight, self.bottomRight, self.bottomLeft))
 
     # --- Representation ---
     def __repr__(self):
-         if self.topLeft == self.topRight == self.bottomRight == self.bottomLeft:
-              return f"BorderRadius.all({self.topLeft})"
-         # Add checks for vertical/horizontal if desired
-         return f"BorderRadius(topLeft={self.topLeft}, topRight={self.topRight}, bottomRight={self.bottomRight}, bottomLeft={self.bottomLeft})"
+        if self.topLeft == self.topRight == self.bottomRight == self.bottomLeft:
+            return f"BorderRadius.all({self.topLeft})"
+        # Add checks for vertical/horizontal if desired
+        return f"BorderRadius(topLeft={self.topLeft}, topRight={self.topRight}, bottomRight={self.bottomRight}, bottomLeft={self.bottomLeft})"
 
     # --- Reconciler Prop Representation ---
     def to_dict(self):
-         return {'topLeft': self.topLeft, 'topRight': self.topRight,
-                 'bottomRight': self.bottomRight, 'bottomLeft': self.bottomLeft}
+        return {
+            "topLeft": self.topLeft,
+            "topRight": self.topRight,
+            "bottomRight": self.bottomRight,
+            "bottomLeft": self.bottomLeft,
+        }
 
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         return (self.topLeft, self.topRight, self.bottomRight, self.bottomLeft)
+        """Returns a hashable tuple representation."""
+        return (self.topLeft, self.topRight, self.bottomRight, self.bottomLeft)
+
 
 class BorderSide:
     """
@@ -1032,16 +1268,20 @@ class BorderSide:
     Used by BoxDecoration or for individual border properties (border-top, etc.).
     Compatible with reconciliation.
     """
-    # Define a constant for no border
-    NONE = None # Or potentially an instance: BorderSide(width=0, style=BorderStyle.NONE)
 
-    def __init__(self,
-                 width: float = 1.0, # Default width
-                 style: str = BorderStyle.SOLID, # Default style
-                 color: str = Colors.black # Default color
-                 # Removed borderRadius - Radius applies to the box (BorderRadius), not a single side's style
-                 # borderRadius=None
-                 ):
+    # Define a constant for no border
+    NONE = (
+        None  # Or potentially an instance: BorderSide(width=0, style=BorderStyle.NONE)
+    )
+
+    def __init__(
+        self,
+        width: float = 1.0,  # Default width
+        style: str = BorderStyle.SOLID,  # Default style
+        color: str = Colors.black,  # Default color
+        # Removed borderRadius - Radius applies to the box (BorderRadius), not a single side's style
+        # borderRadius=None
+    ):
         """
         Initializes the BorderSide.
 
@@ -1052,10 +1292,12 @@ class BorderSide:
                          Defaults to BorderStyle.SOLID. Use BorderStyle.NONE for no visible border.
             color (str): The color of the border line (CSS color string). Defaults to Colors.black.
         """
-        self.width = max(0.0, width) # Ensure non-negative
+        self.width = max(0.0, width)  # Ensure non-negative
         # Add validation for style if desired
-        self.style = style if style else BorderStyle.NONE # Default to NONE if None/empty provided
-        self.color = color if color else Colors.black # Default color if None/empty
+        self.style = (
+            style if style else BorderStyle.NONE
+        )  # Default to NONE if None/empty provided
+        self.color = color if color else Colors.black  # Default color if None/empty
 
     # --- Compatibility Methods ---
 
@@ -1065,7 +1307,7 @@ class BorderSide:
         (e.g., '1px solid black'). Returns 'none' if style is NONE or width is 0.
         """
         if self.style == BorderStyle.NONE or self.width <= 0:
-            return 'none'
+            return "none"
         # Format: width style color
         return f"{self.width}px {self.style} {self.color}"
 
@@ -1076,13 +1318,13 @@ class BorderSide:
         """
         styles = {}
         if self.style == BorderStyle.NONE or self.width <= 0:
-             # Set style to none, implicitly hiding width/color
-             styles['border-style'] = BorderStyle.NONE
-             styles['border-width'] = '0px' # Explicitly set width to 0
+            # Set style to none, implicitly hiding width/color
+            styles["border-style"] = BorderStyle.NONE
+            styles["border-width"] = "0px"  # Explicitly set width to 0
         else:
-            styles['border-width'] = f"{self.width}px"
-            styles['border-style'] = self.style
-            styles['border-color'] = self.color
+            styles["border-width"] = f"{self.width}px"
+            styles["border-style"] = self.style
+            styles["border-color"] = self.color
         return styles
 
     def to_css(self) -> str:
@@ -1099,9 +1341,11 @@ class BorderSide:
             return NotImplemented
         # Treat width=0 or style=NONE as equivalent to no border for comparison? Optional.
         # Simple comparison for now:
-        return (self.width == other.width and
-                self.style == other.style and
-                self.color == other.color)
+        return (
+            self.width == other.width
+            and self.style == other.style
+            and self.color == other.color
+        )
 
     def __hash__(self):
         # Hash based on the defining attributes
@@ -1111,30 +1355,42 @@ class BorderSide:
     def __repr__(self):
         # Show defaults only if non-standard
         props = []
-        if self.width != 1.0: props.append(f"width={self.width}")
-        if self.style != BorderStyle.SOLID: props.append(f"style='{self.style}'")
-        if self.color != Colors.black: props.append(f"color='{self.color}'")
-        if not props: return "BorderSide()" # All defaults
+        if self.width != 1.0:
+            props.append(f"width={self.width}")
+        if self.style != BorderStyle.SOLID:
+            props.append(f"style='{self.style}'")
+        if self.color != Colors.black:
+            props.append(f"color='{self.color}'")
+        if not props:
+            return "BorderSide()"  # All defaults
         return f"BorderSide({', '.join(props)})"
 
     # --- Reconciler Prop Representation ---
     def to_dict(self):
-         """Returns a simple dictionary representation."""
-         return {'width': self.width, 'style': self.style, 'color': self.color}
+        """Returns a simple dictionary representation."""
+        return {"width": self.width, "style": self.style, "color": self.color}
 
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         return (self.width, self.style, self.color)
+        """Returns a hashable tuple representation."""
+        return (self.width, self.style, self.color)
 
     # Removed to_int() - unclear purpose, width is directly accessible.
     # Removed borderRadius - Belongs on BoxDecoration/BorderRadius.
     # Removed border_to_css() - Replaced by to_css_shorthand_value().
 
+
 class Border:
     """
     A border of a box, comprised of four sides: top, right, bottom, left.
     """
-    def __init__(self, top: BorderSide = None, right: BorderSide = None, bottom: BorderSide = None, left: BorderSide = None):
+
+    def __init__(
+        self,
+        top: BorderSide = None,
+        right: BorderSide = None,
+        bottom: BorderSide = None,
+        left: BorderSide = None,
+    ):
         """
         Creates a border with the given sides.
         If a side is None, it defaults to a border with no style (no width).
@@ -1153,13 +1409,8 @@ class Border:
     @classmethod
     def symmetric(cls, vertical: BorderSide = None, horizontal: BorderSide = None):
         """Creates a border with symmetrical vertical and horizontal sides."""
-        return cls(
-            top=vertical, 
-            right=horizontal, 
-            bottom=vertical, 
-            left=horizontal
-        )
-    
+        return cls(top=vertical, right=horizontal, bottom=vertical, left=horizontal)
+
     @classmethod
     def fromBorderSide(cls, side: BorderSide):
         """Creates a border with the same side on all four edges."""
@@ -1170,11 +1421,11 @@ class Border:
         styles = {}
         # Optimization: check if all sides are identical
         if self.top == self.right == self.bottom == self.left:
-             # Use shorthand 'border' property
-             shorthand = self.top.to_css_shorthand_value()
-             if shorthand != 'none':
-                 styles['border'] = shorthand
-             return styles
+            # Use shorthand 'border' property
+            shorthand = self.top.to_css_shorthand_value()
+            if shorthand != "none":
+                styles["border"] = shorthand
+            return styles
 
         # Otherwise, apply individual sides
         # Helper to apply side rules
@@ -1183,23 +1434,25 @@ class Border:
             for k, v in side_dict.items():
                 # k is like 'border-width', 'border-color'
                 # we need 'border-top-width', etc.
-                suffix = k.split('-')[1] # width, style, color
+                suffix = k.split("-")[1]  # width, style, color
                 styles[f"{prefix}-{suffix}"] = v
 
-        apply_side(self.top, 'border-top')
-        apply_side(self.right, 'border-right')
-        apply_side(self.bottom, 'border-bottom')
-        apply_side(self.left, 'border-left')
-        
+        apply_side(self.top, "border-top")
+        apply_side(self.right, "border-right")
+        apply_side(self.bottom, "border-bottom")
+        apply_side(self.left, "border-left")
+
         return styles
 
     def __eq__(self, other):
         if not isinstance(other, Border):
             return NotImplemented
-        return (self.top == other.top and 
-                self.right == other.right and 
-                self.bottom == other.bottom and 
-                self.left == other.left)
+        return (
+            self.top == other.top
+            and self.right == other.right
+            and self.bottom == other.bottom
+            and self.left == other.left
+        )
 
     def __hash__(self):
         return hash((self.top, self.right, self.bottom, self.left))
@@ -1208,20 +1461,27 @@ class Border:
         return f"Border(top={self.top}, right={self.right}, bottom={self.bottom}, left={self.left})"
 
     def to_dict(self):
-         return {
-             'top': self.top.to_dict(),
-             'right': self.right.to_dict(),
-             'bottom': self.bottom.to_dict(),
-             'left': self.left.to_dict()
-         }
+        return {
+            "top": self.top.to_dict(),
+            "right": self.right.to_dict(),
+            "bottom": self.bottom.to_dict(),
+            "left": self.left.to_dict(),
+        }
 
     def to_tuple(self):
-         return (self.top.to_tuple(), self.right.to_tuple(), self.bottom.to_tuple(), self.left.to_tuple())
+        return (
+            self.top.to_tuple(),
+            self.right.to_tuple(),
+            self.bottom.to_tuple(),
+            self.left.to_tuple(),
+        )
+
 
 from typing import Optional, Union, Tuple, Dict, Any
 
 # Assuming other style classes are defined/imported and compatible:
 # from .styles import Colors, EdgeInsets, BorderSide, BorderRadius, TextStyle, Alignment, BoxShadow, Offset
+
 
 class ButtonStyle:
     """
@@ -1243,30 +1503,40 @@ class ButtonStyle:
             textStyle: TextStyle object for button label.
             alignment: Alignment object if button uses flex/grid for content.
     """
-    def __init__(self,
-                 # --- Colors ---
-                 backgroundColor: Optional[str] = None, # Button background
-                 foregroundColor: Optional[str] = None, # Text/Icon color
-                 disabledBackgroundColor: Optional[str] = None, # Background when disabled
-                 disabledForegroundColor: Optional[str] = None, # Text/Icon when disabled
-                 shadowColor: Optional[str] = None, # Color of elevation shadow
-                 hoverColor: Optional[str] = None,
-                 activeColor: Optional[str] = None,
-                 # overlayColor: Optional[str] = None, # TODO: Handle hover/focus/pressed overlay (CSS :hover/:active or JS)
-                 # --- Shape & Border ---
-                 elevation: Optional[float] = None, # Shadow depth (used to generate BoxShadow)
-                 padding: Optional[EdgeInsets] = None, # Padding inside the button
-                 margin: Optional[EdgeInsets] = None, # margin outside the button
-                 minimumSize: Optional[Tuple[Optional[float], Optional[float]]] = None, # (minWidth, minHeight) in px
-                 maximumSize: Optional[Tuple[Optional[float], Optional[float]]] = None, # (maxWidth, maxHeight) in px
-                 side: Optional[BorderSide] = None, # Border properties
-                 shape: Optional[Union[float, BorderRadius]] = None, # Corner radius (number or BorderRadius object)
-                 # --- Content Style ---
-                 textStyle: Optional[TextStyle] = None, # Style for text content
-                 alignment: Optional[Alignment] = None, # How content (icon+label) is aligned if button is flex container
-                 # iconColor: Optional[str] = None, # Specific icon color override? (or use foregroundColor)
-                 # iconSize: Optional[float] = None, # Icon size? (Usually handled by Icon widget itself)
-                 ):
+
+    def __init__(
+        self,
+        # --- Colors ---
+        backgroundColor: Optional[str] = None,  # Button background
+        foregroundColor: Optional[str] = None,  # Text/Icon color
+        disabledBackgroundColor: Optional[str] = None,  # Background when disabled
+        disabledForegroundColor: Optional[str] = None,  # Text/Icon when disabled
+        shadowColor: Optional[str] = None,  # Color of elevation shadow
+        hoverColor: Optional[str] = None,
+        activeColor: Optional[str] = None,
+        # overlayColor: Optional[str] = None, # TODO: Handle hover/focus/pressed overlay (CSS :hover/:active or JS)
+        # --- Shape & Border ---
+        elevation: Optional[float] = None,  # Shadow depth (used to generate BoxShadow)
+        padding: Optional[EdgeInsets] = None,  # Padding inside the button
+        margin: Optional[EdgeInsets] = None,  # margin outside the button
+        minimumSize: Optional[
+            Tuple[Optional[float], Optional[float]]
+        ] = None,  # (minWidth, minHeight) in px
+        maximumSize: Optional[
+            Tuple[Optional[float], Optional[float]]
+        ] = None,  # (maxWidth, maxHeight) in px
+        side: Optional[BorderSide] = None,  # Border properties
+        shape: Optional[
+            Union[float, BorderRadius]
+        ] = None,  # Corner radius (number or BorderRadius object)
+        # --- Content Style ---
+        textStyle: Optional[TextStyle] = None,  # Style for text content
+        alignment: Optional[
+            Alignment
+        ] = None,  # How content (icon+label) is aligned if button is flex container
+        # iconColor: Optional[str] = None, # Specific icon color override? (or use foregroundColor)
+        # iconSize: Optional[float] = None, # Icon size? (Usually handled by Icon widget itself)
+    ):
         """
         Initializes the ButtonStyle.
 
@@ -1308,10 +1578,14 @@ class ButtonStyle:
     def to_css_dict(self) -> Dict[str, str]:
         """Converts button style properties to a dictionary of CSS styles."""
         styles = {}
-        if self.backgroundColor: styles['background-color'] = self.backgroundColor
-        if self.foregroundColor: styles['color'] = self.foregroundColor # Applies to text/icon color usually
-        if self.hoverColor: styles['hover-color'] = self.hoverColor
-        if self.activeColor: styles['active-color'] = self.activeColor
+        if self.backgroundColor:
+            styles["background-color"] = self.backgroundColor
+        if self.foregroundColor:
+            styles["color"] = self.foregroundColor  # Applies to text/icon color usually
+        if self.hoverColor:
+            styles["hover-color"] = self.hoverColor
+        if self.activeColor:
+            styles["active-color"] = self.activeColor
         # Disabled colors handled by specific .disabled class rules, not here directly
 
         # --- Shadow ---
@@ -1321,38 +1595,44 @@ class ButtonStyle:
             offset_y = min(max(1, self.elevation * 0.8), 6)
             blur = max(4, self.elevation * 1.5)
             spread = max(0, self.elevation * 0.2 - 1)
-            color = self.shadowColor or Colors.rgba(0,0,0,0.2)
-            styles['box-shadow'] = f"0px {offset_y}px {blur}px {spread}px {color}"
+            color = self.shadowColor or Colors.rgba(0, 0, 0, 0.2)
+            styles["box-shadow"] = f"0px {offset_y}px {blur}px {spread}px {color}"
 
-        if self.padding and isinstance(self.padding, EdgeInsets): styles['padding'] = self.padding.to_css() # Use EdgeInsets method
-        if self.margin and isinstance(self.margin, EdgeInsets): styles['margin'] = self.margin.to_css() # Use EdgeInsets method
+        if self.padding and isinstance(self.padding, EdgeInsets):
+            styles["padding"] = self.padding.to_css()  # Use EdgeInsets method
+        if self.margin and isinstance(self.margin, EdgeInsets):
+            styles["margin"] = self.margin.to_css()  # Use EdgeInsets method
         if self.minimumSize:
             min_w, min_h = self.minimumSize
-            if min_w is not None: styles['min-width'] = f"{min_w}px"
-            if min_h is not None: styles['min-height'] = f"{min_h}px"
+            if min_w is not None:
+                styles["min-width"] = f"{min_w}px"
+            if min_h is not None:
+                styles["min-height"] = f"{min_h}px"
         if self.maximumSize:
             max_w, max_h = self.maximumSize
-            if max_w is not None: styles['max-width'] = f"{max_w}px"
-            if max_h is not None: styles['max-height'] = f"{max_h}px"
+            if max_w is not None:
+                styles["max-width"] = f"{max_w}px"
+            if max_h is not None:
+                styles["max-height"] = f"{max_h}px"
 
         # --- Border & Shape ---
         if self.side and isinstance(self.side, BorderSide):
             # Use shorthand if available and not NONE
             shorthand = self.side.to_css_shorthand_value()
-            if shorthand != 'none':
-                 styles['border'] = shorthand
+            if shorthand != "none":
+                styles["border"] = shorthand
             else:
-                 styles['border'] = 'none' # Explicitly set to none
+                styles["border"] = "none"  # Explicitly set to none
         else:
             # Default: buttons often have no border unless specified
-            styles['border'] = 'none'
+            styles["border"] = "none"
 
         if self.shape:
             print("Shape value in btnStyle: ", self.shape.to_css_value())
             if isinstance(self.shape, BorderRadius):
-                styles['border-radius'] = self.shape.to_css_value()
+                styles["border-radius"] = self.shape.to_css_value()
             elif isinstance(self.shape, (int, float)):
-                 styles['border-radius'] = f"{max(0.0, self.shape)}px"
+                styles["border-radius"] = f"{max(0.0, self.shape)}px"
 
         # --- Text Style ---
         # Note: Text styles apply to text *within* the button.
@@ -1364,11 +1644,11 @@ class ButtonStyle:
         # --- Alignment ---
         # Applies if the button itself uses flex/grid to lay out an icon and label
         if self.alignment and isinstance(self.alignment, Alignment):
-             # Usually buttons use flex to align icon+label
-             styles['display'] = 'inline-flex' # Use inline-flex for button
-             styles['justify-content'] = self.alignment.justify_content
-             styles['align-items'] = self.alignment.align_items
-             styles['gap'] = '8px' # Default gap between icon/label?
+            # Usually buttons use flex to align icon+label
+            styles["display"] = "inline-flex"  # Use inline-flex for button
+            styles["justify-content"] = self.alignment.justify_content
+            styles["align-items"] = self.alignment.align_items
+            styles["gap"] = "8px"  # Default gap between icon/label?
 
         return styles
 
@@ -1383,68 +1663,138 @@ class ButtonStyle:
             return NotImplemented
         # Compare all relevant attributes
         # Ensure nested objects are comparable (__eq__ implemented)
-        return (self.backgroundColor == other.backgroundColor and
-                self.foregroundColor == other.foregroundColor and
-                self.disabledBackgroundColor == other.disabledBackgroundColor and
-                self.disabledForegroundColor == other.disabledForegroundColor and
-                self.shadowColor == other.shadowColor and
-                self.hoverColor == other.hoverColor and
-                self.activeColor == other.activeColor and
-                self.elevation == other.elevation and
-                self.padding == other.padding and
-                self.margin == other.margin and
-                self.minimumSize == other.minimumSize and
-                self.maximumSize == other.maximumSize and
-                self.side == other.side and
-                self.shape == other.shape and
-                self.textStyle == other.textStyle and
-                self.alignment == other.alignment)
+        return (
+            self.backgroundColor == other.backgroundColor
+            and self.foregroundColor == other.foregroundColor
+            and self.disabledBackgroundColor == other.disabledBackgroundColor
+            and self.disabledForegroundColor == other.disabledForegroundColor
+            and self.shadowColor == other.shadowColor
+            and self.hoverColor == other.hoverColor
+            and self.activeColor == other.activeColor
+            and self.elevation == other.elevation
+            and self.padding == other.padding
+            and self.margin == other.margin
+            and self.minimumSize == other.minimumSize
+            and self.maximumSize == other.maximumSize
+            and self.side == other.side
+            and self.shape == other.shape
+            and self.textStyle == other.textStyle
+            and self.alignment == other.alignment
+        )
 
     def __hash__(self):
         # Hash a tuple of hashable representations of attributes
         # Ensure nested objects (EdgeInsets, BorderSide, BorderRadius, TextStyle, Alignment) are hashable
-        return hash((
-            self.backgroundColor, self.foregroundColor,
-            self.disabledBackgroundColor, self.disabledForegroundColor,
-            self.shadowColor, self.hoverColor, self.activeColor, self.elevation, self.padding, self.margin,
-            self.minimumSize, self.maximumSize, # Tuples are hashable
-            self.side, self.shape, self.textStyle, self.alignment
-        ))
+        return hash(
+            (
+                self.backgroundColor,
+                self.foregroundColor,
+                self.disabledBackgroundColor,
+                self.disabledForegroundColor,
+                self.shadowColor,
+                self.hoverColor,
+                self.activeColor,
+                self.elevation,
+                self.padding,
+                self.margin,
+                self.minimumSize,
+                self.maximumSize,  # Tuples are hashable
+                self.side,
+                self.shape,
+                self.textStyle,
+                self.alignment,
+            )
+        )
 
     # --- Representation ---
     def __repr__(self):
         props = []
         # Add checks to show only non-default/non-None values
-        attrs = ['backgroundColor', 'foregroundColor', 'disabledBackgroundColor', 'disabledForegroundColor',
-                 'shadowColor', 'hoverColor', 'activeColor', 'elevation', 'padding', 'margin','minimumSize', 'maximumSize',
-                 'side', 'shape', 'textStyle', 'alignment']
+        attrs = [
+            "backgroundColor",
+            "foregroundColor",
+            "disabledBackgroundColor",
+            "disabledForegroundColor",
+            "shadowColor",
+            "hoverColor",
+            "activeColor",
+            "elevation",
+            "padding",
+            "margin",
+            "minimumSize",
+            "maximumSize",
+            "side",
+            "shape",
+            "textStyle",
+            "alignment",
+        ]
         for attr in attrs:
             value = getattr(self, attr)
-            if value is not None: # Simple check for None
+            if value is not None:  # Simple check for None
                 # Add more sophisticated default checks if needed
-                 props.append(f"{attr}={value!r}")
+                props.append(f"{attr}={value!r}")
         return f"ButtonStyle({', '.join(props)})"
 
     # --- Reconciler Prop Representation ---
     def to_dict(self):
         """Returns a simple dictionary representation."""
         # Convert nested objects to dicts too
-        return {attr: getattr(self, attr).to_dict() if hasattr(getattr(self, attr), 'to_dict') else getattr(self, attr)
-                for attr in [
-                    'backgroundColor', 'foregroundColor', 'disabledBackgroundColor', 'disabledForegroundColor',
-                    'shadowColor', 'hoverColor', 'activeColor', 'elevation', 'padding', 'margin', 'minimumSize', 'maximumSize',
-                    'side', 'shape', 'textStyle', 'alignment'
-                ] if getattr(self, attr) is not None}
+        return {
+            attr: (
+                getattr(self, attr).to_dict()
+                if hasattr(getattr(self, attr), "to_dict")
+                else getattr(self, attr)
+            )
+            for attr in [
+                "backgroundColor",
+                "foregroundColor",
+                "disabledBackgroundColor",
+                "disabledForegroundColor",
+                "shadowColor",
+                "hoverColor",
+                "activeColor",
+                "elevation",
+                "padding",
+                "margin",
+                "minimumSize",
+                "maximumSize",
+                "side",
+                "shape",
+                "textStyle",
+                "alignment",
+            ]
+            if getattr(self, attr) is not None
+        }
 
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         # Convert nested objects to tuples too
-         return tuple(getattr(self, attr).to_tuple() if hasattr(getattr(self, attr), 'to_tuple') else getattr(self, attr)
-                      for attr in [
-                          'backgroundColor', 'foregroundColor', 'disabledBackgroundColor', 'disabledForegroundColor',
-                          'shadowColor', 'hoverColor', 'activeColor', 'elevation', 'padding', 'margin', 'minimumSize', 'maximumSize',
-                          'side', 'shape', 'textStyle', 'alignment'
-                      ])
+        """Returns a hashable tuple representation."""
+        # Convert nested objects to tuples too
+        return tuple(
+            (
+                getattr(self, attr).to_tuple()
+                if hasattr(getattr(self, attr), "to_tuple")
+                else getattr(self, attr)
+            )
+            for attr in [
+                "backgroundColor",
+                "foregroundColor",
+                "disabledBackgroundColor",
+                "disabledForegroundColor",
+                "shadowColor",
+                "hoverColor",
+                "activeColor",
+                "elevation",
+                "padding",
+                "margin",
+                "minimumSize",
+                "maximumSize",
+                "side",
+                "shape",
+                "textStyle",
+                "alignment",
+            ]
+        )
+
 
 class ScrollPhysics:
     """
@@ -1456,11 +1806,13 @@ class ScrollPhysics:
         ALWAYS_SCROLLABLE: Enables scrolling even if content does not overflow.
         NEVER_SCROLLABLE: Disables scrolling regardless of content size.
     """
-    BOUNCING = 'bouncing'
-    CLAMPING = 'clamping'
-    ALWAYS_SCROLLABLE = 'alwaysScrollable'
-    NEVER_SCROLLABLE = 'neverScrollable'
-    
+
+    BOUNCING = "bouncing"
+    CLAMPING = "clamping"
+    ALWAYS_SCROLLABLE = "alwaysScrollable"
+    NEVER_SCROLLABLE = "neverScrollable"
+
+
 class Overflow:
     """
     Defines how content overflow is handled in a widget.
@@ -1471,10 +1823,12 @@ class Overflow:
         SCROLL: Adds scrolling to manage content overflow.
         AUTO: Automatically decides based on the content size.
     """
-    VISIBLE = 'visible'
-    HIDDEN = 'hidden'
-    SCROLL = 'scroll'
-    AUTO = 'auto'    
+
+    VISIBLE = "visible"
+    HIDDEN = "hidden"
+    SCROLL = "scroll"
+    AUTO = "auto"
+
 
 class StackFit:
     """
@@ -1485,9 +1839,11 @@ class StackFit:
         expand: Children expand to fill the Stack's available space.
         passthrough: Children retain their original size.
     """
-    loose = 'loose'
-    expand = 'expand'
-    passthrough = 'passthrough'
+
+    loose = "loose"
+    expand = "expand"
+    passthrough = "passthrough"
+
 
 class TextDirection:
     """
@@ -1497,10 +1853,12 @@ class TextDirection:
         LTR: Text flows from left to right.
         RTL: Text flows from right to left.
     """
-    LTR = 'ltr'
-    RTL = 'rtl'
 
-class TextBaseline():
+    LTR = "ltr"
+    RTL = "rtl"
+
+
+class TextBaseline:
     """
     Specifies the alignment of text baselines.
 
@@ -1508,8 +1866,10 @@ class TextBaseline():
         alphabetic: Aligns the baseline to the bottom of alphabetic characters.
         ideographic: Aligns the baseline to the middle of ideographic characters.
     """
-    alphabetic = 'text-bottom'
-    ideographic = 'middle'
+
+    alphabetic = "text-bottom"
+    ideographic = "middle"
+
 
 class VerticalDirection:
     """
@@ -1519,8 +1879,22 @@ class VerticalDirection:
         DOWN: Children are arranged from top to bottom.
         UP: Children are arranged from bottom to top.
     """
-    DOWN = 'down'
-    UP = 'up'
+
+    DOWN = "down"
+    UP = "up"
+
+
+class HorizontalDirection:
+    """
+    Determines the horizontal arrangement of children.
+
+    Attributes:
+        LEFT: Children are arranged from left to right.
+        RIGHT: Children are arranged from right to left.
+    """
+
+    LEFT = "left"
+    RIGHT = "right"
 
 
 class BoxFit:
@@ -1533,31 +1907,41 @@ class BoxFit:
         FILL: Stretches to fill the bounds, disregarding aspect ratio.
         NONE: Does not scale; the content's original size is used.
     """
-    CONTAIN = 'contain'
-    COVER = 'cover'
-    FILL = 'fill'
-    NONE = 'none'
-    
+
+    CONTAIN = "contain"
+    COVER = "cover"
+    FILL = "fill"
+    NONE = "none"
+
+
 # --- BoxDecoration Refactored ---
 class BoxDecoration:
     """
     Describes how to paint a box (background, border, shadow, shape).
     Compatible with reconciliation.
     """
-    def __init__(self,
-                 color: Optional[str] = None,
-                 # image: Optional[DecorationImage] = None, # TODO: If image backgrounds needed
-                 border: Optional[Union[str, BorderSide]] = None, # Allow BorderSide object or CSS string? Prefer object.
-                 borderRadius: Optional[Union[int, float, BorderRadius]] = None, # Allow number or BorderRadius obj
-                 boxShadow: Optional[Union[BoxShadow, List[BoxShadow]]] = None, # Allow single or list
-                 # gradient: Optional[Gradient] = None, # TODO: If gradients needed
-                 # shape: BoxShape = BoxShape.rectangle, # TODO: If specific shapes like circle needed
-                 # For simplicity, sticking to properties easily mappable to CSS:
-                 transform: Optional[str] = None, # Raw CSS transform string
-                 # Padding is usually handled by Padding widget, not BoxDecoration
-                 # padding: Optional[EdgeInsets] = None,
-                 visible: bool = True,
-                 ):
+
+    def __init__(
+        self,
+        color: Optional[str] = None,
+        # image: Optional[DecorationImage] = None, # TODO: If image backgrounds needed
+        border: Optional[
+            Union[str, BorderSide]
+        ] = None,  # Allow BorderSide object or CSS string? Prefer object.
+        borderRadius: Optional[
+            Union[int, float, BorderRadius]
+        ] = None,  # Allow number or BorderRadius obj
+        boxShadow: Optional[
+            Union[BoxShadow, List[BoxShadow]]
+        ] = None,  # Allow single or list
+        # gradient: Optional[Gradient] = None, # TODO: If gradients needed
+        # shape: BoxShape = BoxShape.rectangle, # TODO: If specific shapes like circle needed
+        # For simplicity, sticking to properties easily mappable to CSS:
+        transform: Optional[str] = None,  # Raw CSS transform string
+        # Padding is usually handled by Padding widget, not BoxDecoration
+        # padding: Optional[EdgeInsets] = None,
+        visible: bool = True,
+    ):
         """
         Initializes the BoxDecoration.
 
@@ -1588,31 +1972,41 @@ class BoxDecoration:
         """Converts decoration properties to a dictionary of CSS styles."""
         styles = {}
         if self.color:
-            styles['background'] = self.color
+            styles["background"] = self.color
         if self.border:
             if isinstance(self.border, BorderSide):
-                 # Assumes BorderSide has a way to generate full border property
-                 if hasattr(self.border, 'border_to_css_shorthand'):
-                      styles['border'] = self.border.border_to_css_shorthand() # Example method name
-                 else: # Fallback using individual properties if needed
-                      border_dict = self.border.to_css_dict() # Assume BorderSide returns dict
-                      styles.update(border_dict)
-            elif isinstance(self.border, str): # Allow raw CSS string (less safe)
-                 styles['border'] = self.border
+                # Assumes BorderSide has a way to generate full border property
+                if hasattr(self.border, "border_to_css_shorthand"):
+                    styles["border"] = (
+                        self.border.border_to_css_shorthand()
+                    )  # Example method name
+                else:  # Fallback using individual properties if needed
+                    border_dict = (
+                        self.border.to_css_dict()
+                    )  # Assume BorderSide returns dict
+                    styles.update(border_dict)
+            elif isinstance(self.border, str):  # Allow raw CSS string (less safe)
+                styles["border"] = self.border
         if self.borderRadius:
             if isinstance(self.borderRadius, BorderRadius):
                 # Assumes BorderRadius has a way to generate border-radius property
-                 styles['border-radius'] = self.borderRadius.to_css_value() # Example method name
+                styles["border-radius"] = (
+                    self.borderRadius.to_css_value()
+                )  # Example method name
             elif isinstance(self.borderRadius, (int, float)):
-                 styles['border-radius'] = f"{self.borderRadius}px"
+                styles["border-radius"] = f"{self.borderRadius}px"
             # Else handle string? For now, require object or number
         if self.boxShadow:
             # Combine multiple shadows with comma
-            shadow_strings = [shadow.to_css() for shadow in self.boxShadow if isinstance(shadow, BoxShadow)]
+            shadow_strings = [
+                shadow.to_css()
+                for shadow in self.boxShadow
+                if isinstance(shadow, BoxShadow)
+            ]
             if shadow_strings:
-                 styles['box-shadow'] = ", ".join(shadow_strings)
+                styles["box-shadow"] = ", ".join(shadow_strings)
         if self.transform:
-            styles['transform'] = self.transform
+            styles["transform"] = self.transform
         # if self.padding and isinstance(self.padding, EdgeInsets): # Padding removed
         #     styles['padding'] = self.padding.to_css()
         return styles
@@ -1628,50 +2022,81 @@ class BoxDecoration:
             return NotImplemented
         # Compare all relevant attributes
         # Note: Comparing lists requires order to be the same for equality
-        return (self.color == other.color and
-                self.border == other.border and
-                self.borderRadius == other.borderRadius and
-                self.boxShadow == other.boxShadow and # Relies on BoxShadow __eq__ and list order
-                self.transform == other.transform)
+        return (
+            self.color == other.color
+            and self.border == other.border
+            and self.borderRadius == other.borderRadius
+            and self.boxShadow
+            == other.boxShadow  # Relies on BoxShadow __eq__ and list order
+            and self.transform == other.transform
+        )
 
     def __hash__(self):
         # Hash a tuple of hashable representations of attributes
         # Ensure nested objects (BorderSide, BorderRadius, BoxShadow) are hashable
         # Convert list of shadows to tuple for hashing
         shadow_tuple = tuple(self.boxShadow) if self.boxShadow else None
-        return hash((
-            self.color,
-            self.border, # Relies on BorderSide/str hash
-            self.borderRadius, # Relies on BorderRadius/number hash
-            shadow_tuple, # Relies on BoxShadow hash
-            self.transform
-        ))
+        return hash(
+            (
+                self.color,
+                self.border,  # Relies on BorderSide/str hash
+                self.borderRadius,  # Relies on BorderRadius/number hash
+                shadow_tuple,  # Relies on BoxShadow hash
+                self.transform,
+            )
+        )
 
     # --- Representation ---
     def __repr__(self):
         props = []
-        if self.color: props.append(f"color='{self.color}'")
-        if self.border: props.append(f"border={self.border!r}")
-        if self.borderRadius: props.append(f"borderRadius={self.borderRadius!r}")
-        if self.boxShadow: props.append(f"boxShadow={self.boxShadow!r}")
-        if self.transform: props.append(f"transform='{self.transform}'")
+        if self.color:
+            props.append(f"color='{self.color}'")
+        if self.border:
+            props.append(f"border={self.border!r}")
+        if self.borderRadius:
+            props.append(f"borderRadius={self.borderRadius!r}")
+        if self.boxShadow:
+            props.append(f"boxShadow={self.boxShadow!r}")
+        if self.transform:
+            props.append(f"transform='{self.transform}'")
         return f"BoxDecoration({', '.join(props)})"
 
     # --- Reconciler Prop Representation ---
     def to_dict(self):
-         # Convert nested objects to dicts too if needed for serialization
-         border_repr = self.border.to_dict() if hasattr(self.border, 'to_dict') else self.border
-         radius_repr = self.borderRadius.to_dict() if hasattr(self.borderRadius, 'to_dict') else self.borderRadius
-         shadow_repr = [s.to_dict() for s in self.boxShadow if hasattr(s, 'to_dict')] if self.boxShadow else None
+        # Convert nested objects to dicts too if needed for serialization
+        border_repr = (
+            self.border.to_dict() if hasattr(self.border, "to_dict") else self.border
+        )
+        radius_repr = (
+            self.borderRadius.to_dict()
+            if hasattr(self.borderRadius, "to_dict")
+            else self.borderRadius
+        )
+        shadow_repr = (
+            [s.to_dict() for s in self.boxShadow if hasattr(s, "to_dict")]
+            if self.boxShadow
+            else None
+        )
 
-         return {'color': self.color, 'border': border_repr,
-                 'borderRadius': radius_repr, 'boxShadow': shadow_repr,
-                 'transform': self.transform}
+        return {
+            "color": self.color,
+            "border": border_repr,
+            "borderRadius": radius_repr,
+            "boxShadow": shadow_repr,
+            "transform": self.transform,
+        }
 
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         shadow_tuple = tuple(self.boxShadow) if self.boxShadow else None
-         return (self.color, self.border, self.borderRadius, shadow_tuple, self.transform)
+        """Returns a hashable tuple representation."""
+        shadow_tuple = tuple(self.boxShadow) if self.boxShadow else None
+        return (
+            self.color,
+            self.border,
+            self.borderRadius,
+            shadow_tuple,
+            self.transform,
+        )
+
 
 # --- BoxDecoration Refactored ---
 class BoxDecoration:
@@ -1679,19 +2104,27 @@ class BoxDecoration:
     Describes how to paint a box (background, border, shadow, shape).
     Compatible with reconciliation.
     """
-    def __init__(self,
-                 color: Optional[str] = None,
-                 # image: Optional[DecorationImage] = None, # TODO: If image backgrounds needed
-                 border: Optional[Union[str, BorderSide, Border]] = None, # Allow BorderSide, Border object or CSS string.
-                 borderRadius: Optional[Union[int, float, BorderRadius]] = None, # Allow number or BorderRadius obj
-                 boxShadow: Optional[Union[BoxShadow, List[BoxShadow]]] = None, # Allow single or list
-                 # gradient: Optional[Gradient] = None, # TODO: If gradients needed
-                 # shape: BoxShape = BoxShape.rectangle, # TODO: If specific shapes like circle needed
-                 # For simplicity, sticking to properties easily mappable to CSS:
-                 transform: Optional[str] = None, # Raw CSS transform string
-                 # Padding is usually handled by Padding widget, not BoxDecoration
-                 # padding: Optional[EdgeInsets] = None,
-                 ):
+
+    def __init__(
+        self,
+        color: Optional[str] = None,
+        # image: Optional[DecorationImage] = None, # TODO: If image backgrounds needed
+        border: Optional[
+            Union[str, BorderSide, Border]
+        ] = None,  # Allow BorderSide, Border object or CSS string.
+        borderRadius: Optional[
+            Union[int, float, BorderRadius]
+        ] = None,  # Allow number or BorderRadius obj
+        boxShadow: Optional[
+            Union[BoxShadow, List[BoxShadow]]
+        ] = None,  # Allow single or list
+        # gradient: Optional[Gradient] = None, # TODO: If gradients needed
+        # shape: BoxShape = BoxShape.rectangle, # TODO: If specific shapes like circle needed
+        # For simplicity, sticking to properties easily mappable to CSS:
+        transform: Optional[str] = None,  # Raw CSS transform string
+        # Padding is usually handled by Padding widget, not BoxDecoration
+        # padding: Optional[EdgeInsets] = None,
+    ):
         """
         Initializes the BoxDecoration.
 
@@ -1721,33 +2154,41 @@ class BoxDecoration:
         """Converts decoration properties to a dictionary of CSS styles."""
         styles = {}
         if self.color:
-            styles['background'] = self.color
+            styles["background"] = self.color
         if self.border:
             if isinstance(self.border, Border):
-                 styles.update(self.border.to_css_dict())
+                styles.update(self.border.to_css_dict())
             elif isinstance(self.border, BorderSide):
-                 # Assumes BorderSide has a way to generate full border property
-                 if hasattr(self.border, 'to_css_shorthand_value'):
-                      styles['border'] = self.border.to_css_shorthand_value()
-                 else: # Fallback using individual properties if needed
-                      border_dict = self.border.to_css_dict() # Assume BorderSide returns dict
-                      styles.update(border_dict)
-            elif isinstance(self.border, str): # Allow raw CSS string (less safe)
-                 styles['border'] = self.border
+                # Assumes BorderSide has a way to generate full border property
+                if hasattr(self.border, "to_css_shorthand_value"):
+                    styles["border"] = self.border.to_css_shorthand_value()
+                else:  # Fallback using individual properties if needed
+                    border_dict = (
+                        self.border.to_css_dict()
+                    )  # Assume BorderSide returns dict
+                    styles.update(border_dict)
+            elif isinstance(self.border, str):  # Allow raw CSS string (less safe)
+                styles["border"] = self.border
         if self.borderRadius:
             if isinstance(self.borderRadius, BorderRadius):
                 # Assumes BorderRadius has a way to generate border-radius property
-                 styles['border-radius'] = self.borderRadius.to_css_value() # Example method name
+                styles["border-radius"] = (
+                    self.borderRadius.to_css_value()
+                )  # Example method name
             elif isinstance(self.borderRadius, (int, float)):
-                 styles['border-radius'] = f"{self.borderRadius}px"
+                styles["border-radius"] = f"{self.borderRadius}px"
             # Else handle string? For now, require object or number
         if self.boxShadow:
             # Combine multiple shadows with comma
-            shadow_strings = [shadow.to_css() for shadow in self.boxShadow if isinstance(shadow, BoxShadow)]
+            shadow_strings = [
+                shadow.to_css()
+                for shadow in self.boxShadow
+                if isinstance(shadow, BoxShadow)
+            ]
             if shadow_strings:
-                 styles['box-shadow'] = ", ".join(shadow_strings)
+                styles["box-shadow"] = ", ".join(shadow_strings)
         if self.transform:
-            styles['transform'] = self.transform
+            styles["transform"] = self.transform
         # if self.padding and isinstance(self.padding, EdgeInsets): # Padding removed
         #     styles['padding'] = self.padding.to_css()
         return styles
@@ -1763,53 +2204,80 @@ class BoxDecoration:
             return NotImplemented
         # Compare all relevant attributes
         # Note: Comparing lists requires order to be the same for equality
-        return (self.color == other.color and
-                self.border == other.border and
-                self.borderRadius == other.borderRadius and
-                self.boxShadow == other.boxShadow and # Relies on BoxShadow __eq__ and list order
-                self.transform == other.transform)
+        return (
+            self.color == other.color
+            and self.border == other.border
+            and self.borderRadius == other.borderRadius
+            and self.boxShadow
+            == other.boxShadow  # Relies on BoxShadow __eq__ and list order
+            and self.transform == other.transform
+        )
 
     def __hash__(self):
         # Hash a tuple of hashable representations of attributes
         # Ensure nested objects (BorderSide, BorderRadius, BoxShadow) are hashable
         # Convert list of shadows to tuple for hashing
         shadow_tuple = tuple(self.boxShadow) if self.boxShadow else None
-        return hash((
-            self.color,
-            self.border, # Relies on BorderSide/str hash
-            self.borderRadius, # Relies on BorderRadius/number hash
-            shadow_tuple, # Relies on BoxShadow hash
-            self.transform
-        ))
+        return hash(
+            (
+                self.color,
+                self.border,  # Relies on BorderSide/str hash
+                self.borderRadius,  # Relies on BorderRadius/number hash
+                shadow_tuple,  # Relies on BoxShadow hash
+                self.transform,
+            )
+        )
 
     # --- Representation ---
     def __repr__(self):
         props = []
-        if self.color: props.append(f"color='{self.color}'")
-        if self.border: props.append(f"border={self.border!r}")
-        if self.borderRadius: props.append(f"borderRadius={self.borderRadius!r}")
-        if self.boxShadow: props.append(f"boxShadow={self.boxShadow!r}")
-        if self.transform: props.append(f"transform='{self.transform}'")
+        if self.color:
+            props.append(f"color='{self.color}'")
+        if self.border:
+            props.append(f"border={self.border!r}")
+        if self.borderRadius:
+            props.append(f"borderRadius={self.borderRadius!r}")
+        if self.boxShadow:
+            props.append(f"boxShadow={self.boxShadow!r}")
+        if self.transform:
+            props.append(f"transform='{self.transform}'")
         return f"BoxDecoration({', '.join(props)})"
 
     # --- Reconciler Prop Representation ---
     def to_dict(self):
-         # Convert nested objects to dicts too if needed for serialization
-         border_repr = self.border.to_dict() if hasattr(self.border, 'to_dict') else self.border
-         radius_repr = self.borderRadius.to_dict() if hasattr(self.borderRadius, 'to_dict') else self.borderRadius
-         shadow_repr = [s.to_dict() for s in self.boxShadow if hasattr(s, 'to_dict')] if self.boxShadow else None
+        # Convert nested objects to dicts too if needed for serialization
+        border_repr = (
+            self.border.to_dict() if hasattr(self.border, "to_dict") else self.border
+        )
+        radius_repr = (
+            self.borderRadius.to_dict()
+            if hasattr(self.borderRadius, "to_dict")
+            else self.borderRadius
+        )
+        shadow_repr = (
+            [s.to_dict() for s in self.boxShadow if hasattr(s, "to_dict")]
+            if self.boxShadow
+            else None
+        )
 
-         return {'color': self.color, 'border': border_repr,
-                 'borderRadius': radius_repr, 'boxShadow': shadow_repr,
-                 'transform': self.transform}
+        return {
+            "color": self.color,
+            "border": border_repr,
+            "borderRadius": radius_repr,
+            "boxShadow": shadow_repr,
+            "transform": self.transform,
+        }
 
     def to_tuple(self):
-         """Returns a hashable tuple representation."""
-         shadow_tuple = tuple(self.boxShadow) if self.boxShadow else None
-         return (self.color, self.border, self.borderRadius, shadow_tuple, self.transform)
-
-
-
+        """Returns a hashable tuple representation."""
+        shadow_tuple = tuple(self.boxShadow) if self.boxShadow else None
+        return (
+            self.color,
+            self.border,
+            self.borderRadius,
+            shadow_tuple,
+            self.transform,
+        )
 
 
 # class InputDecoration:
@@ -1825,31 +2293,31 @@ class BoxDecoration:
 #                  hintText: Optional[str] = None,
 #                  errorText: Optional[str] = None,
 #                  # You can add prefixIcon and suffixIcon as Widget later
-                 
+
 #                  # --- Colors ---
 #                  fillColor: Optional[str] = None, # Background of the input
 #                  focusColor: Optional[str] = None, # Color of the border/label when focused
-                 
+
 #                  # --- Borders ---
 #                  # For simplicity, we can use a single border style and change its color based on state
 #                  border: Optional[BorderSide] = None,
 #                  focusedBorder: Optional[BorderSide] = None,
 #                  errorBorder: Optional[BorderSide] = None,
-                 
+
 #                  # --- Flags ---
 #                  filled: bool = True, # Determines if fillColor is used
 #                  ):
 #         self.label = label
 #         self.hintText = hintText
 #         self.errorText = errorText
-        
+
 #         self.fillColor = fillColor
 #         self.focusColor = focusColor
-        
+
 #         self.border = border
 #         self.focusedBorder = focusedBorder
 #         self.errorBorder = errorBorder
-        
+
 #         self.filled = filled
 
 #     def to_tuple(self) -> Tuple:
@@ -1874,12 +2342,12 @@ class BoxDecoration:
 #         return hash(self.to_tuple())
 
 
-
 # in pythra/styles.py
 
 # ... (other imports) ...
 # Make sure BorderSide is defined before this class or imported
 # from .styles import BorderSide, Colors
+
 
 class InputDecoration:
     """
@@ -1889,70 +2357,103 @@ class InputDecoration:
     and border styles, allowing for consistent and reusable text field styling
     that mimics Material Design's filled or outlined text fields.
     """
-    def __init__(self,
-                 label: Optional[str] = None,
-                 hintText: Optional[str] = None,
-                 errorText: Optional[str] = None,
-                 
-                 # --- Colors ---
-                 fillColor: Optional[str] = None,
-                 focusColor: Optional[str] = None,
-                 labelColor: Optional[str] = None, # NEW: Color for the label
-                 errorColor: Optional[str] = None, # NEW: Color for border/label/text in error state
-                 
-                 # --- Borders ---
-                 borderRadius: Optional[BorderRadius] = None,
-                 border: Optional[BorderSide] = None,
-                 focusedBorder: Optional[BorderSide] = None,
-                 errorBorder: Optional[BorderSide] = None,
-                 
-                 # --- Flags ---
-                 filled: bool = True
-                 ):
-        
+
+    def __init__(
+        self,
+        label: Optional[str] = None,
+        hintText: Optional[str] = None,
+        errorText: Optional[str] = None,
+        # --- Styling Objects ---
+        contentPadding: Optional[EdgeInsets] = None,
+        labelStyle: Optional[TextStyle] = None,
+        hintStyle: Optional[TextStyle] = None,
+        # --- Colors (CSS string or Color role) ---
+        fillColor: Optional[str] = None,
+        focusColor: Optional[str] = None,
+        labelColor: Optional[str] = None,  # NEW: Color for the label
+        errorColor: Optional[
+            str
+        ] = None,  # NEW: Color for border/label/text in error state
+        # --- Borders/Geometry ---
+        borderRadius: Optional[BorderRadius] = None,
+        border: Optional[BorderSide] = None,
+        focusedBorder: Optional[BorderSide] = None,
+        errorBorder: Optional[BorderSide] = None,
+        # --- Flags ---
+        filled: bool = True,
+    ):
+
         # --- Store user-provided values ---
         self.label = label
         self.hintText = hintText
         self.errorText = errorText
-        
+
+        self.contentPadding = contentPadding
+        self.labelStyle = labelStyle
+        self.hintStyle = hintStyle
+
         self.filled = filled
 
         # --- Set smart, M3-style defaults if values are not provided ---
-        self.fillColor = fillColor if fillColor is not None else (fillColor if self.filled else 'transparent')
+        self.fillColor = (
+            fillColor
+            if fillColor is not None
+            else (fillColor if self.filled else "transparent")
+        )
         # print("FILL FROM STYLE.PY: ", self.fillColor, self.label)
         self.focusColor = focusColor if focusColor is not None else Colors.primary
-        self.labelColor = labelColor if labelColor is not None else Colors.onSurfaceVariant
+        self.labelColor = (
+            labelColor if labelColor is not None else Colors.onSurfaceVariant
+        )
         self.errorColor = errorColor if errorColor is not None else Colors.error
 
-        self.borderRadius = borderRadius if borderRadius is not None else BorderRadius.all(4)
+        self.borderRadius = (
+            borderRadius if borderRadius is not None else BorderRadius.all(4)
+        )
 
-        self.border = border if border is not None else BorderSide(
-            width=1.0, 
-            style=BorderStyle.SOLID, 
-            color=Colors.outline
+        self.border = (
+            border
+            if border is not None
+            else BorderSide(width=1.0, style=BorderStyle.SOLID, color=Colors.outline)
         )
-        self.focusedBorder = focusedBorder if focusedBorder is not None else BorderSide(
-            width=2.0, 
-            style=BorderStyle.SOLID, 
-            color=self.focusColor # Use the focus color for the focused border
+        self.focusedBorder = (
+            focusedBorder
+            if focusedBorder is not None
+            else BorderSide(
+                width=2.0,
+                style=BorderStyle.SOLID,
+                color=self.focusColor,  # Use the focus color for the focused border
+            )
         )
-        self.errorBorder = errorBorder if errorBorder is not None else BorderSide(
-            width=2.0, 
-            style=BorderStyle.SOLID, 
-            color=self.errorColor # Use the error color for the error border
+        self.errorBorder = (
+            errorBorder
+            if errorBorder is not None
+            else BorderSide(
+                width=2.0,
+                style=BorderStyle.SOLID,
+                color=self.errorColor,  # Use the error color for the error border
+            )
         )
 
     def to_tuple(self) -> Tuple:
         """Creates a hashable tuple representation for use in style keys."""
         # Note: We now hash the final, resolved values, not the initial ones.
         return (
-            self.label, self.hintText, self.errorText, self.fillColor,
-            self.focusColor, self.labelColor, self.errorColor,
-            self.borderRadius.to_css(),
+            self.label,
+            self.hintText,
+            self.errorText,
+            self.fillColor,
+            self.focusColor,
+            self.labelColor,
+            self.errorColor,
+            make_hashable(self.borderRadius),
             make_hashable(self.border),
             make_hashable(self.focusedBorder),
             make_hashable(self.errorBorder),
-            self.filled
+            make_hashable(self.contentPadding),
+            make_hashable(self.labelStyle),
+            make_hashable(self.hintStyle),
+            self.filled,
         )
 
     def __eq__(self, other):
@@ -1967,8 +2468,8 @@ class InputDecoration:
 # In pythra/styles.py
 
 
-
 # ... (keep all your other style classes)
+
 
 @dataclass
 class ScrollbarTheme:
@@ -1976,32 +2477,42 @@ class ScrollbarTheme:
     Holds the styling information for a custom scrollbar.
     Maps directly to CSS scrollbar pseudo-element properties.
     """
+
     width: int = 12  # The width of the vertical scrollbar in pixels.
-    height: int = 12 # The height of the horizontal scrollbar in pixels.
-    
-    thumbColor: Optional[str] = "#888" # Color of the draggable thumb.
-    thumbHoverColor: Optional[str] = "#555" # Color of the thumb on hover.
-    
-    trackColor: Optional[str] = "transparent" # Color of the track (the groove).
-    
+    height: int = 12  # The height of the horizontal scrollbar in pixels.
+
+    thumbColor: Optional[str] = "#888"  # Color of the draggable thumb.
+    thumbHoverColor: Optional[str] = "#555"  # Color of the thumb on hover.
+
+    trackColor: Optional[str] = "transparent"  # Color of the track (the groove).
+
     # The radius of the corners on the thumb.
-    radius: int = 6 
-    trackRadius: int = 8 
-    
+    radius: int = 6
+    trackRadius: int = 8
+
     # Creates a "padding" effect around the thumb by using a transparent border.
-    thumbPadding: int = 0 
-    trackMargin: Optional[EdgeInsets] = 0 
+    thumbPadding: int = 0
+    trackMargin: Optional[EdgeInsets] = 0
 
     def to_tuple(self) -> Tuple:
         """Returns a hashable tuple representation for use as a style key."""
         return (
-            self.width, self.height, self.thumbColor, self.thumbHoverColor,
-            self.trackColor, self.radius, self.trackRadius, self.thumbPadding, self.trackMargin
+            self.width,
+            self.height,
+            self.thumbColor,
+            self.thumbHoverColor,
+            self.trackColor,
+            self.radius,
+            self.trackRadius,
+            self.thumbPadding,
+            self.trackMargin,
         )
+
 
 # In pythra/styles.py
 
 # ... (keep all your other style classes like EdgeInsets, Colors, etc.)
+
 
 @dataclass
 class SliderTheme:
@@ -2011,54 +2522,68 @@ class SliderTheme:
     This data class holds customizable properties for colors and dimensions,
     allowing for consistent theming of sliders across an application.
     """
+
     # Colors
     activeTrackColor: Optional[str] = None
     inactiveTrackColor: Optional[str] = None
     thumbColor: Optional[str] = None
-    overlayColor: Optional[str] = None # Color of the halo effect when dragging
+    overlayColor: Optional[str] = None  # Color of the halo effect when dragging
 
     # Dimensions
     trackHeight: float = 4.0
     thumbSize: float = 14.0
     thumbBorderWidth: float = 2.0
     thumbBorderColor: Optional[str] = None
-    overlaySize: float = 8.0 # The 'spread' of the overlay halo in pixels
-
+    overlaySize: float = 8.0  # The 'spread' of the overlay halo in pixels
 
     def to_tuple(self) -> Tuple:
         """Creates a hashable tuple for use in style keys."""
         print("thumbBorderColor: ", self.thumbBorderColor)
         return (
-            self.activeTrackColor, self.inactiveTrackColor, self.thumbColor,
-            self.overlayColor, self.trackHeight, self.thumbSize,
-            self.thumbBorderWidth, self.thumbBorderColor, self.overlaySize
+            self.activeTrackColor,
+            self.inactiveTrackColor,
+            self.thumbColor,
+            self.overlayColor,
+            self.trackHeight,
+            self.thumbSize,
+            self.thumbBorderWidth,
+            self.thumbBorderColor,
+            self.overlaySize,
         )
+
 
 # In pythra/styles.py
 
 # ... (keep all your other style classes like EdgeInsets, SliderTheme, etc.)
+
 
 @dataclass
 class CheckboxTheme:
     """
     Defines the visual properties for a Checkbox widget.
     """
+
     # Colors
-    activeColor: Optional[str] = None      # The background color of the box when checked.
-    checkColor: Optional[str] = None       # The color of the checkmark icon.
-    inactiveColor: Optional[str] = None    # The color of the border when unchecked.
-    splashColor: Optional[str] = None      # The color of the ripple/splash effect on press.
+    activeColor: Optional[str] = None  # The background color of the box when checked.
+    checkColor: Optional[str] = None  # The color of the checkmark icon.
+    inactiveColor: Optional[str] = None  # The color of the border when unchecked.
+    splashColor: Optional[str] = None  # The color of the ripple/splash effect on press.
 
     # Dimensions
-    size: float = 18.0                     # The width and height of the checkbox square.
-    strokeWidth: float = 2.0               # The thickness of the border and checkmark.
-    splashRadius: float = 20.0             # The radius of the splash effect.
+    size: float = 18.0  # The width and height of the checkbox square.
+    strokeWidth: float = 2.0  # The thickness of the border and checkmark.
+    splashRadius: float = 20.0  # The radius of the splash effect.
 
     def to_tuple(self) -> Tuple:
         """Creates a hashable tuple for use in style keys."""
         return (
-            self.activeColor, self.checkColor, self.inactiveColor,
-            self.splashColor, self.size, self.strokeWidth, self.splashRadius
+            self.activeColor,
+            self.checkColor,
+            self.inactiveColor,
+            self.splashColor,
+            self.size,
+            self.strokeWidth,
+            self.splashRadius,
         )
 
 
@@ -2066,11 +2591,13 @@ class CheckboxTheme:
 
 # ... (keep all your other style classes)
 
+
 @dataclass
 class SwitchTheme:
     """
     Defines the visual properties for a Switch widget.
     """
+
     # Color of the sliding circle (thumb).
     thumbColor: Optional[str] = None
     # Color of the track when the switch is ON.
@@ -2094,11 +2621,13 @@ class SwitchTheme:
 
 # ... (keep all your other style classes)
 
+
 @dataclass
 class RadioTheme:
     """
     Defines the visual properties for a Radio button widget.
     """
+
     # The color of the radio button's fill and border when selected.
     fillColor: Optional[str] = None
     # The color of the splash/ripple effect on press.
@@ -2107,7 +2636,6 @@ class RadioTheme:
     def to_tuple(self) -> Tuple:
         """Creates a hashable tuple for use in style keys."""
         return (self.fillColor, self.splashColor)
-
 
 
 class DropdownTheme:
@@ -2120,9 +2648,9 @@ class DropdownTheme:
         hoverColor=Colors.rgba(0, 0, 0, 0.1),
         dropdownHoverColor=Colors.rgba(0, 0, 0, 0.08),
         itemHoverColor=Colors.rgba(103, 80, 164, 0.1),
-        width = "100%",
-        height = "auto",
-        dropDownHeight = "auto",
+        width="100%",
+        height="auto",
+        dropDownHeight="auto",
         borderWidth=1.0,
         borderRadius=8.0,
         textColor=Colors.hex("#000000"),
@@ -2131,9 +2659,9 @@ class DropdownTheme:
         dropdownColor=Colors.hex("#FFFFFF"),
         dropdownTextColor=Colors.hex("#000000"),
         selectedItemColor=Colors.hex("#E0E0E0"),
-        selectedItemShape= BorderRadius.all(4),
+        selectedItemShape=BorderRadius.all(4),
         dropdownMargin=EdgeInsets.only(top=45),
-        itemPadding = EdgeInsets.symmetric(horizontal=12, vertical=8),
+        itemPadding=EdgeInsets.symmetric(horizontal=12, vertical=8),
     ):
         self.backgroundColor = backgroundColor
         self.borderColor = borderColor
@@ -2156,63 +2684,79 @@ class DropdownTheme:
         self.itemPadding = itemPadding
 
 
-
 @dataclass
 class GradientBorderTheme:
     """
     Defines the visual properties for a GradientBorderContainer.
     """
+
     # A list of CSS colors for the gradient.
-    gradientColors: List[str] = field(default_factory=lambda: [
-        '#ff4d4d', '#ffb86b', '#ffd166', '#7bed9f',
-        '#6ad3ff', '#a78bfa', '#ff4d4d'
-    ])
-    
+    gradientColors: List[str] = field(
+        default_factory=lambda: [
+            "#ff4d4d",
+            "#ffb86b",
+            "#ffd166",
+            "#7bed9f",
+            "#6ad3ff",
+            "#a78bfa",
+            "#ff4d4d",
+        ]
+    )
+
     # The CSS angle or direction for the linear gradient (e.g., '270deg', 'to right').
-    gradientDirection: str = '270deg'
-    
+    gradientDirection: str = "270deg"
+
     # The speed of the animation (e.g., '5s', '10s').
-    animationSpeed: str = '5s'
-    
+    animationSpeed: str = "5s"
+
     # The animation timing function (e.g., 'linear', 'ease-in-out').
-    animationTiming: str = 'linear'
+    animationTiming: str = "linear"
 
     def to_tuple(self) -> Tuple:
         """Creates a hashable tuple for use in style keys."""
         return (
-            tuple(self.gradientColors), # Convert list to tuple for hashing
+            tuple(self.gradientColors),  # Convert list to tuple for hashing
             self.gradientDirection,
             self.animationSpeed,
-            self.animationTiming
+            self.animationTiming,
         )
 
 
 # In pythra/styles.py
 
+
 # Rename GradientBorderTheme to GradientTheme
 @dataclass
-class GradientTheme: # <-- RENAMED
+class GradientTheme:  # <-- RENAMED
     """
     Defines the visual properties for an animated gradient effect.
     """
+
     # A list of CSS colors for the gradient.
-    gradientColors: List[str] = field(default_factory=lambda: [
-        '#ff4d4d', '#ffb86b', '#ffd166', '#7bed9f',
-        '#6ad3ff', '#a78bfa', '#ff4d4d'
-    ])
-    
+    gradientColors: List[str] = field(
+        default_factory=lambda: [
+            "#ff4d4d",
+            "#ffb86b",
+            "#ffd166",
+            "#7bed9f",
+            "#6ad3ff",
+            "#a78bfa",
+            "#ff4d4d",
+        ]
+    )
+
     # The CSS angle or direction for the linear gradient.
-    gradientDirection: str = '270deg'
-    
+    gradientDirection: str = "270deg"
+
     # The speed of the animation.
-    animationSpeed: str = '5s'
-    
+    animationSpeed: str = "5s"
+
     # The animation timing function.
-    animationTiming: str = 'linear'
+    animationTiming: str = "linear"
 
     # --- NEW: Rotation Animation ---
     # Set to a time (e.g., '10s') to enable rotation. Set to None to disable.
-    rotationSpeed: Optional[str] = None 
+    rotationSpeed: Optional[str] = None
 
     def to_tuple(self) -> Tuple:
         """Creates a hashable tuple for use in style keys."""
@@ -2221,13 +2765,13 @@ class GradientTheme: # <-- RENAMED
             self.gradientDirection,
             self.animationSpeed,
             self.animationTiming,
-            self.rotationSpeed # <-- ADD TO TUPLE
+            self.rotationSpeed,  # <-- ADD TO TUPLE
         )
 
 
 class Loader(Enum):
     """Enum for all available loader styles."""
-    
+
     ARCADE = "arcade"
     ARROW = "arrow"
     BARS = "bars"
@@ -2270,15 +2814,15 @@ class Loader(Enum):
     WAVY = "wavy"
     WOBBLING = "wobbling"
     ZIG_ZAG = "zig-zag"
-    
+
     def __str__(self) -> str:
         """Return the lowercase string value of the enum."""
         return self.value
 
 
-
 class LoaderStyle(Enum):
     """Enum for loader-styles CSS classes."""
+
     LOADER_3D_1 = "loader-3d-1"
     LOADER_3D_10 = "loader-3d-10"
     LOADER_3D_11 = "loader-3d-11"
@@ -3001,6 +3545,7 @@ class Matrix4:
     Compatible with reconciliation.
     Stored in column-major order (like OpenGL/Flutter/CSS matrix3d).
     """
+
     def __init__(self, storage: Optional[List[float]] = None):
         """
         Initializes Matrix4.
@@ -3013,75 +3558,72 @@ class Matrix4:
             self.storage = list(storage)
         else:
             self.storage = [
-                1.0, 0.0, 0.0, 0.0,
-                0.0, 1.0, 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                0.0, 0.0, 0.0, 1.0
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
             ]
 
     @staticmethod
-    def identity() -> 'Matrix4':
+    def identity() -> "Matrix4":
         return Matrix4()
 
     @staticmethod
-    def rotationZ(radians: float) -> 'Matrix4':
+    def rotationZ(radians: float) -> "Matrix4":
         """Returns a rotation matrix around the Z axis."""
         c = math.cos(radians)
         s = math.sin(radians)
         # Column-major
-        return Matrix4([
-             c,  s, 0.0, 0.0,
-            -s,  c, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0
-        ])
-    
+        return Matrix4(
+            [c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        )
+
     @staticmethod
-    def rotationX(radians: float) -> 'Matrix4':
+    def rotationX(radians: float) -> "Matrix4":
         """Returns a rotation matrix around the X axis."""
         c = math.cos(radians)
         s = math.sin(radians)
-        return Matrix4([
-            1.0, 0.0, 0.0, 0.0,
-            0.0,  c,  s, 0.0,
-            0.0, -s,  c, 0.0,
-            0.0, 0.0, 0.0, 1.0
-        ])
+        return Matrix4(
+            [1.0, 0.0, 0.0, 0.0, 0.0, c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0]
+        )
 
     @staticmethod
-    def rotationY(radians: float) -> 'Matrix4':
+    def rotationY(radians: float) -> "Matrix4":
         """Returns a rotation matrix around the Y axis."""
         c = math.cos(radians)
         s = math.sin(radians)
-        return Matrix4([
-             c, 0.0, -s, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-             s, 0.0,  c, 0.0,
-            0.0, 0.0, 0.0, 1.0
-        ])
+        return Matrix4(
+            [c, 0.0, -s, 0.0, 0.0, 1.0, 0.0, 0.0, s, 0.0, c, 0.0, 0.0, 0.0, 0.0, 1.0]
+        )
 
     @staticmethod
-    def translationValues(x: float, y: float, z: float) -> 'Matrix4':
+    def translationValues(x: float, y: float, z: float) -> "Matrix4":
         """Returns a translation matrix."""
-        return Matrix4([
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-              x,   y,   z, 1.0
-        ])
+        return Matrix4(
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x, y, z, 1.0]
+        )
 
     @staticmethod
-    def diagonal3Values(x: float, y: float, z: float) -> 'Matrix4':
+    def diagonal3Values(x: float, y: float, z: float) -> "Matrix4":
         """Returns a scaling matrix."""
-        return Matrix4([
-              x, 0.0, 0.0, 0.0,
-            0.0,   y, 0.0, 0.0,
-            0.0, 0.0,   z, 0.0,
-            0.0, 0.0, 0.0, 1.0
-        ])
-    
+        return Matrix4(
+            [x, 0.0, 0.0, 0.0, 0.0, y, 0.0, 0.0, 0.0, 0.0, z, 0.0, 0.0, 0.0, 0.0, 1.0]
+        )
+
     @staticmethod
-    def skew(alpha: float, beta: float) -> 'Matrix4':
+    def skew(alpha: float, beta: float) -> "Matrix4":
         """
         Returns a skew matrix.
         alpha: Skew along X axis (radians/tan value usually, but here simplifies to tan for standard CSS skew)
@@ -3090,17 +3632,33 @@ class Matrix4:
         """
         tan_alpha = math.tan(alpha)
         tan_beta = math.tan(beta)
-        return Matrix4([
-               1.0, tan_beta, 0.0, 0.0,
-            tan_alpha,      1.0, 0.0, 0.0,
-               0.0,      0.0, 1.0, 0.0,
-               0.0,      0.0, 0.0, 1.0
-        ])
+        return Matrix4(
+            [
+                1.0,
+                tan_beta,
+                0.0,
+                0.0,
+                tan_alpha,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+            ]
+        )
 
     @staticmethod
-    def compose(translation: Tuple[float, float, float], 
-                rotation: 'Matrix4', 
-                scale: Tuple[float, float, float]) -> 'Matrix4':
+    def compose(
+        translation: Tuple[float, float, float],
+        rotation: "Matrix4",
+        scale: Tuple[float, float, float],
+    ) -> "Matrix4":
         """
         Composes a matrix from translation, rotation, and scale.
         Order: Translation * Rotation * Scale (T * R * S)
@@ -3109,43 +3667,45 @@ class Matrix4:
         s = Matrix4.diagonal3Values(*scale)
         return t.multiply(rotation).multiply(s)
 
-    def multiply(self, other: 'Matrix4') -> 'Matrix4':
+    def multiply(self, other: "Matrix4") -> "Matrix4":
         """Returns the result of satisfying this * other."""
         a = self.storage
         b = other.storage
         result = [0.0] * 16
-        
+
         # 4x4 Matrix multiplication (Column-Major)
         # C = A * B
         # C_col_k = A * B_col_k
-        
-        for r in range(4): # Row
-            for c in range(4): # Column
+
+        for r in range(4):  # Row
+            for c in range(4):  # Column
                 sum_val = 0.0
                 for k in range(4):
                     # A accesses: row r, col k -> index k*4 + r
                     # B accesses: row k, col c -> index c*4 + k
-                    sum_val += a[k*4 + r] * b[c*4 + k]
-                result[c*4 + r] = sum_val
-        
+                    sum_val += a[k * 4 + r] * b[c * 4 + k]
+                result[c * 4 + r] = sum_val
+
         return Matrix4(result)
-        
-    def __mul__(self, other: 'Matrix4') -> 'Matrix4':
+
+    def __mul__(self, other: "Matrix4") -> "Matrix4":
         return self.multiply(other)
 
-    def scale(self, x: float, y: float = None, z: float = None) -> 'Matrix4':
+    def scale(self, x: float, y: float = None, z: float = None) -> "Matrix4":
         """Post-multiplies this matrix by a scale matrix."""
-        if y is None: y = x
-        if z is None: z = 1.0 # 2D scale usually ignores Z
+        if y is None:
+            y = x
+        if z is None:
+            z = 1.0  # 2D scale usually ignores Z
         s = Matrix4.diagonal3Values(x, y, z)
-        return self.multiply(s) # Post-multiply: this * s
+        return self.multiply(s)  # Post-multiply: this * s
 
-    def translate(self, x: float, y: float, z: float = 0.0) -> 'Matrix4':
+    def translate(self, x: float, y: float, z: float = 0.0) -> "Matrix4":
         """Post-multiplies this matrix by a translation matrix."""
         t = Matrix4.translationValues(x, y, z)
-        return self.multiply(t) # Post-multiply: this * t
-    
-    def rotateZ(self, radians: float) -> 'Matrix4':
+        return self.multiply(t)  # Post-multiply: this * t
+
+    def rotateZ(self, radians: float) -> "Matrix4":
         """Post-multiplies this matrix by a Z-rotation matrix."""
         r = Matrix4.rotationZ(radians)
         return self.multiply(r)
@@ -3155,7 +3715,7 @@ class Matrix4:
         """Returns the CSS matrix3d string."""
         # CSS matrix3d takes 16 values in column-major order, comma-separated.
         # Ensure values are floats
-        vals = [f"{v:.6f}" for v in self.storage] # Limit precision
+        vals = [f"{v:.6f}" for v in self.storage]  # Limit precision
         return f"matrix3d({', '.join(vals)})"
 
     # --- Compatibility ---
@@ -3173,3 +3733,20 @@ class Matrix4:
 
     def to_tuple(self):
         return tuple(self.storage)
+
+@dataclass
+class ExpandableTheme:
+    """
+    Configuration object for styling an Expandable widget.
+    Allows customization of header and body decorations, padding, margins, and animation properties.
+    """
+    headerDecoration: Optional['BoxDecoration'] = None
+    bodyDecoration: Optional['BoxDecoration'] = None
+    headerPadding: Optional['EdgeInsets'] = None
+    bodyPadding: Optional['EdgeInsets'] = None
+    headerMargin: Optional['EdgeInsets'] = None
+    bodyMargin: Optional['EdgeInsets'] = None
+    animationDurationMs: int = 300
+    showIcon: bool = True
+    iconColor: Optional[Union[str, 'Color']] = None
+    iconSize: int = 24

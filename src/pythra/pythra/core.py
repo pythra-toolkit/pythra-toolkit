@@ -94,7 +94,7 @@ class Framework:
     """
 
     _instance = None  # Stores the single Framework instance
-    
+
     @classmethod
     def instance(cls):
         """Gets the current Framework instance, creates one if needed"""
@@ -121,7 +121,7 @@ class Framework:
         # STEP 1: Find your project's root directory
         # This is where your config.yaml, assets/, and plugins/ folders live
         main_script_path = os.path.abspath(sys.argv[0])  # Path to your main.py file
-        
+
         # If your main.py is in a 'lib' folder, go up one level to find project root
         if "lib" in Path(main_script_path).parts:
             self.project_root = Path(main_script_path).parent.parent
@@ -144,7 +144,7 @@ class Framework:
         # Create these directories if they don't exist yet
         self.render_dir.mkdir(exist_ok=True)
         self.assets_dir.mkdir(exist_ok=True)
-        
+
         # Copy default PyThra files (CSS, JS) to your project if missing
         self._ensure_default_assets()
 
@@ -155,28 +155,28 @@ class Framework:
         # This handles loading plugins from your plugins/ folder
         self.package_manager = PackageManager(self.project_root)
         self.package_manager.set_framework(self)
-        
+
         # Keep these for backward compatibility with older plugins
         self.plugins = {}  # Old-style plugin storage
         self.plugin_js_modules = {}  # JavaScript modules from plugins
-        
+
         # STEP 4a: Auto-discover packages and plugins
         # This scans your project for any plugins you've added
         debug_print("🔍 PyThra Framework | Scanning for packages and plugins...")
         discovered_packages = self.package_manager.discover_all_packages()
-        
+
         # Automatically load any plugins found in your plugins/ directory
         local_packages = [name for name, packages in discovered_packages.items() 
                          if any(pkg.path.parent.name == "plugins" for pkg in packages)]
-        
+
         if local_packages:
             # Load the packages and handle any dependency issues
             loaded_packages, warnings = self.package_manager.resolve_and_load_packages(local_packages)
-            
+
             # Show any warnings (like missing dependencies)
             for warning in warnings:
                 print(f"⚠️  PyThra Framework | Package Warning: {warning}")
-            
+
             # Populate the old-style plugins dictionary for JS module lookup
             for pkg_name, pkg_info in loaded_packages.items():
                 if hasattr(pkg_info, 'package_json'):
@@ -187,9 +187,9 @@ class Framework:
                             'js_modules': js_modules
                         }
                         print(f"📦 PyThra Framework | Found JS modules in {pkg_name}: {js_modules}")
-            
+
             print(f"🎉 PyThra Framework | Successfully loaded {len(loaded_packages)} packages: {', '.join(loaded_packages.keys())}")
-        
+
         # STEP 5: Start the Asset Server
         # This serves your static files (images, CSS, JS) to the web browser
         package_asset_dirs = self.package_manager.get_asset_server_dirs()
@@ -228,7 +228,7 @@ class Framework:
         self._cached_initial_html: Optional[str] = None
         self._cached_initial_css: Optional[str] = None
         self._cached_font_css: Optional[str] = None 
-        
+
         # Tracks JS blueprint classes for clip-paths initialized in this exact instance to skip duplications.
         self._clip_blueprint_registry: Set[str] = set()
 
@@ -239,16 +239,16 @@ class Framework:
         Widget.set_framework(self)
         StatefulWidget.set_framework(self)
         self._last_update_time = time.time()
-        
+
         debug_print("🚀 PyThra Framework | Initialization Complete! Ready to build your amazing app! 🎯")
 
     # Package management methods are now handled by PackageManager
     # Legacy methods kept for backward compatibility if needed
-    
+
     def get_loaded_packages(self) -> Dict[str, Any]:
         """Get information about loaded packages"""
         return self.package_manager.get_loaded_packages()
-    
+
     def list_packages(self, package_type: Optional[PackageType] = None) -> List[Any]:
         """List all discovered packages, optionally filtered by type"""
         return self.package_manager.list_packages(package_type)
@@ -276,7 +276,7 @@ class Framework:
         package_root = Path(__file__).parent
         source_render_dir = package_root / 'web_template'
         source_assets_dir = package_root / 'assets_template'
-        
+
         # Copy web files (js, etc.)
         if source_render_dir.exists():
             for item in source_render_dir.iterdir():
@@ -286,7 +286,7 @@ class Framework:
                         shutil.copytree(item, dest_item)
                     else:
                         shutil.copy(item, dest_item)
-        
+
         # Copy asset files (fonts, etc.)
         if source_assets_dir.exists():
             for item in source_assets_dir.iterdir():
@@ -370,7 +370,7 @@ class Framework:
         print(f"⚙️  PyThra Framework | Analysis Complete: {len(required_engines)} JS engines needed: {', '.join(required_engines) if required_engines else 'None'}")
 
         self._loaded_js_engines = required_engines.update(_v_items_required_engines) if _v_items_required_engines else required_engines  # Store the initially loaded engines
-        
+
         # 5. Generate initial HTML, CSS, and JS with optimized loading
         root_key = initial_tree_to_reconcile.get_unique_id() if initial_tree_to_reconcile else None
         html_content = self._generate_html_from_map(root_key, result.new_rendered_map)
@@ -379,7 +379,7 @@ class Framework:
 
         # 6. Write files
         self._write_initial_files(title, html_content, css_rules, js_script)
-        
+
         # 7. Set flag to prevent re-injection during reconciliation
         self.called = True  # JS utilities are already included in initial render
 
@@ -473,14 +473,14 @@ class Framework:
 
     @property
     def theme(self):
-         return ThemeManager.instance().current_theme
+        return ThemeManager.instance().current_theme
 
     def set_theme(self, theme):
         """Updates the application theme instantly."""
         ThemeManager.instance()._current_theme = theme
         css_vars = theme.to_css_vars()
         escaped_css = _dumps(css_vars).replace("`", "\\`")
-        
+
         js_cmd = f"""
             var themeSheet = document.getElementById('theme-styles');
             if (themeSheet) {{
@@ -493,28 +493,27 @@ class Framework:
             }}
         """
         if self.window:
-             self.window.evaluate_js(self.id, js_cmd)
+            self.window.evaluate_js(self.id, js_cmd)
         else:
-             print("Warning: Window not ready, theme will be applied on startup.")
+            print("Warning: Window not ready, theme will be applied on startup.")
 
     def _dispose_widget_tree(self, widget: Optional[Widget]):
         """Recursively disposes of the state of a widget and its children."""
         if widget is None:
             return
-        
+
         # Dispose of the current widget's state if it's stateful
         if isinstance(widget, StatefulWidget):
             state = widget.get_state()
             if state:
                 state.dispose()
-        
+
         # Recurse on all children
         if hasattr(widget, 'get_children'):
             for child in widget.get_children():
                 self._dispose_widget_tree(child)
 
     # --- State Update and Reconciliation Cycle ---
-
 
     # Place this new helper method somewhere in the Framework class
     def _get_js_utility_functions(self, required_engines: set = None) -> str:
@@ -651,7 +650,7 @@ class Framework:
         :return: Set of required JS engine names
         """
         required_engines = set()
-        
+
         # Check reconciliation result for JS initializers
         for init in result.js_initializers:
             init_type = init.get("type")
@@ -665,12 +664,12 @@ class Framework:
                 required_engines.add('PythraSlider')
             elif init_type == "VirtualList":
                 required_engines.add('PythraVirtualList')
-        
+
         # Check rendered widgets for engine requirements
         for node_data in result.new_rendered_map.values():
             props = node_data.get("props", {})
             # print('init_type: ', props)
-            
+
             # Check for various initialization flags
             if props.get("init_slider"):
                 required_engines.add('PythraSlider')
@@ -686,7 +685,7 @@ class Framework:
                 required_engines.add('PythraVirtualGrid')
             if props.get("responsive_clip_path"):
                 required_engines.update(['ResponsiveClipPath', 'generateRoundedPath', 'scalePathAbsoluteMLA'])
-                
+
             # Check for js_init configuration
             js_init = props.get("js_init")
             if js_init and isinstance(js_init, dict):
@@ -697,25 +696,25 @@ class Framework:
                 engine_name = props["_js_init"].get("engine")
                 if engine_name:
                     required_engines.add(engine_name)
-        
+
         # Check for ClipPath widgets (which need ResponsiveClipPath)
         self._check_widget_for_clip_path(widget_tree, required_engines)
-        
+
         return required_engines
-    
+
     def _check_widget_for_clip_path(self, widget: Widget, required_engines: set):
         """
         Recursively checks widget tree for ClipPath widgets that need JS engines.
         """
         if widget is None:
             return
-            
+
         # Check if this is a ClipPath widget
         widget_class_name = widget.__class__.__name__
         if widget_class_name == 'ClipPath':
             # ClipPath widgets need the path generation engines
             required_engines.update(['ResponsiveClipPath', 'generateRoundedPath', 'scalePathAbsoluteMLA'])
-        
+
         # Recursively check children
         if hasattr(widget, 'get_children'):
             for child in widget.get_children():
@@ -728,7 +727,6 @@ class Framework:
         if not self._reconciliation_requested:
             self._reconciliation_requested = True
             QTimer.singleShot(0, self._process_reconciliation)
-
 
     def _process_reconciliation(self):
         """
@@ -750,7 +748,7 @@ class Framework:
         all_patches = []
         all_new_callbacks = {}
         all_active_css_details = {}
-        
+
         # --- NEW: Track required engines for this entire update cycle ---
         all_required_engines_this_cycle = set()
         all_js_initializers = []
@@ -786,7 +784,7 @@ class Framework:
             all_new_callbacks.update(subtree_result.registered_callbacks)
             all_active_css_details.update(subtree_result.active_css_details)
             main_context_map.update(subtree_result.new_rendered_map)
-            
+
             # --- NEW: Analyze this subtree and aggregate required engines ---
             required_in_subtree = self._analyze_required_js_engines(new_subtree, subtree_result)
             all_required_engines_this_cycle.update(required_in_subtree)
@@ -799,7 +797,7 @@ class Framework:
         # --- NEW: DYNAMIC JS ENGINE INJECTION LOGIC ---
         js_injection_script = ""
         newly_required_engines = all_required_engines_this_cycle - self._loaded_js_engines
-        
+
         if newly_required_engines:
             print(f"🚀 PyThra Framework | Dynamically loading {len(newly_required_engines)} new JS engine(s): {newly_required_engines}")
             js_injection_script = self._get_js_utility_functions(newly_required_engines)
@@ -810,11 +808,16 @@ class Framework:
         css_update_script = ""
         if not hasattr(self, '_last_css_keys') or self._last_css_keys != new_css_keys:
             print("🎨 PyThra Framework | CSS styles changed - Updating stylesheet...")
-            full_css_details = {
-                data['props']['css_class']: (type(data['widget_instance']).generate_css_rule, data['widget_instance'].style_key)
-                for data in main_context_map.values()
-                if 'css_class' in data['props'] and hasattr(data['widget_instance'], 'style_key')
-            }
+            full_css_details = {}
+            for data in main_context_map.values():
+                if "css_class" in data["props"] and hasattr(
+                    data["widget_instance"], "style_key"
+                ):
+                    for css_class in data["props"]["css_class"].split():
+                        full_css_details[css_class] = (
+                            type(data["widget_instance"]).generate_css_rule,
+                            data["widget_instance"].style_key,
+                        )
             css_rules = self._generate_css_from_details(full_css_details)
             css_update_script = self._generate_css_update_script(css_rules)
             self._last_css_keys = new_css_keys
@@ -840,7 +843,7 @@ class Framework:
         fps = 1.0 / cycle_duration if cycle_duration > 0 else float('inf')
 
         print(f"🎉 PyThra Framework | UI Update Complete! at (⏱️ {cycle_duration:.4f}s) ({(cycle_duration * 1000):.2f}ms) ({fps:.2f} FPS)")
-        
+
         profiler.disable()
         s = io.StringIO()
         ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
@@ -848,7 +851,7 @@ class Framework:
         print("\n--- cProfile Report ---")
         print(s.getvalue())
         print("--- End of Report ---\n")
-        
+
     # --- Widget Tree Building ---
     def build_subtree_async(self, widget: Optional[Widget]):
         """
@@ -974,7 +977,7 @@ class Framework:
             return None
 
         current_key = start_widget.get_unique_id()
-        
+
         # Loop up the tree using parent references stored in the reconciler's map
         while current_key in main_context_map:
             node_data = main_context_map[current_key]
@@ -991,7 +994,7 @@ class Framework:
             if not parent_key:
                 break
             current_key = parent_key
-            
+
         return None
 
     def _generate_html_from_map(
@@ -1074,8 +1077,6 @@ class Framework:
         """
         return ""
 
-
-
     def _generate_dom_patch_script(self, patches: List[Patch], js_initializers=None) -> str:
         """
         Converts the list of Patch objects into a JSON payload for the JS Bridge.
@@ -1089,7 +1090,7 @@ class Framework:
 
         # Prepare the data-only list for serialization
         patches_data = []
-        
+
         for patch in patches:
             # We convert the dataclass to a simple dict.
             # _dumps will handle recursive serialization of widgets/functions implicitly.
@@ -1102,7 +1103,7 @@ class Framework:
 
         # Fast serialization using orjson (if available)
         json_payload = _dumps(patches_data)
-        
+
         # Log payload size in debug mode
         if getattr(self, 'config', None) and self.config.get('Debug'):
             print(f"📦 Bridge Payload: {len(json_payload)} bytes")
@@ -1118,13 +1119,13 @@ class Framework:
                     processed_inits.append(init)
                 elif isinstance(init, dict):
                     init_type = init.get("type")
-                    
+
                     if init_type == "ResponsiveClipPath":
                         # Generate JS for ResponsiveClipPath dynamic init
                         target_id = init["target_id"]
                         clip_data = init["data"]
                         blueprint_class = clip_data.get("blueprint_class", target_id)
-                        
+
                         if blueprint_class in self._clip_blueprint_registry:
                             continue
                         self._clip_blueprint_registry.add(blueprint_class)
@@ -1174,13 +1175,13 @@ class Framework:
                             }}
                         }}, 0);
                         """)
-                    
+
                     elif init_type == "virtual_list":
-                         target_id = init["target_id"]
-                         data = init.get("data", {})
-                         estimated_height = data.get("estimated_height", 50) # Fallback if missing
-                         item_count = data.get("item_count", 0)
-                         processed_inits.append(f"""
+                        target_id = init["target_id"]
+                        data = init.get("data", {})
+                        estimated_height = data.get("estimated_height", 50) # Fallback if missing
+                        item_count = data.get("item_count", 0)
+                        processed_inits.append(f"""
                          setTimeout(() => {{
                              if (typeof VirtualList !== 'undefined') {{
                                  new VirtualList(
@@ -1236,7 +1237,7 @@ class Framework:
                     # However, Reconciler line 499 sets: "type": js_init_data['engine']
                     # So we should probably handle that case by exclusion or a specific check?
                     # Actually, the user's snippet showed:
-                    # elif init_type == "_js_init": ... 
+                    # elif init_type == "_js_init": ...
                     # But Reconciler line 499 sets type=engine_name.
                     # Let's check init['data'] to see if it has 'engine' for the generic case.
                     elif isinstance(init.get("data"), dict) and "engine" in init["data"]:
@@ -1246,7 +1247,7 @@ class Framework:
                         engine_name = js_init_data.get("engine")
                         instance_name = js_init_data.get("instance_name")
                         options_json = _dumps(js_init_data.get("options", {}))
-                        
+
                         processed_inits.append(f"""
                         setTimeout(() => {{
                             const targetElement = document.getElementById('{target_id}');
@@ -1260,12 +1261,10 @@ class Framework:
                         }}, 0);
                         """)
 
-
             if processed_inits:
                 bridge_script += "\n" + "\n".join(processed_inits)
 
         return bridge_script
-
 
     def _generate_initial_js_script(self, result: 'ReconciliationResult', required_engines: set = None) -> str:
         """Generates a script tag to run initializations after the DOM loads with optimized JS loading."""
@@ -1283,7 +1282,6 @@ class Framework:
             # print(">>>init_slider<<<", html_id)
             widget_instance = node_data.get("widget_instance")
 
-
             # --- NEW: Generic JS Initializer ---
             js_init_data = props.get("_js_init")
             if js_init_data:
@@ -1291,7 +1289,7 @@ class Framework:
                 engine_name = js_init_data.get("engine")
                 instance_name = js_init_data.get("instance_name")
                 options = js_init_data.get("options", {})
-                
+
                 # Find the module path from the plugin manifest
                 js_module_info = self._find_js_module(engine_name)
                 # print("js_module_info: ", js_module_info)
@@ -1302,7 +1300,7 @@ class Framework:
                         module_path = os.path.join(self.project_root, module_path)
                     path_js = module_path
                     imports.add(f"import {{ {engine_name} }} from '{path_js}';")
-                    
+
                     options_json = _dumps(options)
                     js_commands.append(f"""
                     function waitForAndInit(className, initCallback) {{
@@ -1432,7 +1430,7 @@ class Framework:
                 imports.add("import { PythraSlider } from './js/slider.js';")
                 options = props.get("slider_options", {})
                 options_json = _dumps(options)
-                
+
                 # Generate the JS command to instantiate the slider engine
                 js_commands.append(f"""
                     if (typeof PythraSlider !== 'undefined') {{
@@ -1454,7 +1452,7 @@ class Framework:
         # Get JS utilities for initial render so all functions are available
         # Get the required engines from the current reconciliation result
         js_utilities = self._get_js_utility_functions(required_engines)
-        
+
         full_script = f"""
         <script>
             document.addEventListener('DOMContentLoaded', () => {{
@@ -1478,7 +1476,7 @@ class Framework:
         """Generates JS code for a single initializer."""
         init_type = init.get("type")
         target_id = init.get("target_id")
-        
+
         # --- SIMPLEBAR ---
         if init_type == "SimpleBar":
             options_json = _dumps(init.get("options", {}))
@@ -1490,7 +1488,7 @@ class Framework:
                 }};
             """
             )
-        
+
         # --- SLIDER ---
         elif init_type == "_RenderableSlider":
             options_json = _dumps(init.get("options", {}))
@@ -1544,7 +1542,7 @@ class Framework:
         elif init_type == "ResponsiveClipPath":
             imports.add("import { generateRoundedPath } from './js/pathGenerator.js';")
             imports.add("import { ResponsiveClipPath } from './js/clipPathUtils.js';")
-            
+
             clip_data = init["data"]
             blueprint_class = clip_data.get("blueprint_class", target_id)
 
@@ -1579,13 +1577,13 @@ class Framework:
         # print("Looking for JS module:", engine_name)
         # print("Plugins:", self.plugins)
         # print("Plugin JS Modules:", self.plugin_js_modules)
-        
+
         # First check the new-style plugin_js_modules
         if engine_name in self.plugin_js_modules:
             module_info = self.plugin_js_modules[engine_name]
             print(f"✅ Found module in plugin_js_modules: {module_info}")
             return module_info
-            
+
         # Fall back to old-style plugins dict
         for plugin_name, plugin_info in self.plugins.items():
             modules = plugin_info.get("js_modules", {})
@@ -1595,7 +1593,7 @@ class Framework:
                     "plugin": plugin_name,
                     "path": f"/plugins/{plugin_name}/{modules[engine_name]}"
                 }
-        
+
         # If not found, look in package manager's loaded packages
         if hasattr(self, 'package_manager'):
             loaded_packages = self.package_manager.get_loaded_packages()
@@ -1609,7 +1607,7 @@ class Framework:
                             "plugin": pkg_name,
                             "path": str(module_path)
                         }
-        
+
         print(f"⚠️ No JS module found for engine: {engine_name}")
         return None
 
@@ -1622,7 +1620,7 @@ class Framework:
             return self._cached_font_css
 
         print("🔤 PyThra Framework | Embedding fonts into CSS for instant rendering...")
-        
+
         # Map the Font Name to the Filename
         fonts_to_load = [
             ("Material Symbols Outlined", "MaterialSymbolsOutlined.ttf"),
@@ -1635,14 +1633,14 @@ class Framework:
 
         for font_family, filename in fonts_to_load:
             file_path = fonts_dir / filename
-            
+
             # 1. Try to load file and converting to Base64
             if file_path.exists():
                 try:
                     with open(file_path, "rb") as f:
                         # Read binary, encode to b64 bytes, decode to utf-8 string
                         b64_str = base64.b64encode(f.read()).decode("utf-8")
-                    
+
                     rule = f"""
 @font-face {{
     font-family: '{font_family}';
@@ -1686,7 +1684,7 @@ class Framework:
                     # The asset server will handle this.
                     url_path = f"plugins/{name}/{css_file}"
                     plugin_css_links.append(f'<link rel="stylesheet" href="{url_path}">')
-        
+
         plugin_css_str = "\n    ".join(plugin_css_links)
 
         font_face_rules = self._generate_embedded_font_css()
@@ -1875,5 +1873,3 @@ body {
             }}
         </script>
         """
-
-

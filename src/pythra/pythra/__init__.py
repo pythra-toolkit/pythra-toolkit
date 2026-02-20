@@ -79,6 +79,7 @@ from .styles import (
     LoaderStyle,
     Double,
     Matrix4,
+    ExpandableTheme,
 )
 
 from .drawing import (
@@ -167,6 +168,7 @@ from .widgets import (
     ThreeDLoader,
     Transform,
     VirtualGridView,
+    Expandable,
 )
 
 # --- Define __all__ for explicit export control ---
@@ -301,19 +303,18 @@ __all__ = [
     "DerivedDropdownController",
     "TapDetails",
     "PanUpdateDetails",
-
     "ProgressIndicator",
     "ProgressIndicatorController",
     "Loader",
     "LoaderStyle",
-
     "BarsProgressIndicator",
     "DotsProgressIndicator",
     "ThreeDLoader",
-
     "Matrix4",
     "Transform",
-    "VirtualGridView"
+    "VirtualGridView",
+    "Expandable",
+    "ExpandableTheme",
 ]
 
 
