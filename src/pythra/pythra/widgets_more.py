@@ -3090,8 +3090,10 @@ class Slider(Widget):
         self.drag_ended: bool = self.controller.isDragEnded
 
     def _handle_drag_update(self, new_value: float, drag_ended: bool):
-        # This method remains the same
-        print(f'HANDLE DRAG TRIGGERD WITH VALUE: {new_value}')
+        if self.controller.isDragEnded and not drag_ended:
+            if self.onChangeStart:
+                self.onChangeStart(new_value)
+
         self.controller.isDragEnded = drag_ended
         clamped_value = max(self.min, min(self.max, new_value))
         
@@ -3108,7 +3110,6 @@ class Slider(Widget):
             self.onChangeEnd(snapped_value)
 
     def render_props(self) -> Dict[str, Any]:
-        # This method remains the same
         current_value = self.controller.value
         isDragEnded = self.controller.isDragEnded
         range_val = self.max - self.min
@@ -3121,7 +3122,13 @@ class Slider(Widget):
             "onDragName": self.on_drag_update_name,
             "onDrag": self._handle_drag_update,
             "isDragEnded" : isDragEnded,
-            "slider_options": { "min": self.min, "max": self.max, "onDragName": self.on_drag_update_name, "isDragEnded" : isDragEnded },
+            "slider_options": {
+                "min": self.min,
+                "max": self.max,
+                "divisions": self.divisions,
+                "onDragName": self.on_drag_update_name,
+                "isDragEnded" : isDragEnded
+            },
             "style": { "--slider-percentage": f"{percentage}%" }
         }
 

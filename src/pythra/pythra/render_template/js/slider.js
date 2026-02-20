@@ -14,11 +14,11 @@ export class PythraSlider { // <-- ADD 'export' HERE
 
         this.options = options;
         this.dragBool = false;
-        
+
         // ... THE REST OF THE FILE REMAINS EXACTLY THE SAME ...
         this.track = this.container.querySelector('.slider-track');
         this.thumb = this.container.querySelector('.slider-thumb');
-        
+
         this.handleDragStart = this.handleDragStart.bind(this);
         this.handleDragMove = this.handleDragMove.bind(this);
         this.handleDragEnd = this.handleDragEnd.bind(this);
@@ -30,7 +30,7 @@ export class PythraSlider { // <-- ADD 'export' HERE
     handleDragStart(event) {
         event.preventDefault();
         this.container.classList.add('active');
-        
+
         document.addEventListener('mousemove', this.handleDragMove);
         document.addEventListener('mouseup', this.handleDragEnd);
         document.addEventListener('touchmove', this.handleDragMove);
@@ -45,43 +45,57 @@ export class PythraSlider { // <-- ADD 'export' HERE
     }
 
     handleDragEnd(event) {
-        this.container.classList.remove('active');
-        
+        if (this.container) {
+            this.container.classList.remove('active');
+        }
+
         document.removeEventListener('mousemove', this.handleDragMove);
         document.removeEventListener('mouseup', this.handleDragEnd);
         document.removeEventListener('touchmove', this.handleDragMove);
         document.removeEventListener('touchend', this.handleDragEnd);
-        // console.log("drag ended")
-        this.dragBool = true;
-        console.log("drag ended", this.dragBool, event);
-        this.updatePosition(event);
+
+        if (event) {
+            this.dragBool = true;
+            this.updatePosition(event);
+        }
     }
 
     updatePosition(event) {
         if (!this.track) return;
         const rect = this.track.getBoundingClientRect();
-        const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-        
+
+        let clientX = event.clientX;
+        if (event.type && event.type.startsWith('touch')) {
+            clientX = event.touches && event.touches.length > 0 ? event.touches[0].clientX : event.changedTouches[0].clientX;
+        } else if (event.touches) {
+            clientX = event.touches.length > 0 ? event.touches[0].clientX : event.changedTouches[0].clientX;
+        }
+
         let positionX = clientX - rect.left;
         let percentage = (positionX / rect.width) * 100;
-        
+
         percentage = Math.max(0, Math.min(100, percentage));
-        
-        this.container.style.setProperty('--slider-percentage', `${percentage}%`);
-        console.log(percentage, this.options.onDragName);
-        
+
         const range = this.options.max - this.options.min;
-        const newValue = this.options.min + (percentage / 100) * range;
-        console.log(percentage, this.options.onDragName, newValue);
-        
-        if (window.pywebview && this.options.onDragName) {
-            window.pywebview.on_drag_update(this.options.onDragName, newValue, this.dragBool);
+        let newValue = this.options.min + (percentage / 100) * range;
+
+        if (this.options.divisions) {
+            const step = range / this.options.divisions;
+            newValue = this.options.min + Math.round((newValue - this.options.min) / step) * step;
+            percentage = ((newValue - this.options.min) / range) * 100;
         }
-        if (this.dragBool){
-            console.log("hasDrag: Ended")
-            this.dragBool = false
-        } else {
-            console.log("dragging")
+
+        this.container.style.setProperty('--slider-percentage', `${percentage}%`);
+
+        if (this.lastSentValue !== newValue || this.dragBool) {
+            this.lastSentValue = newValue;
+            if (window.pywebview && this.options.onDragName) {
+                window.pywebview.on_drag_update(this.options.onDragName, newValue, this.dragBool);
+            }
+        }
+
+        if (this.dragBool) {
+            this.dragBool = false;
         }
     }
 
@@ -89,6 +103,6 @@ export class PythraSlider { // <-- ADD 'export' HERE
         if (!this.container) return;
         this.container.removeEventListener('mousedown', this.handleDragStart);
         this.container.removeEventListener('touchstart', this.handleDragStart);
-        this.handleDragEnd();
+        this.handleDragEnd(null);
     }
 }

@@ -63,6 +63,7 @@ import html
 import uuid
 import html
 import json
+
 try:
     import orjson
 except ImportError:
@@ -70,6 +71,7 @@ except ImportError:
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable, Literal
 from dataclasses import dataclass, field
 from collections import defaultdict, OrderedDict
+
 # near top imports if not already present
 # from collections import defaultdict
 
@@ -88,14 +90,22 @@ if TYPE_CHECKING:
 
 # Import Cython implementations with graceful fallback
 try:
-    from .reconciler_loader import get_diff_props_impl, get_diff_node_impl, get_diff_children_impl, CYTHON_AVAILABLE
+    from .reconciler_loader import (
+        get_diff_props_impl,
+        get_diff_node_impl,
+        get_diff_children_impl,
+        CYTHON_AVAILABLE,
+    )
 except ImportError:
     # If loader isn't available, provide stubs that return None (Python fallback)
     CYTHON_AVAILABLE = False
+
     def get_diff_props_impl():
         return None
+
     def get_diff_node_impl():
         return None
+
     def get_diff_children_impl():
         return None
 
@@ -166,8 +176,12 @@ class Reconciler:
     def __init__(self):
         self.context_maps: Dict[str, Dict[Union[Key, str], NodeData]] = {"main": {}}
         self.id_generator = IDGenerator()
-        self._external_js_init_queue: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-        self._registered_js_initializers: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(dict)
+        self._external_js_init_queue: Dict[str, List[Dict[str, Any]]] = defaultdict(
+            list
+        )
+        self._registered_js_initializers: Dict[str, Dict[str, Dict[str, Any]]] = (
+            defaultdict(dict)
+        )
 
         # Small in-memory LRU cache for HTML stub templates.
         # Keys are (widget_class_name, stable_props_json) -> template string with '{id}' placeholder
@@ -197,7 +211,7 @@ class Reconciler:
         print("Reconciler: Clearing all contexts.")
         debug_print("Reconciler: Clearing all contexts.")
         self.context_maps.clear()
-        self.context_maps['main'] = {}
+        self.context_maps["main"] = {}
 
     def reconcile(
         self,
@@ -205,7 +219,7 @@ class Reconciler:
         new_widget_root: Optional["Widget"],
         parent_html_id: str,
         old_root_key: Optional[Union[Key, str]] = None,
-        is_partial_reconciliation: bool = False
+        is_partial_reconciliation: bool = False,
     ) -> ReconciliationResult:
         """
         Compares a new widget tree with the previous state and generates patches.
@@ -239,10 +253,13 @@ class Reconciler:
         if old_root_key is None:
             # Find the root key from the previous map if not provided.
             for key, data in previous_map.items():
-                if data.get("parent_html_id") == parent_html_id and data.get("parent_key") is None:
+                if (
+                    data.get("parent_html_id") == parent_html_id
+                    and data.get("parent_key") is None
+                ):
                     old_root_key = key
                     break
-        
+
         # Start the recursive diffing process, passing `None` as the initial parent_key.
         self._diff_node_recursive(
             old_node_key=old_root_key,
@@ -250,7 +267,7 @@ class Reconciler:
             parent_html_id=parent_html_id,
             parent_key=None,  # The root has no parent widget.
             result=result,
-            previous_map=previous_map
+            previous_map=previous_map,
         )
 
         if not is_partial_reconciliation:
@@ -259,23 +276,31 @@ class Reconciler:
             removed_keys = old_keys - new_keys
             for key in removed_keys:
                 data = previous_map.get(key, {})
-                if not data: continue
+                if not data:
+                    continue
                 if isinstance(data.get("widget_instance"), StatefulWidget):
                     state = data["widget_instance"].get_state()
-                    if state: state.dispose()
+                    if state:
+                        state.dispose()
                 if data.get("html_id"):
-                    result.patches.append(Patch(action="REMOVE", html_id=data["html_id"], data={}))
+                    result.patches.append(
+                        Patch(action="REMOVE", html_id=data["html_id"], data={})
+                    )
 
         # --- Inject any external JS initializers queued by register_js_initializer ---
-        queued = self._external_js_init_queue.get("main", [])  # change context if you pass context
+        queued = self._external_js_init_queue.get(
+            "main", []
+        )  # change context if you pass context
         if queued:
             # copy them so the result owns its copy
             result.js_initializers.extend([dict(q) for q in queued])
             # clear the queue for that context after pushing to result
             self._external_js_init_queue["main"].clear()
-            debug_print(f'Injected {len(queued)} external JS initializers into reconciliation result.')
-        
-        debug_print(f'Python reconciler: {result}')
+            debug_print(
+                f"Injected {len(queued)} external JS initializers into reconciliation result."
+            )
+
+        debug_print(f"Python reconciler: {result}")
 
         return result
 
@@ -293,14 +318,16 @@ class Reconciler:
 
         if old_data is None:
             # The widget is new, insert it and its entire subtree.
-            self._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
+            self._insert_node_recursive(
+                new_widget, parent_html_id, parent_key, result, previous_map
+            )
             return
-            
+
         new_type = type(new_widget).__name__
         old_type = old_data.get("widget_type")
         new_props = new_widget.render_props()
         self._collect_details(new_widget, new_props, result)
-        
+
         # If the type or key has changed, it's a replacement.
         if old_type != new_type or new_widget.key != old_data.get("key"):
             # The reconciler will treat this as a REMOVE and an INSERT
@@ -308,17 +335,22 @@ class Reconciler:
             # to handle this more efficiently.
             new_props = new_widget.render_props()
             self._collect_details(new_widget, new_props, result)
-            
+
             # Insert the new node and its children into the map first.
-            self._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
+            self._insert_node_recursive(
+                new_widget, parent_html_id, parent_key, result, previous_map
+            )
 
             # Then, create a REPLACE patch. The `html_id` is the old one to replace.
-            new_html_stub = self._generate_html_stub(new_widget, old_data["html_id"], new_props)
+            new_html_stub = self._generate_html_stub(
+                new_widget, old_data["html_id"], new_props
+            )
             result.patches.append(
-                Patch(action="REPLACE", html_id=old_data["html_id"], data={
-                    "new_html": new_html_stub,
-                    "new_props": new_props
-                })
+                Patch(
+                    action="REPLACE",
+                    html_id=old_data["html_id"],
+                    data={"new_html": new_html_stub, "new_props": new_props},
+                )
             )
             return
 
@@ -346,10 +378,14 @@ class Reconciler:
             prop_changes = self._diff_props(old_props_from_map, new_props)
             if prop_changes:
                 patch_data = {"props": new_props, "old_props": old_props_from_map}
-                if 'css_class' in prop_changes:
-                    patch_data["props"]["old_shared_class"] = old_props_from_map.get("css_class")
-                result.patches.append(Patch(action="UPDATE", html_id=html_id, data=patch_data))
-        
+                if "css_class" in prop_changes:
+                    patch_data["props"]["old_shared_class"] = old_props_from_map.get(
+                        "css_class"
+                    )
+                result.patches.append(
+                    Patch(action="UPDATE", html_id=html_id, data=patch_data)
+                )
+
         # Update the map with the new widget data, including the parent_key.
         result.new_rendered_map[new_widget_key] = {
             "html_id": html_id,
@@ -358,23 +394,33 @@ class Reconciler:
             "widget_instance": new_widget,
             "props": new_props,
             "parent_html_id": parent_html_id,
-            "parent_key": parent_key, # Store the parent's unique key
+            "parent_key": parent_key,  # Store the parent's unique key
             "children_keys": [c.get_unique_id() for c in new_widget.get_children()],
         }
 
         # Recurse on children, passing the current widget's key as their parent_key.
-        child_parent_html_id = html_id if widget_type_name not in ["StatefulWidget", "StatelessWidget"] else parent_html_id
+        child_parent_html_id = (
+            html_id
+            if widget_type_name not in ["StatefulWidget", "StatelessWidget"]
+            else parent_html_id
+        )
         self._diff_children_recursive(
             old_data.get("children_keys", []),
             new_widget.get_children(),
-            child_parent_html_id, # <-- Pass the correct parent HTML ID
+            child_parent_html_id,  # <-- Pass the correct parent HTML ID
             new_widget.get_unique_id(),
             result,
             previous_map,
         )
 
     def _insert_node_recursive(
-        self, new_widget, parent_html_id, parent_key, result, previous_map, before_id=None
+        self,
+        new_widget,
+        parent_html_id,
+        parent_key,
+        result,
+        previous_map,
+        before_id=None,
     ):
         """Recursively handles the insertion of a new widget and its children."""
         if new_widget is None:
@@ -419,7 +465,6 @@ class Reconciler:
                 "before_id": old_id,
             }
             result.js_initializers.append(initializer_data)
-
 
         if "init_dropdown" in new_props:
             debug_print("DROPDOWN INIT")
@@ -497,7 +542,6 @@ class Reconciler:
                 "before_id": old_id,
             }
             result.js_initializers.append(initializer_data)
-        
 
         # --- END NEW ---
 
@@ -506,18 +550,20 @@ class Reconciler:
         if js_init_data and isinstance(js_init_data, dict):
             # We don't need the html_id here, as the framework will have it
             # when it processes the initializer list.
-            result.js_initializers.append({
-                "widget_key": new_widget.get_unique_id(), # Use the widget's key for stable reference
-                "data": js_init_data,
-                "type": js_init_data['engine'],
-                "target_id": html_id,
-                "before_id": old_id,
-            })
+            result.js_initializers.append(
+                {
+                    "widget_key": new_widget.get_unique_id(),  # Use the widget's key for stable reference
+                    "data": js_init_data,
+                    "type": js_init_data["engine"],
+                    "target_id": html_id,
+                    "before_id": old_id,
+                }
+            )
         # --- END OF NEW LOGIC ---
-        
+
         # --- THIS IS THE FIX ---
         widget_type_name = type(new_widget).__name__
-        
+
         # Store the node in the map, regardless of its type.
         result.new_rendered_map[key] = {
             "html_id": html_id,
@@ -534,25 +580,39 @@ class Reconciler:
         # StatefulWidget and StatelessWidget are hosts, not renderable elements.
         if widget_type_name not in ["StatefulWidget", "StatelessWidget"]:
             stub_html = self._generate_html_stub(new_widget, html_id, new_props)
-            result.patches.append(Patch(action="INSERT", html_id=html_id, data={
-                "html": stub_html, "parent_html_id": parent_html_id,
-                "props": new_props, "before_id": before_id,
-            }))
+            result.patches.append(
+                Patch(
+                    action="INSERT",
+                    html_id=html_id,
+                    data={
+                        "html": stub_html,
+                        "parent_html_id": parent_html_id,
+                        "props": new_props,
+                        "before_id": before_id,
+                    },
+                )
+            )
         # --- END OF FIX ---
 
         # Recurse for children, passing the current widget's key as their parent_key.
         for child in new_widget.get_children():
             # If the parent is composable (Stateless/Stateful), its children are rendered
             # into the same parent DOM element. Otherwise, they are rendered inside the parent's new DOM element.
-            child_parent_html_id = parent_html_id if widget_type_name in ["StatefulWidget", "StatelessWidget"] else html_id
-            self._insert_node_recursive(child, child_parent_html_id, key, result, previous_map)
+            child_parent_html_id = (
+                parent_html_id
+                if widget_type_name in ["StatefulWidget", "StatelessWidget"]
+                else html_id
+            )
+            self._insert_node_recursive(
+                child, child_parent_html_id, key, result, previous_map
+            )
 
     def _diff_children_recursive(
         self,
         old_children_keys: List[Union[Key, str]],
         new_children_widgets: List["Widget"],
         parent_html_id: str,
-        parent_key: str, # Accept the parent's key
+        parent_key: str,  # Accept the parent's key
         result: ReconciliationResult,
         previous_map: Dict,
     ):
@@ -560,8 +620,12 @@ class Reconciler:
         if not old_children_keys and not new_children_widgets:
             return
 
-        old_key_to_data = {key: previous_map[key] for key in old_children_keys if key in previous_map}
-        new_key_to_widget = {widget.get_unique_id(): widget for widget in new_children_widgets}
+        old_key_to_data = {
+            key: previous_map[key] for key in old_children_keys if key in previous_map
+        }
+        new_key_to_widget = {
+            widget.get_unique_id(): widget for widget in new_children_widgets
+        }
         old_keys_set = set(old_key_to_data.keys())
         new_keys_set = set(new_key_to_widget.keys())
 
@@ -569,10 +633,13 @@ class Reconciler:
         keys_to_remove = old_keys_set - new_keys_set
         for key in keys_to_remove:
             old_data = old_key_to_data[key]
-            result.patches.append(Patch(action="REMOVE", html_id=old_data["html_id"], data={}))
+            result.patches.append(
+                Patch(action="REMOVE", html_id=old_data["html_id"], data={})
+            )
             if isinstance(old_data.get("widget_instance"), StatefulWidget):
                 state = old_data["widget_instance"].get_state()
-                if state: state.dispose()
+                if state:
+                    state.dispose()
 
         # Handle updates, inserts, and moves.
         last_placed_old_idx = -1
@@ -583,21 +650,53 @@ class Reconciler:
 
             if new_key in old_keys_set:
                 # It's an existing widget, so diff it, passing the parent_key.
-                self._diff_node_recursive(new_key, new_widget, parent_html_id, parent_key, result, previous_map)
-                
+                self._diff_node_recursive(
+                    new_key,
+                    new_widget,
+                    parent_html_id,
+                    parent_key,
+                    result,
+                    previous_map,
+                )
+
                 # Check for moves.
                 old_idx = old_key_to_index[new_key]
                 if old_idx < last_placed_old_idx:
                     moved_html_id = result.new_rendered_map[new_key]["html_id"]
-                    before_id = self._find_next_stable_html_id(i + 1, new_children_widgets, old_key_to_index, result.new_rendered_map)
-                    result.patches.append(Patch("MOVE", moved_html_id, {"parent_html_id": parent_html_id, "before_id": before_id}))
+                    before_id = self._find_next_stable_html_id(
+                        i + 1,
+                        new_children_widgets,
+                        old_key_to_index,
+                        result.new_rendered_map,
+                    )
+                    result.patches.append(
+                        Patch(
+                            "MOVE",
+                            moved_html_id,
+                            {"parent_html_id": parent_html_id, "before_id": before_id},
+                        )
+                    )
                 last_placed_old_idx = max(last_placed_old_idx, old_idx)
             else:
                 # It's a new widget, so insert it, passing the parent_key.
-                before_id = self._find_next_stable_html_id(i + 1, new_children_widgets, old_key_to_index, result.new_rendered_map)
-                self._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map, before_id=before_id)
+                before_id = self._find_next_stable_html_id(
+                    i + 1,
+                    new_children_widgets,
+                    old_key_to_index,
+                    result.new_rendered_map,
+                )
+                self._insert_node_recursive(
+                    new_widget,
+                    parent_html_id,
+                    parent_key,
+                    result,
+                    previous_map,
+                    before_id=before_id,
+                )
 
-    def _find_next_stable_html_id(self, start_index, new_widgets, old_key_map, new_rendered_map):
+    def _find_next_stable_html_id(
+        self, start_index, new_widgets, old_key_map, new_rendered_map
+    ):
         for j in range(start_index, len(new_widgets)):
             key = new_widgets[j].get_unique_id()
             if key in old_key_map and key in new_rendered_map:
@@ -612,7 +711,9 @@ class Reconciler:
             css_classes.extend(widget.get_required_css_classes())
         for css_class in set(css_classes):
             if css_class and css_class not in result.active_css_details:
-                if hasattr(type(widget), "generate_css_rule") and hasattr(widget, "style_key"):
+                if hasattr(type(widget), "generate_css_rule") and hasattr(
+                    widget, "style_key"
+                ):
                     result.active_css_details[css_class] = (
                         getattr(type(widget), "generate_css_rule"),
                         getattr(widget, "style_key"),
@@ -620,20 +721,28 @@ class Reconciler:
 
         # Unified callback registration
         for prop_name, callback_name_value in props.items():
-            if prop_name.endswith("Name") and callback_name_value or prop_name == 'onDragName' and callback_name_value:
+            if (
+                prop_name.endswith("Name")
+                and callback_name_value
+                or prop_name == "onDragName"
+                and callback_name_value
+            ):
                 function_prop_name = prop_name[:-4]
                 if hasattr(widget, function_prop_name):
                     callback_function = getattr(widget, function_prop_name)
                     if callable(callback_function):
-                        result.registered_callbacks[callback_name_value] = callback_function
+                        result.registered_callbacks[callback_name_value] = (
+                            callback_function
+                        )
                         # print(f"Successfully registered callback for [{callback_name_value}] with function: [{callback_function}]\n")
-                if function_prop_name == 'onDrag':
+                if function_prop_name == "onDrag":
                     callback_function = props[function_prop_name]
                     # print(f'callback_function: {callback_function}')
                     if callable(callback_function):
-                        result.registered_callbacks[callback_name_value] = callback_function
+                        result.registered_callbacks[callback_name_value] = (
+                            callback_function
+                        )
                         # print(f"Successfully registered callback for [{callback_name_value}] with function: [{callback_function}]\n")
-
 
         # --- THIS IS THE NEW GENERIC INITIALIZER LOGIC ---
         # js_init_data = props.get("_js_init")
@@ -685,6 +794,7 @@ class Reconciler:
 
         # Attempt to use memoized template for common, cacheable props
         try:
+
             def _is_cacheable_value(v):
                 # Reject callables, Widget instances, and weakrefs
                 if callable(v):
@@ -694,7 +804,10 @@ class Reconciler:
                 if isinstance(v, (list, tuple)):
                     return all(_is_cacheable_value(i) for i in v)
                 if isinstance(v, dict):
-                    return all(isinstance(k, (str, int)) and _is_cacheable_value(val) for k, val in v.items())
+                    return all(
+                        isinstance(k, (str, int)) and _is_cacheable_value(val)
+                        for k, val in v.items()
+                    )
                 return isinstance(v, (str, int, float, bool, type(None)))
 
             cacheable = True
@@ -708,9 +821,16 @@ class Reconciler:
                 try:
                     if orjson:
                         # OPT_SORT_KEYS ensures deterministic order for caching
-                        stable_props_json = orjson.dumps(props, option=orjson.OPT_SORT_KEYS).decode()
+                        stable_props_json = orjson.dumps(
+                            props, option=orjson.OPT_SORT_KEYS
+                        ).decode()
                     else:
-                        stable_props_json = json.dumps(props, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+                        stable_props_json = json.dumps(
+                            props,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                            ensure_ascii=False,
+                        )
 
                     cache_key = (type(widget).__name__, stable_props_json)
                     if cache_key in self._html_stub_cache:
@@ -791,11 +911,13 @@ class Reconciler:
             for key, value in props["style"].items():
                 # print("css kebab-case: ",props["style"].items())
                 # Convert python camelCase to css kebab-case
-                css_key = "".join(["-" + c.lower() if c.isupper() else c for c in key]).lstrip("-")
+                css_key = "".join(
+                    ["-" + c.lower() if c.isupper() else c for c in key]
+                ).lstrip("-")
                 inline_styles[css_key] = value
         # --- END OF FIX ---
 
-        if 'position_type' in props:
+        if "position_type" in props:
             # print("position_type:", props["position_type"])
             inline_styles["position"] = props["position_type"]
 
@@ -819,30 +941,22 @@ class Reconciler:
 
         # Add event handlers
         if "onPressedName" in props and props.get("enabled", True):
-            
+
             if cb_name := props["onPressedName"]:
                 if props["onPressedArgs"] != []:
                     # [print("arg: ", x) for x in props["onPressedArgs"]]
                     # print("ARGS: ",props["onPressedArgs"] if props["onPressedArgs"] else 'None') #["onPressedArgs"] if props["onPressedArgs"] else 'None'
-                    attrs += (
-                        f" onclick=\"handleClickWithArgs('{html.escape(cb_name, quote=True)}', {props['onPressedArgs']})\""
-                    )
+                    attrs += f" onclick=\"handleClickWithArgs('{html.escape(cb_name, quote=True)}', {props['onPressedArgs']})\""
                 else:
-                    attrs += (
-                        f" onclick=\"handleClick('{html.escape(cb_name, quote=True)}')\""
-                    )
+                    attrs += f" onclick=\"handleClick('{html.escape(cb_name, quote=True)}')\""
         elif "onTapName" in props and props.get("enabled", True):
             if cb_name := props.get("onTapName"):
                 if props["onTapArg"] != []:
                     # [print("arg: ", x) for x in props["onPressedArgs"]]
                     # print("ARGS: ",props["onPressedArgs"] if props["onPressedArgs"] else 'None') #["onPressedArgs"] if props["onPressedArgs"] else 'None'
-                    attrs += (
-                        f" onclick=\"handleClickWithArgs('{html.escape(cb_name, quote=True)}', {props['onTapArg']})\""
-                    )
+                    attrs += f" onclick=\"handleClickWithArgs('{html.escape(cb_name, quote=True)}', {props['onTapArg']})\""
                 else:
-                    attrs += (
-                        f" onclick=\"handleClick('{html.escape(cb_name, quote=True)}')\""
-                    )
+                    attrs += f" onclick=\"handleClick('{html.escape(cb_name, quote=True)}')\""
         elif "onItemTapName" in props and props.get("enabled", True):
             if cb_name := props.get("onItemTapName"):
                 attrs += f' onclick="handleItemTap(\'{html.escape(cb_name, quote=True)}\', {props.get("item_index", -1)})"'
@@ -858,16 +972,15 @@ class Reconciler:
         elif widget_type_name == "Icon" and props.get("render_type") == "img":
             attrs += f' src="{html.escape(props.get("custom_icon_src", ""), quote=True)}" alt=""'
 
-
-        
-
         # if hasattr(type(widget), '_generate_html_stub'):
         #     return type(widget)._generate_html_stub(widget, html_id, props)
 
         if tag in ["img", "hr", "br"]:
             result = f'<{tag} id="{html_id}" class="{classes}"{attrs}>'
         else:
-            result = f'<{tag} id="{html_id}" class="{classes}"{attrs}>{inner_html}</{tag}>'
+            result = (
+                f'<{tag} id="{html_id}" class="{classes}"{attrs}>{inner_html}</{tag}>'
+            )
 
         # If cacheable, store a template (replace current html_id with placeholder)
         try:
@@ -896,15 +1009,22 @@ class Reconciler:
         # Try to use Cython implementation if available
         if self._cython_diff_props_impl is not None:
             return self._cython_diff_props_impl(old_props, new_props)
-        
+
         # Fall back to Python implementation
         changes = {}
         # --- THIS IS THE FIX ---
         # Define a set of properties to ignore during the diffing process.
         # These are typically function references that are re-created on every build.
-        ignored_keys = {'widget_instance', 'itemBuilder', 'onChanged', 'onPressed', 'onTap', 'onDrag'}
+        ignored_keys = {
+            "widget_instance",
+            "itemBuilder",
+            "onChanged",
+            "onPressed",
+            "onTap",
+            "onDrag",
+        }
         # --- END OF FIX ---
-            # Combine keys, but exclude 'widget_instance' from the check
+        # Combine keys, but exclude 'widget_instance' from the check
         all_keys = (set(old_props.keys()) | set(new_props.keys())) - ignored_keys
 
         for key in all_keys:
@@ -916,7 +1036,9 @@ class Reconciler:
                 changes[key] = new_val
         return changes if changes else None
 
-    def register_js_initializer(self, initializer: Dict[str, Any], context_key: str = "main") -> str:
+    def register_js_initializer(
+        self, initializer: Dict[str, Any], context_key: str = "main"
+    ) -> str:
         """
         Register an external JS initializer to be emitted on the next reconcile call.
 
@@ -959,12 +1081,16 @@ class Reconciler:
         self._registered_js_initializers[context_key][initializer_id] = init
         self._external_js_init_queue[context_key].append(init)
 
-        print(f"Registered JS initializer [{initializer_id}] for context [{context_key}]: {init}")
+        print(
+            f"Registered JS initializer [{initializer_id}] for context [{context_key}]: {init}"
+        )
 
         # Return the id so the caller can reference or cancel later
         return initializer_id
 
-    def unregister_js_initializer(self, initializer_id: str, context_key: str = "main") -> bool:
+    def unregister_js_initializer(
+        self, initializer_id: str, context_key: str = "main"
+    ) -> bool:
         """
         Unregister a previously registered initializer. Returns True if removed.
         """
@@ -973,7 +1099,8 @@ class Reconciler:
             del self._registered_js_initializers[context_key][initializer_id]
             # remove from queue if present
             q = self._external_js_init_queue.get(context_key, [])
-            self._external_js_init_queue[context_key] = [i for i in q if i.get("_id") != initializer_id]
+            self._external_js_init_queue[context_key] = [
+                i for i in q if i.get("_id") != initializer_id
+            ]
             return True
         return False
-
