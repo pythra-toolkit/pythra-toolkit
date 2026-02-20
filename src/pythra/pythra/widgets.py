@@ -6676,6 +6676,10 @@ class TextField(Widget):
         helper_text = props.get("errorText", "")
         helper_safe = html.escape(helper_text) if helper_text else ""
 
+        placeholder_text = str(props.get("placeholder", ""))
+        if not placeholder_text:
+            placeholder_text = " "  # Ensure space so :placeholder-shown works properly for floating label
+
         on_input_handler = (
             f"handleInput('{props.get('onChangedName', '')}', this.value)"
         )
@@ -6689,7 +6693,7 @@ class TextField(Widget):
                     class="textfield-input {base_class}" 
                     type="{input_type}" 
                     value="{html.escape(str(props.get('value', '')), quote=True)}"
-                    placeholder="{html.escape(str(props.get('placeholder', '')), quote=True)}"
+                    placeholder="{html.escape(placeholder_text, quote=True)}"
                     oninput="clearTimeout(this.to); this.to=setTimeout(()=>{{{on_input_handler}}}, 300);"
                     {('disabled' if not props.get('enabled', True) else '').strip()}
                 >
@@ -6763,26 +6767,34 @@ class TextField(Widget):
         }}
         .textfield-root-container.{css_class} .textfield-container {{
             position: relative; padding-top: 0px;
+            background-color: {fill_color or 'rgba(0, 0, 0, 0.04)'};
+            border-radius: 4px 4px 0 0;
+            cursor: text;
         }}
         .textfield-root-container.{css_class} .textfield-input {{
-            width: 100%; height: 34px; padding: 0px 8px; font-size: 14px;
-            color: {Colors.hex("#D9D9D9")}; background-color: {fill_color};
+            width: 100%; height: 56px; padding: 20px 16px 6px 16px; font-size: 16px;
+            color: inherit; font-family: inherit; background-color: transparent;
             border-top: none;
             border-left: none;
             border-right: none;
-            border-bottom:{border_width}px {border_style} {border_color}; outline: none; {border_radius} box-sizing: border-box;
-            transition: background-color 0.2s;
+            border-bottom:{border_width}px {border_style} {border_color or '#757575'}; outline: none; {border_radius} box-sizing: border-box;
+            transition: border-bottom-color 0.2s, background-color 0.2s;
+        }}
+        .textfield-root-container.{css_class} .textfield-input::placeholder {{
+            color: transparent; /* hide placeholder when label is resting */
+            transition: color 0.2s;
+        }}
+        .textfield-root-container.{css_class} .textfield-input:focus::placeholder {{
+            color: {Colors.hex("#757575")}; /* show placeholder on focus */
         }}
         .textfield-root-container.{css_class} .textfield-label {{
-            position: absolute; left: 16px; top: 16px; font-size: 16px;
-            color: {label_color}; pointer-events: none;
-            transform-origin: left top; transform: translateY(-50%);
-            transition: transform 0.2s, color 0.2s;
+            position: absolute; left: 16px; top: 18px; font-size: 16px;
+            color: {label_color or '#757575'}; pointer-events: none;
+            transform-origin: left top; 
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
         }}
         .textfield-root-container.{css_class} .textfield-outline {{
-            position: absolute; bottom: 0; left: 0; right: 0;
-            height: {border_width}px; background-color: {border_color};
-            transition: background-color 0.2s, height 0.2s; display: none;
+            display: none; /* using standard borders instead */
         }}
         .textfield-root-container.{css_class}  .textfield-helper-text {{
             padding: 4px 16px 0 16px; font-size: 12px; color: {label_color};
@@ -6792,21 +6804,17 @@ class TextField(Widget):
              display: none; 
         }}
 
-        /* --- FOCUSED STATE (Scoped) --- */
+        /* --- FOCUSED & VALUE STATE (Scoped) --- */
         .textfield-root-container.{css_class} .textfield-input:focus {{
-            border-top: none;
-            border-left: none;
-            border-right: none;
-            border-bottom:{border_width}px {border_style} {Colors.hex("#FF94DA")};
+            border-bottom: {focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'};
         }}
-        .textfield-root-container.{css_class} .textfield-input:focus ~ .textfield-label {{
-            transform: translateY(-190%) scale(0.75);
-            color: {focus_color};
-            display: none;
+        .textfield-root-container.{css_class} .textfield-input:focus ~ .textfield-label,
+        .textfield-root-container.{css_class} .textfield-input:not(:placeholder-shown) ~ .textfield-label {{
+            transform: translateY(-10px) scale(0.75);
+            color: {focus_color or '#FF94DA'};
         }}
-        .textfield-root-container.{css_class}:focus-within .textfield-outline {{
-            height: {focused_border_width}px;
-            background-color: {focused_border_color};
+        .textfield-root-container.{css_class}:focus-within .textfield-container {{
+            background-color: {Colors.rgba(0,0,0,0.08)}; /* slight highlight */
         }}
         
         /* --- ERROR STATE (Scoped) --- */
