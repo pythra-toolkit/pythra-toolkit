@@ -308,6 +308,17 @@ class Reconciler:
         self, old_node_key, new_widget, parent_html_id, parent_key, result, previous_map
     ):
         """Compares a new widget with its old version."""
+        # Try to use Cython implementation if available
+        if self._cython_diff_node_impl is not None:
+            return self._cython_diff_node_impl(
+                old_node_key,
+                new_widget,
+                parent_html_id,
+                parent_key,
+                result,
+                previous_map,
+                self,
+            )
         if new_widget is None:
             # If the new widget is None, it will be handled as a removal
             # in the _diff_children_recursive function.
@@ -610,6 +621,17 @@ class Reconciler:
         previous_map: Dict,
     ):
         """Efficiently diffs a list of child widgets."""
+        # Try to use Cython implementation if available
+        if self._cython_diff_children_impl is not None:
+            return self._cython_diff_children_impl(
+                old_children_keys,
+                new_children_widgets,
+                parent_html_id,
+                parent_key,
+                result,
+                previous_map,
+                self,
+            )
         if not old_children_keys and not new_children_widgets:
             return
 
