@@ -166,6 +166,13 @@ window.PythraBridge = {
                 const helperId = el.id + "_helper";
                 const helperEl = document.getElementById(helperId);
                 if (helperEl) helperEl.textContent = String(value);
+            } else if (key === 'style') {
+                // Inject dynamic inline styling for Pythra elements
+                if (typeof value === 'object' && value !== null) {
+                    for (const [styleKey, styleValue] of Object.entries(value)) {
+                        el.style.setProperty(styleKey, styleValue);
+                    }
+                }
             }
             // Add more property handlers as needed from the Python logic
         }
