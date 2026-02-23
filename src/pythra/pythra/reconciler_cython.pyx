@@ -83,14 +83,7 @@ def cython_diff_node_recursive(
     if new_widget is None:
         return
     
-    # Format the incoming old_node_key as a string
-    cdef str old_node_key_str
-    if hasattr(old_node_key, 'value'):
-        old_node_key_str = str(old_node_key.value)
-    else:
-        old_node_key_str = str(old_node_key)
-        
-    cdef dict old_data = previous_map.get(old_node_key_str)
+    cdef dict old_data = previous_map.get(old_node_key)
     
     # If no old data, this is a new widget - delegate to insert handler
     if old_data is None:
@@ -132,9 +125,7 @@ def cython_diff_node_recursive(
             result.patches.append(Patch(action="UPDATE", html_id=html_id, data=patch_data))
     
     # Update the rendered map
-    cdef object raw_key = new_widget.get_unique_id()
-    cdef str new_widget_key = str(raw_key.value) if hasattr(raw_key, 'value') else str(raw_key)
-
+    new_widget_key = new_widget.get_unique_id()
     result.new_rendered_map[new_widget_key] = {
         "html_id": html_id,
         "widget_type": new_type,
@@ -143,7 +134,7 @@ def cython_diff_node_recursive(
         "props": new_props,
         "parent_html_id": parent_html_id,
         "parent_key": parent_key,
-        "children_keys": [str(c.get_unique_id().value) if hasattr(c.get_unique_id(), 'value') else str(c.get_unique_id()) for c in new_widget.get_children()],
+        "children_keys": [c.get_unique_id() for c in new_widget.get_children()],
     }
     
     # Recurse on children
@@ -182,16 +173,13 @@ def cython_diff_children_recursive(
     cdef set old_keys_set
     cdef set new_keys_set
     
-    # Build lookup dictionaries efficiently using string keys
-    cdef str k_str
+    # Build lookup dictionaries efficiently
     for key in old_children_keys:
-        k_str = str(key.value) if hasattr(key, 'value') else str(key)
-        if k_str in previous_map:
-            old_key_to_data[k_str] = previous_map[k_str]
+        if key in previous_map:
+            old_key_to_data[key] = previous_map[key]
     
     for widget in new_children_widgets:
-        k_str = str(widget.get_unique_id().value) if hasattr(widget.get_unique_id(), 'value') else str(widget.get_unique_id())
-        new_key_to_widget[k_str] = widget
+        new_key_to_widget[widget.get_unique_id()] = widget
     
     old_keys_set = set(old_key_to_data.keys())
     new_keys_set = set(new_key_to_widget.keys())
@@ -210,17 +198,13 @@ def cython_diff_children_recursive(
     
     # Handle updates, inserts, and moves
     cdef int last_placed_old_idx = -1
-    cdef dict old_key_to_index = {}
-    cdef int i
+    cdef dict old_key_to_index = {key: i for i, key in enumerate(old_children_keys)}
     cdef int old_idx
-    cdef str new_key
-    
-    for i, key in enumerate(old_children_keys):
-        k_str = str(key.value) if hasattr(key, 'value') else str(key)
-        old_key_to_index[k_str] = i
+    cdef int i = 0
+    cdef new_key
     
     for i, new_widget in enumerate(new_children_widgets):
-        new_key = str(new_widget.get_unique_id().value) if hasattr(new_widget.get_unique_id(), 'value') else str(new_widget.get_unique_id())
+        new_key = new_widget.get_unique_id()
         
         if new_key in old_keys_set:
             # Existing widget: diff it

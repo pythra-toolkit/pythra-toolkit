@@ -265,18 +265,12 @@ class Reconciler:
                     data.get("parent_html_id") == parent_html_id
                     and data.get("parent_key") is None
                 ):
-                    old_root_key = str(key.value) if hasattr(key, "value") else str(key)
+                    old_root_key = key
                     break
-
-        old_root_key_str = (
-            str(old_root_key.value)
-            if hasattr(old_root_key, "value")
-            else str(old_root_key)
-        )
 
         # Start the recursive diffing process, passing `None` as the initial parent_key.
         self._diff_node_recursive(
-            old_node_key=old_root_key_str,
+            old_node_key=old_root_key,
             new_widget=new_widget_root,
             parent_html_id=parent_html_id,
             parent_key=None,  # The root has no parent widget.
@@ -338,17 +332,8 @@ class Reconciler:
             # in the _diff_children_recursive function.
             return
 
-        old_node_key_str = (
-            str(old_node_key.value)
-            if hasattr(old_node_key, "value")
-            else str(old_node_key)
-        )
-        old_data = previous_map.get(old_node_key_str)
-
-        raw_key = new_widget.get_unique_id()
-        new_widget_key = (
-            str(raw_key.value) if hasattr(raw_key, "value") else str(raw_key)
-        )
+        old_data = previous_map.get(old_node_key)
+        new_widget_key = new_widget.get_unique_id()
 
         if old_data is None:
             # The widget is new, insert it and its entire subtree.
@@ -422,14 +407,7 @@ class Reconciler:
             "props": new_props,
             "parent_html_id": parent_html_id,
             "parent_key": parent_key,  # Store the parent's unique key
-            "children_keys": [
-                (
-                    str(c.get_unique_id().value)
-                    if hasattr(c.get_unique_id(), "value")
-                    else str(c.get_unique_id())
-                )
-                for c in new_widget.get_children()
-            ],
+            "children_keys": [c.get_unique_id() for c in new_widget.get_children()],
         }
 
         # Recurse on children, passing the current widget's key as their parent_key.
@@ -442,7 +420,7 @@ class Reconciler:
             old_data.get("children_keys", []),
             new_widget.get_children(),
             child_parent_html_id,  # <-- Pass the correct parent HTML ID
-            new_widget_key,
+            new_widget.get_unique_id(),
             result,
             previous_map,
         )
@@ -463,8 +441,7 @@ class Reconciler:
         html_id = self.id_generator.next_id()
         new_props = new_widget.render_props()
         self._collect_details(new_widget, new_props, result)
-        raw_key = new_widget.get_unique_id()
-        key = str(raw_key.value) if hasattr(raw_key, "value") else str(raw_key)
+        key = new_widget.get_unique_id()
 
         old_id = None
         new_id = None
@@ -608,14 +585,7 @@ class Reconciler:
             "props": new_props,
             "parent_html_id": parent_html_id,
             "parent_key": parent_key,
-            "children_keys": [
-                (
-                    str(c.get_unique_id().value)
-                    if hasattr(c.get_unique_id(), "value")
-                    else str(c.get_unique_id())
-                )
-                for c in new_widget.get_children()
-            ],
+            "children_keys": [c.get_unique_id() for c in new_widget.get_children()],
         }
 
         # ONLY generate a patch for renderable widgets.
