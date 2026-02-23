@@ -341,9 +341,6 @@ class Framework:
         # 1. Build the full widget tree
         built_tree_root = self._build_widget_tree(root_widget, context_map={})
         initial_tree_to_reconcile = built_tree_root
-        if isinstance(built_tree_root, StatefulWidget):
-            children = built_tree_root.get_children()
-            initial_tree_to_reconcile = children[0] if children else None
 
         # 2. Perform initial reconciliation
         result = self.reconciler.reconcile(
