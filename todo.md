@@ -1,0 +1,5 @@
+- Analyze state and child state and how setState works for each
+- verify if alowing child state to manage its state updates will cause the widget refrence to be lost
+    - Example: the toggle in ExpandableState 
+        - will it cause the expandable refrence to be lost if the parent state triggers a state update i.e setState triggered in HomePageState by another widget. where Expandable is also a sub Widget in HompageState. but manages it own setState via the toggle method in Expandable State
+        - is that the right behaviour of Stateful widgets in flutter. if not what are the descripances.

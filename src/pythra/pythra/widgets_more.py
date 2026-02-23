@@ -4286,7 +4286,7 @@ class GestureDetector(Widget):
         self.onPanEnd = onPanEnd
         
         # --- Unique callback names for this instance ---
-        instance_id = id(self)
+        instance_id = self.key.value
         self.onTapName = f"gd_tap_{instance_id}" if onTap else None
         self.onDoubleTapName = f"gd_dbtap_{instance_id}" if onDoubleTap else None
         self.onLongPressName = f"gd_lpress_{instance_id}" if onLongPress else None
@@ -5001,10 +5001,20 @@ class ExpandableState(State):
 
     def initState(self):
         # Set the initial state based on the widget's property
-
         self.is_expanded = getattr(self.widget, "initiallyExpanded", None)
         self.onToggle = getattr(self.widget, "onToggle", None)
         print(f"Initialized is_expanded: {self.is_expanded}")
+
+    def didUpdateWidget(self, old_widget, new_widget):
+        # Update the callback if the parent provided a new one
+        self.onToggle = getattr(new_widget, "onToggle", None)
+
+        # If the parent explicitly changed initiallyExpanded between the old and new widget,
+        # we should probably respect it. Otherwise, leave the local state alone!
+        old_initial = getattr(old_widget, "initiallyExpanded", None)
+        new_initial = getattr(new_widget, "initiallyExpanded", None)
+        if old_initial != new_initial:
+            self.is_expanded = new_initial
 
     def toggle(self, *args, **kwargs):
         self.is_expanded = not self.is_expanded
@@ -5012,7 +5022,7 @@ class ExpandableState(State):
         self.setState()
 
     def build(self) -> Widget:
-        
+
         # Lazy import to avoid circular dependencies with widgets_more
         from .widgets import Container, Column, Row, Expanded
 
@@ -5076,9 +5086,9 @@ class ExpandableState(State):
         if show_icon:
             from .widgets import Icon, Container
             from .icons import Icons
-            
+
             rotation = "180deg" if self.is_expanded else "0deg"
-            
+
             icon_wrapper = Container(
                 key=Key(f"{self.widget.key.value}_icon_wrapper"),
                 child=Icon(Icons.keyboard_arrow_down, key=Key(f"{self.widget.key.value}_icon"),size=icon_size, color=icon_color),
@@ -5090,7 +5100,7 @@ class ExpandableState(State):
                     "justify-content": "center",
                 }
             )
-            
+
             header_content = Row(
                 key=Key(f"{self.widget.key.value}_header_content"),
                 children=[

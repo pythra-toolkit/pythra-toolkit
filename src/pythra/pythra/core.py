@@ -339,7 +339,7 @@ class Framework:
         debug_print("\n🎨 PyThra Framework | Performing Initial UI Render...")
 
         # 1. Build the full widget tree
-        built_tree_root = self._build_widget_tree(root_widget)
+        built_tree_root = self._build_widget_tree(root_widget, context_map={})
         initial_tree_to_reconcile = built_tree_root
         if isinstance(built_tree_root, StatefulWidget):
             children = built_tree_root.get_children()
@@ -771,7 +771,9 @@ class Framework:
 
             print(f"🔧 PyThra Framework | Updating: {widget_to_rebuild.__class__.__name__} (ID: {widget_key.__str_key__()[:8]}...)")
 
-            new_subtree = self._build_widget_tree(widget_to_rebuild)
+            new_subtree = self._build_widget_tree(
+                widget_to_rebuild, context_map=main_context_map
+            )
             subtree_result = self.reconciler.reconcile(
                 previous_map=main_context_map,
                 new_widget_root=new_subtree,
@@ -865,7 +867,7 @@ class Framework:
         def _worker():
             try:
                 # print(f"🧵 Starting background build for {widget}...")
-                self._build_widget_tree(widget)
+                self._build_widget_tree(widget, context_map={})
                 widget._preloaded = True
                 # print(f"✅ Background build complete for {widget}")
             except Exception as e:
@@ -875,7 +877,9 @@ class Framework:
         thread = threading.Thread(target=_worker, daemon=True)
         thread.start()
 
-    def _build_widget_tree(self, widget: Optional[Widget]) -> Optional[Widget]:
+    def _build_widget_tree(
+        self, widget: Optional[Widget], context_map: Optional[Dict] = None
+    ) -> Optional[Widget]:
         """
         The "Widget Tree Builder" - converts your nested widgets into a complete tree structure.
         
@@ -924,24 +928,43 @@ class Framework:
             # 1. Build the child widget from the StatelessWidget.
             built_child = widget.build()
             # 2. Recursively process the built child to build its own subtree.
-            processed_child = self._build_widget_tree(built_child)
+            processed_child = self._build_widget_tree(built_child, context_map)
             # 3. CRITICAL: The StatelessWidget's children list becomes the processed child.
             #    This keeps the StatelessWidget in the tree as the parent.
             widget._children = [processed_child] if processed_child else []
             return widget # Return the original StatelessWidget
         # --- END OF FIX ---
 
-        # If it's a StatefulWidget, we need to build its child and replace it in the tree.
         if isinstance(widget, StatefulWidget):
             state = widget.get_state()
+
+            # Attempt to rescue state from context_map if no state exists yet
             if not state:
-                return None  # Or return an error widget
+                if context_map:
+                    widget_key = widget.get_unique_id()
+                    old_node = context_map.get(widget_key)
+                    if old_node:
+                        old_widget = old_node.get("widget_instance")
+                        if old_widget and type(old_widget) == type(widget):
+                            old_state = old_widget.get_state()
+                            if old_state:
+                                widget._state = old_state
+                                old_state._set_widget(widget)
+                                old_state.didUpdateWidget(old_widget, widget)
+                                state = old_state
+
+            # If still no state (first render), create it fresh
+            if not state:
+                state = widget.createState()
+                widget._state = state
+                state._set_widget(widget)
+                state.initState()
 
             # Build the child widget from the state.
             built_child = state.build()
 
             # Recursively process the built child to build its own subtree.
-            processed_child = self._build_widget_tree(built_child)
+            processed_child = self._build_widget_tree(built_child, context_map)
 
             # CRITICAL: The StatefulWidget's children list becomes the *single* processed child.
             # This keeps the StatefulWidget as the parent node in the tree.
@@ -956,7 +979,7 @@ class Framework:
                 new_children = []
                 for child in widget.get_children():
                     # Recursively build each child.
-                    built_child = self._build_widget_tree(child)
+                    built_child = self._build_widget_tree(child, context_map)
                     if built_child:
                         new_children.append(built_child)
                 # Replace the old children list with the newly built one.

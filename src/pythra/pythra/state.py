@@ -86,9 +86,7 @@ class StatefulWidget(Widget):
         super().__init__(key=key) # Pass key to base Widget
         # Framework reference for the *instance*
         # self.framework: Optional['Framework'] = self._framework_ref() if self._framework_ref else None
-        self._state = self.createState() # Create the associated State object
-        self._state._set_widget(self) # Link State back to this widget instance
-        self._state.initState() # <-- CALL THE NEW LIFECYCLE HOOK
+        self._state = None  # Set to None, created by the framework
 
     def createState(self) -> 'State': # Hint uses forward reference 'State'
         """Create the mutable state for this widget."""
@@ -218,8 +216,10 @@ class State:
         # Get framework reference *from the widget instance*
         self.framework = getattr(widget, 'framework', None)
         if not self.framework:
-             # This check is now more robust
-             print(f"Warning: Framework not found on widget {widget} during State linking.")
+            # This check is now more robust
+            print(
+                f"Warning: Framework not found on widget {widget} during State linking."
+            )
 
     def initState(self):
         """
@@ -257,7 +257,7 @@ class State:
     def widget(self) -> Optional['StatefulWidget']: # Hint uses forward reference
         """Safely retrieves the associated StatefulWidget instance."""
         return self._widget_ref() if self._widget_ref else None
-    
+
     def get_widget(self) -> Optional['StatefulWidget']: # Hint uses forward reference
         """Safely retrieves the associated StatefulWidget instance. for internal framwork use only"""
         return self._widget_ref() if self._widget_ref else None
@@ -284,27 +284,36 @@ class State:
         else:
             print(f"❌ PyThra State | setState failed for {self.__class__.__name__}: Framework not available")
 
-
     # --- Drawer/Snackbar/etc. Methods ---
     # These remain largely the same, relying on self.framework being set
     # Ensure snackbar uses _id from base.Widget if needed
 
     def openDrawer(self):
-         # ... (implementation as before, check self.framework) ...
-         if self.framework and self.framework.root_widget and hasattr(self.framework.root_widget, 'drawer') and self.framework.root_widget.drawer:
-            #print("Requesting JS toggle for left drawer")
+        # ... (implementation as before, check self.framework) ...
+        if (
+            self.framework
+            and self.framework.root_widget
+            and hasattr(self.framework.root_widget, "drawer")
+            and self.framework.root_widget.drawer
+        ):
+            # print("Requesting JS toggle for left drawer")
             # Ask framework to execute the JS function
             self.framework.trigger_drawer_toggle('left')
-         else:
+        else:
             print("Cannot open drawer: Framework or root drawer not found.")
 
     def closeDrawer(self):
-         # ... (implementation as before, check self.framework) ...
-         if self.framework and self.framework.root_widget and hasattr(self.framework.root_widget, 'drawer') and self.framework.root_widget.drawer:
-            #print("Requesting JS toggle for left drawer")
+        # ... (implementation as before, check self.framework) ...
+        if (
+            self.framework
+            and self.framework.root_widget
+            and hasattr(self.framework.root_widget, "drawer")
+            and self.framework.root_widget.drawer
+        ):
+            # print("Requesting JS toggle for left drawer")
             # Ask framework to execute the JS function
             self.framework.trigger_drawer_toggle('right')
-         else:
+        else:
             print("Cannot close drawer: Framework or root drawer not found.")
 
     # ... other direct manipulation methods ...
@@ -357,24 +366,32 @@ class State:
         # self.setState() # Only if dismiss changes app state that build() uses
 
     def openSnackBar(self):
-         # ... (implementation using QTimer as before) ...
-         # Make sure to get snack_bar_id from snack_bar_widget._id
-         if not self.framework or not self.framework.root_widget or not hasattr(self.framework.root_widget, 'snackBar'):
-             print("Snackbar widget or framework not available.")
-             return
-         # ... rest of QTimer logic ...
-         snack_bar_widget = self.framework.root_widget.snackBar
-         if not snack_bar_widget: return
-         snack_bar_id = getattr(snack_bar_widget, '_id', None) # Access _id from base Widget
-         if not snack_bar_id:
-              print("Error: Snackbar widget ID (_id) is missing.")
-              return
-         # ... schedule QTimer using snack_bar_id ...
-         snack_bar_widget.toggle(True) # Assuming this triggers JS show
-         duration_sec = getattr(snack_bar_widget, 'duration', 3)
-         duration_ms = int(duration_sec * 1000)
-         QTimer.singleShot(duration_ms, lambda: self._schedule_snackbar_hide(snack_bar_id))
-
+        # ... (implementation using QTimer as before) ...
+        # Make sure to get snack_bar_id from snack_bar_widget._id
+        if (
+            not self.framework
+            or not self.framework.root_widget
+            or not hasattr(self.framework.root_widget, "snackBar")
+        ):
+            print("Snackbar widget or framework not available.")
+            return
+        # ... rest of QTimer logic ...
+        snack_bar_widget = self.framework.root_widget.snackBar
+        if not snack_bar_widget:
+            return
+        snack_bar_id = getattr(
+            snack_bar_widget, "_id", None
+        )  # Access _id from base Widget
+        if not snack_bar_id:
+            print("Error: Snackbar widget ID (_id) is missing.")
+            return
+        # ... schedule QTimer using snack_bar_id ...
+        snack_bar_widget.toggle(True)  # Assuming this triggers JS show
+        duration_sec = getattr(snack_bar_widget, "duration", 3)
+        duration_ms = int(duration_sec * 1000)
+        QTimer.singleShot(
+            duration_ms, lambda: self._schedule_snackbar_hide(snack_bar_id)
+        )
 
     def _schedule_snackbar_hide(self, snack_bar_id_to_hide):
         # ... (implementation as before, using snack_bar_id_to_hide) ...
@@ -394,9 +411,9 @@ class State:
         if self.framework and self.framework.root_widget and hasattr(self.framework.root_widget, 'snackBar'):
             snack_bar_widget = self.framework.root_widget.snackBar
             if snack_bar_widget:
-                 snack_bar_id = getattr(snack_bar_widget, '_id', None)
-                 if snack_bar_id:
-                      self.framework.hide_snack_bar(snack_bar_id)
-                      if hasattr(snack_bar_widget, 'toggle'):
-                           snack_bar_widget.toggle(False)
-                 print("Snackbar closed directly.")
+                snack_bar_id = getattr(snack_bar_widget, "_id", None)
+                if snack_bar_id:
+                    self.framework.hide_snack_bar(snack_bar_id)
+                    if hasattr(snack_bar_widget, "toggle"):
+                        snack_bar_widget.toggle(False)
+                print("Snackbar closed directly.")

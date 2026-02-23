@@ -363,14 +363,7 @@ class Reconciler:
 
         widget_type_name = type(new_widget).__name__
 
-        # --- THIS IS THE NEW LIFECYCLE HOOK ---
-        if widget_type_name == "StatefulWidget" and prop_changes:
-            old_widget_instance = old_data.get("widget_instance")
-            state = new_widget.get_state()
-            if state and old_widget_instance:
-                # Call the lifecycle method, passing the old and new widget configs.
-                state.didUpdateWidget(old_widget_instance, new_widget)
-        # --- END OF NEW LIFECYCLE HOOK ---
+        # Removed duplicate didUpdateWidget call since core.py handles it now.
 
         # ONLY generate an UPDATE patch for renderable widgets.
         if widget_type_name not in ["StatefulWidget", "StatelessWidget"]:
