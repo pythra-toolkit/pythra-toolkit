@@ -1210,7 +1210,7 @@ class SnackBar(Widget):
             print(f"Error generating CSS for SnackBar {css_class} with key {style_key}: {e}")
             return f"/* Error generating rule for .{css_class} */"
 
-    # Removed: __new__, to_html(), get_id(), toggle()
+
 
 
 # =============================================================================
@@ -3059,7 +3059,7 @@ class Slider(Widget):
         print("thumbBorderRadius: ", self.thumbBorderRadius)
 
         # --- Callback Management (no change) ---
-        self.on_drag_update_name = f"slider_update_{id(self.controller)}"
+        self.on_drag_update_name = f"slider_update_{self.key.value}"
         # Api.instance().register_callback(self.on_drag_update_name, self._handle_drag_update)
 
         # --- CSS Style Management ---
@@ -3598,7 +3598,7 @@ class Switch(Widget):
         super().__init__(key=key)
 
         if not isinstance(key, Key):
-             raise TypeError("Switch requires a unique Key.")
+            raise TypeError("Switch requires a unique Key.")
         if onChanged is None:
             raise ValueError("Switch requires an onChanged callback.")
 
@@ -3642,7 +3642,7 @@ class Switch(Widget):
         return {
             "css_class": self.css_class,
             "onPressedName": self.onPressedName,
-            "onPressed": self.onPressed,
+            "onPressed": self.onChanged,
         }
 
     def get_required_css_classes(self) -> Set[str]:
@@ -4032,7 +4032,7 @@ class Dropdown(Widget):
         self.itemPadding = self.theme.itemPadding
 
         # --- Callback Management ---
-        self.on_changed_name = f"dropdown_change_{id(self.controller)}"
+        self.on_changed_name = f"dropdown_change_{self.key.value}"
         # Note: We pass the user's `onChanged` function directly. The JS engine
         # will send the new value, and the framework will call this function.
         
