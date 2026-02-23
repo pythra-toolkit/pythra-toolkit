@@ -4997,10 +4997,14 @@ class ExpandableState(State):
     def __init__(self):
         super().__init__()
         self.is_expanded = False
+        self.onToggle = None
 
-    def on_init(self):
+    def initState(self):
         # Set the initial state based on the widget's property
-        self.is_expanded = self.widget.initiallyExpanded
+
+        self.is_expanded = getattr(self.widget, "initiallyExpanded", None)
+        self.onToggle = getattr(self.widget, "onToggle", None)
+        print(f"Initialized is_expanded: {self.is_expanded}")
 
     def toggle(self, *args, **kwargs):
         self.is_expanded = not self.is_expanded
@@ -5008,6 +5012,7 @@ class ExpandableState(State):
         self.setState()
 
     def build(self) -> Widget:
+        
         # Lazy import to avoid circular dependencies with widgets_more
         from .widgets import Container, Column, Row, Expanded
 
@@ -5099,7 +5104,7 @@ class ExpandableState(State):
         # The header
         header_container = GestureDetector(
             key=Key(f"{self.widget.key.value}_detector"),
-            onTap=self.toggle,
+            onTap=self.onToggle or self.toggle,
             child=Container(
                 key=Key(f"{self.widget.key.value}_header"),
                 child=header_content,
@@ -5146,17 +5151,20 @@ class Expandable(StatefulWidget):
         self,
         header: Widget,
         child: Widget,
-        initiallyExpanded: bool = True,
+        initiallyExpanded: bool = False,
         verticalDirection: str = VerticalDirection.DOWN,
         theme: Optional['ExpandableTheme'] = None,
+        onToggle: Optional[Callable[[bool], None]] = None,
         key: Optional[Key] = None,
     ):
-        super().__init__(key=key)
+        
         self.header = header
         self.child = child
         self.initiallyExpanded = initiallyExpanded
         self.verticalDirection = verticalDirection
+        self.onToggle = onToggle
         self.theme = theme
+        super().__init__(key=key)
 
     def createState(self) -> State:
         return ExpandableState()
