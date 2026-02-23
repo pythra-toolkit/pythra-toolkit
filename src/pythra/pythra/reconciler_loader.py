@@ -13,12 +13,14 @@ try:
     cython_diff_props = reconciler_cython.cython_diff_props
     cython_diff_node_recursive = reconciler_cython.cython_diff_node_recursive
     cython_diff_children_recursive = reconciler_cython.cython_diff_children_recursive
+    CythonPatch = reconciler_cython.Patch
 except ImportError:
     print("[DEV] cython reconciler not found")
     CYTHON_AVAILABLE = False
     cython_diff_props = None
     cython_diff_node_recursive = None
     cython_diff_children_recursive = None
+    CythonPatch = None
 
 
 def get_diff_props_impl():

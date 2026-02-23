@@ -95,10 +95,12 @@ try:
         get_diff_node_impl,
         get_diff_children_impl,
         CYTHON_AVAILABLE,
+        CythonPatch,
     )
 except ImportError:
     # If loader isn't available, provide stubs that return None (Python fallback)
     CYTHON_AVAILABLE = False
+    CythonPatch = None
 
     def get_diff_props_impl():
         return None
@@ -153,10 +155,16 @@ PatchAction = Literal["INSERT", "REMOVE", "UPDATE", "MOVE", "REPLACE"]
 
 
 @dataclass
-class Patch:
+class PatchPythonFallback:
     action: PatchAction
     html_id: str
     data: Dict[str, Any]
+
+
+if CythonPatch is not None:
+    Patch = CythonPatch
+else:
+    Patch = PatchPythonFallback
 
 
 NodeData = Dict[str, Any]

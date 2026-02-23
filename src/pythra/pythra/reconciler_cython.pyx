@@ -12,6 +12,19 @@ This module compiles to C for 5-20x speedup on reconciliation operations.
 
 from typing import Dict, Optional, List, Union, Any
 
+cdef class Patch:
+    cdef public str action
+    cdef public str html_id
+    cdef public dict data
+    
+    def __init__(self, action, html_id, data):
+        self.action = action
+        self.html_id = html_id
+        self.data = data
+        
+    def __repr__(self):
+        return f"Patch(action={self.action}, html_id={self.html_id}, data={self.data})"
+
 
 def cython_diff_props(dict old_props, dict new_props) -> Optional[Dict]:
     """
@@ -87,7 +100,6 @@ def cython_diff_node_recursive(
         reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
         new_props = new_widget.render_props()
         new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)
-        from pythra.reconciler import Patch
         result.patches.append(
             Patch(action="REPLACE", html_id=old_data["html_id"], data={
                 "new_html": new_html_stub,
@@ -110,7 +122,6 @@ def cython_diff_node_recursive(
             patch_data = {"props": new_props, "old_props": old_props_from_map}
             if 'css_class' in prop_changes:
                 patch_data["props"]["old_shared_class"] = old_props_from_map.get("css_class")
-            from pythra.reconciler import Patch
             result.patches.append(Patch(action="UPDATE", html_id=html_id, data=patch_data))
     
     # Update the rendered map
@@ -175,7 +186,6 @@ def cython_diff_children_recursive(
     
     # Handle removals
     cdef set keys_to_remove = old_keys_set - new_keys_set
-    from pythra.reconciler import Patch
     from pythra.state import StatefulWidget
     for key in keys_to_remove:
         old_data = old_key_to_data[key]
