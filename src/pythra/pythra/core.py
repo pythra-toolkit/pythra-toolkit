@@ -803,9 +803,20 @@ class Framework:
             self._loaded_js_engines.update(newly_required_engines)
         # --- END OF NEW LOGIC ---
 
+        # Defensive: also regenerate CSS when any patch modifies css_class,
+        # even if _collect_details wasn't called (e.g. Cython path).
+        css_changed_in_patches = any(
+            p.action in ("UPDATE", "REPLACE", "INSERT")
+            and "css_class" in (p.data.get("props") or {})
+            for p in all_patches
+        )
         new_css_keys = set(all_active_css_details.keys())
         css_update_script = ""
-        if not hasattr(self, '_last_css_keys') or self._last_css_keys != new_css_keys:
+        if (
+            css_changed_in_patches
+            or not hasattr(self, "_last_css_keys")
+            or self._last_css_keys != new_css_keys
+        ):
             print("🎨 PyThra Framework | CSS styles changed - Updating stylesheet...")
             full_css_details = {}
             for data in main_context_map.values():

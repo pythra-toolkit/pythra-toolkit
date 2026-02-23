@@ -94,11 +94,16 @@ def cython_diff_node_recursive(
     cdef str new_type = type(new_widget).__name__
     cdef str old_type = old_data.get("widget_type")
     
+    # Collect CSS details and callbacks (must match Python fallback)
+    new_props = new_widget.render_props()
+    reconciler._collect_details(new_widget, new_props, result)
+    
     # If types differ, it's a replacement (delegate to Python for complex logic)
     if old_type != new_type or new_widget.key != old_data.get("key"):
         # This is complex replacement logic; delegate to Python implementation
-        reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
         new_props = new_widget.render_props()
+        reconciler._collect_details(new_widget, new_props, result)
+        reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
         new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)
         result.patches.append(
             Patch(action="REPLACE", html_id=old_data["html_id"], data={
@@ -111,6 +116,7 @@ def cython_diff_node_recursive(
     # UPDATE path: types match, so check for prop changes
     cdef str html_id = old_data["html_id"]
     new_props = new_widget.render_props()
+    reconciler._collect_details(new_widget, new_props, result)
     old_props_from_map = old_data.get("props", {})
     
     # Use cython_diff_props for fast prop diffing
