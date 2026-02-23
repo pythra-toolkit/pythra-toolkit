@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Virtual Grid Verification</title>
+    <title>Test</title>
     <!-- ADD SIMPLEBAR CSS -->
     <link rel="stylesheet" href="./js/scroll-bar/simplebar.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -44,128 +44,16 @@
     --surface: var(--md-sys-color-surface);
 }</style>
 
-                <style id="dynamic-styles">.shared-scaffold-0 { 
-                display: grid;
-                grid-template-rows: auto 1fr auto; /* AppBar, Body (flexible), BottomNav */
-                grid-template-columns: 100%; /* Single column */
-                height: 100vh; /* Fill viewport height */
-                width: 100vw; /* Fill viewport width */
-                overflow: hidden; /* Prevent body scrollbars, body scrolls internally */
-                position: relative; /* Context for drawers, FABs etc. */
-                background-color: var(--md-sys-color-surface);
-                box-sizing: border-box;
-             }
-.shared-scaffold-0 > .scaffold-appbar { grid-row: 1; grid-column: 1; position: relative; z-index: 10; }
-.shared-scaffold-0 > .scaffold-body { grid-row: 2; grid-column: 1; overflow: auto; position: relative; z-index: 1; }
-.shared-scaffold-0:not(.extendBody) > .scaffold-body:not(.extendBodyBehindAppBar) { padding-top: var(--appbar-height, 56px); padding-bottom: var(--bottomnav-height, 80px); }
-.shared-scaffold-0.extendBodyBehindAppBar > .scaffold-body { padding-top: 0; }
-.shared-scaffold-0.extendBody > .scaffold-body { padding-bottom: 0; }
-.shared-scaffold-0 > .scaffold-bottomnav { grid-row: 3; grid-column: 1; position: relative; z-index: 10; }
-.shared-scaffold-0 > .scaffold-drawer-left { 
-                position: fixed; /* Fixed relative to viewport */
-                top: 0;
-                bottom: 0;
-                width: 300px; /* Default width, Drawer widget can override */
-                max-width: 80%;
-                background-color: surfaceContainerHigh; /* M3 Surface Container High */
-                z-index: 1000; /* Above app content, below scrim */
-                transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); /* M3 Standard Easing */
-                box-shadow: 0 8px 10px -5px rgba(0,0,0,0.2), /* M3 Elevation */
-                            0 16px 24px 2px rgba(0,0,0,0.14),
-                            0 6px 30px 5px rgba(0,0,0,0.12);
-                overflow-y: auto; /* Allow drawer content to scroll */
-             left: 0; transform: translateX(-105%); }
-.shared-scaffold-0 > .scaffold-drawer-left.open { transform: translateX(0); }
-.shared-scaffold-0 > .scaffold-drawer-right { 
-                position: fixed; /* Fixed relative to viewport */
-                top: 0;
-                bottom: 0;
-                width: 300px; /* Default width, Drawer widget can override */
-                max-width: 80%;
-                background-color: surfaceContainerHigh; /* M3 Surface Container High */
-                z-index: 1000; /* Above app content, below scrim */
-                transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); /* M3 Standard Easing */
-                box-shadow: 0 8px 10px -5px rgba(0,0,0,0.2), /* M3 Elevation */
-                            0 16px 24px 2px rgba(0,0,0,0.14),
-                            0 6px 30px 5px rgba(0,0,0,0.12);
-                overflow-y: auto; /* Allow drawer content to scroll */
-             right: 0; transform: translateX(105%); }
-.shared-scaffold-0 > .scaffold-drawer-right.open { transform: translateX(0); }
-.shared-scaffold-0 > .scaffold-scrim { 
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0, 0, 0, 0.4);
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.3s ease-in-out, visibility 0.3s;
-                z-index: 900; /* Below drawer, above content */
-             }
-.shared-scaffold-0 > .scaffold-scrim.active { opacity: 1; visibility: visible; }
-.shared-column-0 { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; height: 100%; direction: ltr; }
-
-.shared-container-0 { box-sizing: border-box; height: 50px; }
+                <style id="dynamic-styles">.shared-column-0 { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; height: 100%; direction: ltr; }
 
             .shared-text-0 {
                 margin: 0; /* Reset default paragraph margin */
                 padding: 0;
-                font-size: 24px; font-weight: bold;
                 
                 
+                white-space: pre-wrap;
             }
-            
-
-                /* Style the scrollbar track (the groove it runs in) */
-                .simplebar-themed-0 .simplebar-track.simplebar-vertical {
-                    background: #f1f1f1;
-                    width: 12px;
-                    border-radius: 8px;
-                    margin: 0;
-                }
-                .simplebar-themed-0 .simplebar-track.simplebar-horizontal {
-                    background: #f1f1f1;
-                    height: 12px;
-                    border-radius: 8px;
-                }
-
-                /* Style the draggable scrollbar thumb */
-                .simplebar-themed-0 .simplebar-scrollbar::before {
-                    background-color: #888;
-                    border-radius: 6px;
-                    /* Use a transparent border to create padding inside the thumb */
-                    border: 3px solid transparent;
-                    background-clip: content-box;
-                    opacity: 1; /* Override auto-hide opacity if needed */
-                }
-
-                .simplebar-themed-0 .simplebar-scrollbar::after {
-                    background-color: #888;
-                    border-radius: 6px;
-                    /* Use a transparent border to create padding inside the thumb */
-                    border: 3px solid transparent;
-                    background-clip: content-box;
-                    opacity: 1; /* Override auto-hide opacity if needed */
-                }
-
-                /* Style the thumb on hover */
-                .simplebar-themed-0 .simplebar-track:hover .simplebar-scrollbar::before {
-                    background-color: #555;
-                }
-                .simplebar-themed-0 {
-                    /* height: -webkit-fill-available; */
-                    height: inherit;
-                }
-                .simplebar-themed-0  .simplebar-track.simplebar-horizontal {
-                    display: none;
-                }
-                .simplebar-scrollbar {
-                    display: none;
-                }
-            
-
-.shared-container-3 { box-sizing: border-box; display: flex; justify-content: center; align-items: center; }</style>
+            </style>
 
                 
         <script src="qwebchannel.js"></script>
@@ -216,7 +104,7 @@
 
             </head>
 <body>
-    <div id="root-container"><div id="fw_id_61" class="shared-scaffold-0"><div id="fw_id_62" class="shared-column-0"><div id="fw_id_63" class="shared-container-0"><p id="fw_id_64" class="shared-text-0" style="font-size: 24; font-weight: bold">Virtual Grid View Demo</p></div><div id="fw_id_65" class="" style="flex-grow: 1; flex-shrink: 1; flex-basis: 0%; min-width: 100%; min-height: 0; display: flex; flex-direction: column"><div id="fw_id_67" class="simplebar-themed-0"><div id="fw_id_68" class="shared-container-3"></div></div></div></div></div></div>
+    <div id="root-container"></div>
     <div id="overlay-container"></div>
 
     <!-- ADD SIMPLEBAR JS -->
@@ -224,44 +112,5 @@
     <script src="./js/pythra_bridge.js"></script>
     <!-- ADD THE NEW SLIDER JS ENGINE -->
     
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                window._pythra_instances = window._pythra_instances || {};
-                try {
-                    // First, DEFINE all our JS classes and functions
-                    
-                    
-                    // Then, RUN the initialization commands that were generated
-                    
-                function waitForAndInit(className, initCallback) {
-                            const interval = setInterval(() => {
-                                if (typeof window[className] === 'function') {
-                                    clearInterval(interval); 
-                                    initCallback(); 
-                                }
-                            }, 100); 
-                        }
-                        waitForAndInit('PythraVirtualGrid', () => {
-                            window._pythra_instances['my_virtual_grid_vgrid'] = new PythraVirtualGrid(
-                                'fw_id_67', 
-                                {"type":"grid","itemCount":1000,"crossAxisCount":3,"childAspectRatio":1.0,"mainAxisSpacing":10,"crossAxisSpacing":10,"itemBuilderName":"vgrid_item_builder_my_virtual_grid","initialItems":{"0":{"html":"<div id=\"fw_id_1\" class=\"shared-container-1\"><div id=\"fw_id_2\" class=\"shared-center-0\"><p id=\"fw_id_3\" class=\"shared-text-1\" style=\"color: white\">Item 0</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"1":{"html":"<div id=\"fw_id_4\" class=\"shared-container-2\"><div id=\"fw_id_5\" class=\"shared-center-0\"><p id=\"fw_id_6\" class=\"shared-text-1\" style=\"color: white\">Item 1</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"2":{"html":"<div id=\"fw_id_7\" class=\"shared-container-1\"><div id=\"fw_id_8\" class=\"shared-center-0\"><p id=\"fw_id_9\" class=\"shared-text-1\" style=\"color: white\">Item 2</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"3":{"html":"<div id=\"fw_id_10\" class=\"shared-container-2\"><div id=\"fw_id_11\" class=\"shared-center-0\"><p id=\"fw_id_12\" class=\"shared-text-1\" style=\"color: white\">Item 3</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"4":{"html":"<div id=\"fw_id_13\" class=\"shared-container-1\"><div id=\"fw_id_14\" class=\"shared-center-0\"><p id=\"fw_id_15\" class=\"shared-text-1\" style=\"color: white\">Item 4</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"5":{"html":"<div id=\"fw_id_16\" class=\"shared-container-2\"><div id=\"fw_id_17\" class=\"shared-center-0\"><p id=\"fw_id_18\" class=\"shared-text-1\" style=\"color: white\">Item 5</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"6":{"html":"<div id=\"fw_id_19\" class=\"shared-container-1\"><div id=\"fw_id_20\" class=\"shared-center-0\"><p id=\"fw_id_21\" class=\"shared-text-1\" style=\"color: white\">Item 6</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"7":{"html":"<div id=\"fw_id_22\" class=\"shared-container-2\"><div id=\"fw_id_23\" class=\"shared-center-0\"><p id=\"fw_id_24\" class=\"shared-text-1\" style=\"color: white\">Item 7</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"8":{"html":"<div id=\"fw_id_25\" class=\"shared-container-1\"><div id=\"fw_id_26\" class=\"shared-center-0\"><p id=\"fw_id_27\" class=\"shared-text-1\" style=\"color: white\">Item 8</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"9":{"html":"<div id=\"fw_id_28\" class=\"shared-container-2\"><div id=\"fw_id_29\" class=\"shared-center-0\"><p id=\"fw_id_30\" class=\"shared-text-1\" style=\"color: white\">Item 9</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"10":{"html":"<div id=\"fw_id_31\" class=\"shared-container-1\"><div id=\"fw_id_32\" class=\"shared-center-0\"><p id=\"fw_id_33\" class=\"shared-text-1\" style=\"color: white\">Item 10</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"11":{"html":"<div id=\"fw_id_34\" class=\"shared-container-2\"><div id=\"fw_id_35\" class=\"shared-center-0\"><p id=\"fw_id_36\" class=\"shared-text-1\" style=\"color: white\">Item 11</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"12":{"html":"<div id=\"fw_id_37\" class=\"shared-container-1\"><div id=\"fw_id_38\" class=\"shared-center-0\"><p id=\"fw_id_39\" class=\"shared-text-1\" style=\"color: white\">Item 12</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"13":{"html":"<div id=\"fw_id_40\" class=\"shared-container-2\"><div id=\"fw_id_41\" class=\"shared-center-0\"><p id=\"fw_id_42\" class=\"shared-text-1\" style=\"color: white\">Item 13</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"14":{"html":"<div id=\"fw_id_43\" class=\"shared-container-1\"><div id=\"fw_id_44\" class=\"shared-center-0\"><p id=\"fw_id_45\" class=\"shared-text-1\" style=\"color: white\">Item 14</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"15":{"html":"<div id=\"fw_id_46\" class=\"shared-container-2\"><div id=\"fw_id_47\" class=\"shared-center-0\"><p id=\"fw_id_48\" class=\"shared-text-1\" style=\"color: white\">Item 15</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"16":{"html":"<div id=\"fw_id_49\" class=\"shared-container-1\"><div id=\"fw_id_50\" class=\"shared-center-0\"><p id=\"fw_id_51\" class=\"shared-text-1\" style=\"color: white\">Item 16</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"17":{"html":"<div id=\"fw_id_52\" class=\"shared-container-2\"><div id=\"fw_id_53\" class=\"shared-center-0\"><p id=\"fw_id_54\" class=\"shared-text-1\" style=\"color: white\">Item 17</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"18":{"html":"<div id=\"fw_id_55\" class=\"shared-container-1\"><div id=\"fw_id_56\" class=\"shared-center-0\"><p id=\"fw_id_57\" class=\"shared-text-1\" style=\"color: white\">Item 18</p></div></div>","css":"\n.shared-container-1 { box-sizing: border-box; background: blue; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]},"19":{"html":"<div id=\"fw_id_58\" class=\"shared-container-2\"><div id=\"fw_id_59\" class=\"shared-center-0\"><p id=\"fw_id_60\" class=\"shared-text-1\" style=\"color: white\">Item 19</p></div></div>","css":"\n.shared-container-2 { box-sizing: border-box; background: red; border-radius: 8px; }\n.shared-center-0 { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;  }\n\n            .shared-text-1 {\n                margin: 0; /* Reset default paragraph margin */\n                padding: 0;\n                color: white;\n                \n                \n            }\n            ","callback_names":[]}},"simplebarOptions":{"autoHide":true}}
-                                );
-                        });
-                
-                    const el_fw_id_67 = document.getElementById('fw_id_67');
-                    if (el_fw_id_67 && !el_fw_id_67.simplebar) { // Check if not already initialized
-                        new SimpleBar(el_fw_id_67, {} );
-                        console.log('SimpleBar initialized for #fw_id_67');
-                        //console.log(!el_fw_id_67.simplebar);
-                    };
-                    
-                
-
-                } catch (e) {
-                    console.error("Error running Pythra initializers:", e);
-                }
-            });
-        </script>
-        
 </body>
 </html>

@@ -1,0 +1,11 @@
+fix: Preserve root StatefulWidget in context map to enable proper UI updates
+
+Architectural Changes:
+- Removed the root-skipping logic in `_perform_initial_render` inside `pythra-toolkit/src/pythra/pythra/core.py`.
+- Previously, if the absolute root widget was a `StatefulWidget`, the framework explicitly bypassed it and registered only its `children[0]` into `main_context_map` (used for Reconciler DOM tracking).
+- Because the root `StatefulWidget` was missing from the DOM tracking map from the beginning, any `setState()` calls triggered internally by the root widget failed to find a matching existing DOM node. This caused the framework to falsely compute it as a brand-new subtree, resulting in invalid `INSERT` patches instead of precise `UPDATE` patches.
+
+How to comply with this architectural change:
+1. Root Widget Freedom: Custom `StatefulWidget` classes (like `HomePage`) no longer need to be wrapped inside `Main()` or other structural wrappers just to ensure their UI updates work. You can safely assign any widget directly via `app.set_root(CustomRootWidget())`.
+2. Reconciler Patching: The framework now properly records the topmost `StatefulWidget` into `main_context_map` and maps it directly to the root DOM container.
+3. Accurate state updates: Any `setState()` calls on the absolute root widget will now successfully match its own assigned `html_id` in the backend, allowing Pythra to generate minimal `UPDATE` patches for dynamic UI changes.
