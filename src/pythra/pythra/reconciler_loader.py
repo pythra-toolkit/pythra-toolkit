@@ -8,6 +8,7 @@ and provides graceful fallback to pure Python if the extension is unavailable.
 # Try to import Cython-accelerated functions
 try:
     from . import reconciler_cython
+    from . import key
     print("[DEV] cython reconciler available")
     CYTHON_AVAILABLE = True
     cython_diff_props = reconciler_cython.cython_diff_props
@@ -22,6 +23,15 @@ except ImportError:
     cython_diff_children_recursive = None
     CythonPatch = None
 
+try:
+    from . import key
+    print("[DEV] cython key available")
+    CYTHON_AVAILABLE = True
+    Key = key.Key
+
+except ImportError:
+    print("[DEV] cython key not found")
+    CYTHON_AVAILABLE = False
 
 def get_diff_props_impl():
     """Returns the optimized _diff_props implementation."""

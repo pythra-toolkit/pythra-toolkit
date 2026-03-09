@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pythra"            
-version = "0.1.21"
+version = "0.1.22"
 description = "PyThra — a Flutter-like GUI framework in Python. a declarative Python UI framework for desktop apps with a webview renderer."
 readme = "README.md"
 license = { text = "MIT" }
@@ -24,6 +24,7 @@ dependencies = [
     "semver>=3.0.0",
     "requests>=2.31.0",
     "Cython>=0.29.30",
+    "Pillow>=10.0.0",
     "dbus-python; sys_platform == 'linux'"
 ]
 classifiers = [
@@ -49,6 +50,10 @@ where = ["src/pythra"]
   "project_template/assets/*",
   "project_template/assets/icons/*",
   "project_template/assets/fonts/*",
+  "project_template/windows/*",
+  "project_template/macos/*",
+  "project_template/linux/*",
+  "project_template/linux/hicolor/**/*",
   "render/*",
   "assets/*",
   "*.html",
@@ -58,8 +63,12 @@ where = ["src/pythra"]
   "*.yml",
   "*.ttf",
   "*.ico",
+  "*.icns",
+  "*.png",
   "*.json",
   "*.in",
-  "*.pyd"
+  "*.pyd",
+  "*.desktop",
+  "*.plist"
 ]
 

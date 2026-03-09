@@ -155,6 +155,7 @@ class Container(Widget):
         visible: bool = True,
         gradient: Optional[GradientTheme] = None,
         zAxisIndex: int = 0,
+        cssPosition: str = None,
         cssClass: Optional[Union[str, List[str]]] = None,
         style: Optional[Dict[str, str]] = None,
         js_init={},
@@ -176,6 +177,7 @@ class Container(Widget):
         self.visible = visible
         self.gradient = gradient
         self.zAxisIndex = zAxisIndex
+        self.cssPosition = cssPosition
         self.style = style
         self.js_init = js_init
         self.pointerEvents = pointerEvents
@@ -202,6 +204,7 @@ class Container(Widget):
                 self.clipBehavior,
                 self.gradient,
                 self.zAxisIndex,
+                self.cssPosition,
                 tuple(sorted(self.cssClass)),
                 tuple(sorted(self.style.items())) if self.style else None,
                 self.pointerEvents,  # Add to style key
@@ -258,6 +261,7 @@ class Container(Widget):
                 clipBehavior,
                 gradient_tuple,
                 z_axis_index,
+                css_position,
                 css_classes_tuple,
                 style_dict_tuple,
                 pointerEvents,
@@ -375,6 +379,9 @@ class Container(Widget):
 
             if z_axis_index:
                 styles.append(f"z-index: {z_axis_index};")
+
+            if css_position:
+                styles.append(f"position: {css_position};")
 
             if pointerEvents:
                 styles.append(f"pointer-events: {pointerEvents};")
@@ -1538,6 +1545,7 @@ class IconButton(Widget):
         tooltip: Optional[str] = None,
         enabled: bool = True,
         cssClass: Optional[str] = "",
+        zAxisIndex: int = 1000,
     ):
 
         super().__init__(key=key, children=[icon])
@@ -1557,6 +1565,7 @@ class IconButton(Widget):
         self.tooltip = tooltip
         self.enabled = enabled
         self.cssClass = cssClass
+        self.zAxisIndex = zAxisIndex
 
         # --- CSS Class Management ---
         # 1. Create a unique, hashable key from the ButtonStyle and iconSize.
@@ -1565,6 +1574,7 @@ class IconButton(Widget):
                 self.style
             ),  # Converts the ButtonStyle object to a hashable tuple
             self.iconSize,
+            self.zAxisIndex,
         )
 
         # 2. Check the cache to reuse or create a new CSS class.
@@ -1602,7 +1612,7 @@ class IconButton(Widget):
         """Static method callable by the Reconciler to generate the CSS rule."""
         try:
             # 1. Reliably unpack the style_key tuple.
-            style_tuple, icon_size = style_key
+            style_tuple, icon_size, z_index_size = style_key
 
             # 2. Reconstruct the ButtonStyle object from its tuple representation.
             # This relies on ButtonStyle having a to_tuple() method and an __init__
@@ -1648,6 +1658,7 @@ class IconButton(Widget):
                 "transition": "background-color 0.15s linear",
                 "-webkit-appearance": "none",
                 "appearance": "none",
+                "z-index": z_index_size,
             }
 
             # Calculate total size based on icon and padding
@@ -6738,8 +6749,9 @@ class TextField(Widget):
                 errorBorder=BorderSide(*style_key[10]) if style_key[10] else None,
                 contentPadding=EdgeInsets(*style_key[11]) if style_key[11] else None,
                 labelStyle=TextStyle(*style_key[12]) if style_key[12] else None,
-                hintStyle=TextStyle(*style_key[13]) if style_key[13] else None,
-                filled=style_key[14],
+                inputStyle=TextStyle(*style_key[13]) if style_key[13] else None,
+                hintStyle=TextStyle(*style_key[14]) if style_key[14] else None,
+                filled=style_key[15],
             )
         except (IndexError, TypeError) as e:
             print(
@@ -6748,10 +6760,12 @@ class TextField(Widget):
             decoration = InputDecoration()
 
         # --- 2. Extract all style values from the decoration object ---
+        label_ = decoration.label
         fill_color = decoration.fillColor
         focus_color = decoration.focusColor
         label_color = decoration.labelColor
         error_color = decoration.errorColor
+        filled = decoration.filled
 
         # Custom Metrics via Style Objects
         content_padding_css = (
@@ -6773,12 +6787,54 @@ class TextField(Widget):
             and decoration.labelStyle.fontFamily
             else ""
         )
+        label_font_color = (
+            decoration.labelStyle.color
+            if hasattr(decoration, "labelStyle")
+            and decoration.labelStyle
+            and decoration.labelStyle.color
+            else ""
+        )
+        input_font_size = (
+            decoration.inputStyle.fontSize
+            if hasattr(decoration, "inputStyle")
+            and decoration.inputStyle
+            and decoration.inputStyle.fontSize
+            else 16
+        )
+        input_font_family = (
+            f"font-family: {decoration.inputStyle.fontFamily};"
+            if hasattr(decoration, "inputStyle")
+            and decoration.inputStyle
+            and decoration.inputStyle.fontFamily
+            else ""
+        )
+        input_font_color = (
+            decoration.inputStyle.color
+            if hasattr(decoration, "inputStyle")
+            and decoration.inputStyle
+            and decoration.inputStyle.color
+            else ""
+        )
         hint_font_size = (
             decoration.hintStyle.fontSize
             if hasattr(decoration, "hintStyle")
             and decoration.hintStyle
             and decoration.hintStyle.fontSize
             else 16
+        )
+        hint_font_family = (
+            f"font-family: {decoration.hintStyle.fontFamily};"
+            if hasattr(decoration, "hintStyle")
+            and decoration.hintStyle
+            and decoration.hintStyle.fontFamily
+            else ""
+        )
+        hint_font_color = (
+            decoration.hintStyle.color
+            if hasattr(decoration, "hintStyle")
+            and decoration.hintStyle
+            and decoration.hintStyle.color
+            else ""
         )
 
         # Normal border
@@ -6837,6 +6893,23 @@ class TextField(Widget):
             else error_color
         )
 
+        hide_placeholder = (
+            f"""
+        .textfield-root-container.{css_class} .textfield-input::placeholder {{
+            color: transparent; /* hide placeholder when label is resting */
+            transition: color 0.2s;
+        }}
+        """
+            if label_
+            else f"""
+        .textfield-root-container.{css_class} .textfield-input::placeholder {{
+            color: {hint_font_color or Colors.hex("#757575")}; /* show placeholder on focus */
+            font-size: {hint_font_size}px;
+            {hint_font_family}
+        }}
+        """
+        )
+
         # --- 3. Generate CSS rules using the extracted variables ---
         return f"""
         /* === Styles for {css_class} === */
@@ -6850,29 +6923,28 @@ class TextField(Widget):
         .textfield-root-container.{css_class} .textfield-container {{
             position: relative; padding-top: 0px;
             background-color: {fill_color or 'rgba(0, 0, 0, 0.04)'};
-            {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius')} /* Top corners only generally for filled */
+            {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css} /* Top corners only generally for filled */
             cursor: text;
         }}
         .textfield-root-container.{css_class} .textfield-input {{
-            width: 100%; height: 56px; padding: {content_padding_css}; font-size: {label_font_size}px;
-            color: inherit; {label_font_family} background-color: transparent;
-            border-top: none;
-            border-left: none;
-            border-right: none;
-            border-bottom:{border_width}px {border_style} {border_color or '#757575'}; outline: none; box-sizing: border-box;
+            width: 100%; height: 56px; padding: {content_padding_css}; font-size: {input_font_size}px;
+            color: {input_font_color or Colors.onSurface}; {input_font_family} background-color: transparent;
+            border-top: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
+            border-left: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
+            border-right: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
+            border-bottom:{border_width}px {border_style} {border_color or '#757575'}; outline: {'none' if filled else border_color}; box-sizing: border-box;
             transition: border-bottom-color 0.2s, background-color 0.2s;
+            {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css}
         }}
-        .textfield-root-container.{css_class} .textfield-input::placeholder {{
-            color: transparent; /* hide placeholder when label is resting */
-            transition: color 0.2s;
-        }}
+        {hide_placeholder}
         .textfield-root-container.{css_class} .textfield-input:focus::placeholder {{
-            color: {Colors.hex("#757575")}; /* show placeholder on focus */
+            color: {hint_font_color or Colors.hex("#757575")}; /* show placeholder on focus */
             font-size: {hint_font_size}px;
+            {hint_font_family}
         }}
         .textfield-root-container.{css_class} .textfield-label {{
             position: absolute; left: 16px; top: 18px; font-size: {label_font_size}px; {label_font_family}
-            color: {label_color or '#757575'}; pointer-events: none;
+            color: {label_font_color or label_color or '#757575'}; pointer-events: none;
             transform-origin: left top; 
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
         }}
@@ -6880,7 +6952,7 @@ class TextField(Widget):
             display: none; /* using standard borders instead */
         }}
         .textfield-root-container.{css_class}  .textfield-helper-text {{
-            padding: 4px 16px 0 16px; font-size: 12px; color: {label_color};
+            padding: 4px 16px 0 16px; font-size: 12px; color: {label_font_color or label_color};
             min-height: 1.2em; transition: color 0.2s;
         }}
         .textfield-root-container.{css_class} .textfield-helper-text:empty {{
@@ -6889,6 +6961,9 @@ class TextField(Widget):
 
         /* --- FOCUSED & VALUE STATE (Scoped) --- */
         .textfield-root-container.{css_class} .textfield-input:focus {{
+            border-top: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
+            border-left: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
+            border-right: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
             border-bottom: {focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'};
         }}
         .textfield-root-container.{css_class} .textfield-input:focus ~ .textfield-label,

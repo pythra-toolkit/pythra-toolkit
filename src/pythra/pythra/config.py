@@ -29,10 +29,15 @@ import yaml
 # This is like the "factory defaults" - if you don't have a config file,
 # PyThra will use these sensible default values to get you started.
 DEFAULT_CONFIG = {
-    # === WINDOW SETTINGS ===
+    # === APP IDENTITY ===
     'app_name': 'My Pythra App',        # What shows in the window title bar
+    'app_id': 'com.pythra.my-pythra-app',  # Unique app ID (Windows taskbar, Linux .desktop, macOS bundle)
+
+    # === WINDOW SETTINGS ===
     'win_width': 1280,                  # Window width in pixels (1280 = good laptop size)
     'win_height': 720,                  # Window height in pixels (720 = HD ready)
+    'min_win_width': 400,               # Minimum window width in pixels
+    'min_win_height': 300,              # Minimum window height in pixels
     'frameless': False,                 # True = no title bar/borders (fullscreen app look)
     'maximixed': False,                 # True = start maximized (Note: typo kept for compatibility)
     'fixed_size': False,                # True = user can't resize the window

@@ -4,6 +4,7 @@ from .state import StatefulWidget, State
 from .widgets import Container, Key, Text
 from .base import Widget
 from typing import Callable, List, Dict
+import time
 
 class PageRoute:
     # The builder now accepts the navigator state as an argument
@@ -17,6 +18,12 @@ class PageRoute:
         if not self.widget_instance:
             self.widget_instance = self.builder(navigator_state)
         return self.widget_instance
+    
+    def setState(self):
+        if not self.widget_instance:
+            return
+        self.widget_instance.get_state().setState()
+
 
     def preload(self, navigator_state: 'NavigatorState'):
         """Starts building the page in the background."""
@@ -27,12 +34,18 @@ class PageRoute:
         # Trigger background build on the framework
         Framework.instance().build_subtree_async(self.widget_instance)
 
+
 class NavigatorState(State):
+    
     def initState(self):
         self.history: List[PageRoute] = [self.get_widget().initialRoute] # type: ignore
         
+        
     def push(self, route: PageRoute):
         self.history.append(route)
+
+        print("[Navugator push widgetState]: ", route.widget_instance.get_state())
+        route.widget_instance.get_state().syncState()
         self.setState()
 
     def preload(self, route: PageRoute):
@@ -51,6 +64,11 @@ class NavigatorState(State):
         if len(self.history) > 1:
             self.history.pop()
             self.setState()
+            # try:
+            #     self.history[-1].setState()
+            # except:
+            #     print("[Navigator] Failed to set state for active route",)
+            # self.history[-1].setState()
             
     def build(self) -> Widget:
         if not self.history:

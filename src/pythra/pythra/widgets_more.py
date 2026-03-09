@@ -3642,7 +3642,7 @@ class Switch(Widget):
         return {
             "css_class": self.css_class,
             "onPressedName": self.onPressedName,
-            "onPressed": self.onChanged,
+            "onPressed": self.onPressed,
         }
 
     def get_required_css_classes(self) -> Set[str]:

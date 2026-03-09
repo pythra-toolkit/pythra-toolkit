@@ -5,6 +5,9 @@ include PACKAGE_SYSTEM_README.md
 include src/pythra/pythra/*.pyx
 
 # include files anywhere under the pythra package
-recursive-include pythra *.html *.css *.js *.yaml *.ttf *.yml *.ico *.json *.in *.pyd
+recursive-include pythra *.html *.css *.js *.yaml *.ttf *.yml *.ico *.icns *.json *.in *.pyd *.desktop *.plist *.png
 recursive-include pythra/assets *
 recursive-include pythra/plugins *
+recursive-include pythra/project_template/windows *
+recursive-include pythra/project_template/macos *
+recursive-include pythra/project_template/linux *

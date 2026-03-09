@@ -19,13 +19,18 @@ if CYTHON_AVAILABLE:
         Extension(
             "pythra.reconciler_cython",
             ["pythra/reconciler_cython.pyx"],
-            extra_compile_args=['-O3'],  # Optimize for speed
+            extra_compile_args=['-O3'],
+        ),
+        Extension(
+            "pythra.key_cython",
+            ["pythra/key_cython.pyx"],
+            extra_compile_args=['-O3'],
         ),
     ]
 
 setup(
     name='pythra',
-    version='0.1.21',
+    version='0.1.22',
     author='Ahmad Muhammad Bashir (RED X)',
     author_email='ambashir02@gmail.com',
     description='A declarative Python UI framework for desktop apps with a webview renderer.',

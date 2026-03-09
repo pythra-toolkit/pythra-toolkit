@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=${APP_NAME}
+Comment=A PyThra desktop application
+Exec=${APP_ID}
+Icon=appIcon
+Terminal=false
+Categories=Utility;
+StartupWMClass=${APP_ID}

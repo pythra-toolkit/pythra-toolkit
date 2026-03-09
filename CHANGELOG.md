@@ -6,6 +6,78 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.22] - 2026-03-10
+
+Cross-platform icon system, CLI project management commands, widget enhancements, TextField styling overhaul, and Cython Key extension.
+
+### ✨ New Features
+
+* **Cross-Platform Icon System:**
+  * New `pythra generate-icons <source.png>` CLI command — one-step generation of all platform icons from a single PNG.
+  * Creates Windows `.ico` (7 sizes: 16–256px), macOS `.icns` (7 sizes: 16–1024px), and Linux FreeDesktop hicolor PNGs (8 sizes: 16–512px).
+  * Flutter-style platform directories: `windows/`, `macos/`, `linux/` added to project template alongside `assets/`, `render/`, `plugins/`.
+  * `.desktop` and `Info.plist` metadata files generated with project-specific values (not hardcoded placeholders).
+  * New `app_id` field in `config.yaml` (default: `com.pythra.{project-name}`) for Windows `AppUserModelID`, Linux `StartupWMClass`, and macOS `CFBundleIdentifier`.
+
+* **`pythra upgrade` CLI Command:**
+  * Brings existing PyThra projects up to date with the current template version.
+  * **Render sync:** Updates JS engines, CSS, and loaders from the installed template. Skips `index.html`/`styles.css` (user-generated). Only replaces files whose content actually differs.
+  * **Platform icon generation:** Generates `windows/`, `macos/`, `linux/` dirs dynamically with project-specific `app_name` and `app_id` derived from the directory name. Respects user-set config values.
+  * **Config merge:** Adds new config keys (e.g. `app_id`) to `config.yaml` without overwriting existing user values. Derives `app_name` from project directory name (e.g. `new-app` → `New App`).
+  * Supports `--dry-run`, `--force`, `--skip-render`, `--skip-icons`, `--skip-config` flags.
+
+* **`pythra install-linux` CLI Command:**
+  * Installs `.desktop` file to `~/.local/share/applications/` and hicolor icons to `~/.local/share/icons/hicolor/`.
+  * Rewrites `Exec=` to point to the actual executable (`python3 /path/to/lib/main.py` during dev, or `--exec /path/to/binary` for compiled builds).
+  * Renames icon files to `{app_id}.png` for FreeDesktop theme lookup.
+  * Runs `gtk-update-icon-cache` if available.
+
+* **`pythra create-project` Enhanced:**
+  * Now generates platform dirs dynamically with project-specific identity instead of copying hardcoded templates.
+  * Customize `config.yaml` with real `app_name` and `app_id` derived from the project directory name at creation time.
+
+### 🎨 Widget Improvements
+
+* **`Container`:** Added `cssPosition` parameter for explicit CSS `position` control (e.g. `relative`, `absolute`, `fixed`, `sticky`).
+* **`IconButton`:** Added `zAxisIndex` parameter (default: `1000`) for z-index control. Included in style key and CSS generation.
+* **`TextField` / `InputDecoration` Overhaul:**
+  * Added `inputStyle` parameter to `InputDecoration` for controlling the input text's font size, family, and color independently from the label.
+  * Added `hintStyle.fontFamily` and `hintStyle.color` support — previously only `fontSize` was extracted.
+  * Added `labelStyle.color` support — label color now respects `labelStyle.color` with fallback to `labelColor`.
+  * **Filled vs Outlined mode:** Border rendering now respects the `filled` property — `filled=True` only shows bottom border (Material filled style), `filled=False` shows full outline borders on all sides including focus states.
+  * Placeholder visibility: When a `label` is present, placeholder is hidden until focus. When no label, placeholder shows immediately with configured hint styles.
+  * Focus borders now rendered on all sides for outlined (non-filled) text fields.
+
+### 🐛 Bug Fixes
+
+* **`Switch`:** Fixed `onPressed` handler — was incorrectly referencing `self.onChanged` instead of `self.onPressed` in `get_interactivity()`.
+* **`State`:** Removed unused `syncState()` method.
+* **`webwidget.py`:** Fixed `NameError: name 'Path' is not defined` crash in `_setup_platform_icon()`. Added `app is None` guard for CLI-only invocations.
+
+### 🚀 Performance & Architecture
+
+* **`Key_cython` Cython Extension:**
+  * Renamed `key.pyx` → `key_cython.pyx` and `Key` → `Key_cython` class to follow Cython naming convention (matching `reconciler_cython`).
+  * Added to both `pythra-toolkit/setup.py` and `pythra-toolkit/src/pythra/setup.py` for compilation with `-O3` optimization.
+
+* **Linux Wayland Auto-Install (`webwidget.py`):**
+  * `_setup_platform_icon()` now auto-installs `.desktop` file and hicolor icons to `~/.local/share/` on each app startup.
+  * Eliminates the Wayland gear icon — `setWindowIcon()` is ignored by Wayland, so full FreeDesktop integration is required.
+  * Detects compiled binaries via `sys.frozen` and uses the binary path for `Exec=` in the .desktop file.
+
+* **Build Command Enhancements (`pythra build`):**
+  * Auto-detects platform icons if `--icon` not provided (`windows/appIcon.ico` on Windows, `macos/appIcon.icns` on macOS).
+  * macOS builds use `--macos-create-app-bundle` + `--macos-app-icon` for native `.app` bundles.
+  * Platform directories auto-included in the build alongside `assets/`, `render/`, `plugins/`.
+
+### 📦 Packaging & Cleanup
+
+* Added `Pillow>=10.0.0` as a dependency for icon generation.
+* Updated `pyproject.toml` package-data with platform directory patterns (`.icns`, `.desktop`, `.plist`, `.png`).
+* Updated `MANIFEST.in` to include platform directories in source distributions.
+* Removed unused `pythra/cli/` directory (old duplicate of `pythra_cli/`).
+
+---
 ## [0.1.21] - 2026-02-20
 
 Performance updates: Optimized ClipPath generation and Responsive VirtualGridViews

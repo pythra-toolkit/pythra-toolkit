@@ -1,5 +1,3 @@
-- Analyze state and child state and how setState works for each
-- verify if alowing child state to manage its state updates will cause the widget refrence to be lost
-    - Example: the toggle in ExpandableState 
-        - will it cause the expandable refrence to be lost if the parent state triggers a state update i.e setState triggered in HomePageState by another widget. where Expandable is also a sub Widget in HompageState. but manages it own setState via the toggle method in Expandable State
-        - is that the right behaviour of Stateful widgets in flutter. if not what are the descripances.
+- my switch widget only toggles once and then after the first toggle if i toggle it again it disapares it seems like a remove patch is being triggered check the newly implemented patch logic in reconclier.py and reconciler_cython.pyx and give a report on what needs to be done to fix it 
+
+# do not fix it yet just give a report on what needs to be done to fix it 

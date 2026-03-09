@@ -2366,6 +2366,7 @@ class InputDecoration:
         # --- Styling Objects ---
         contentPadding: Optional[EdgeInsets] = None,
         labelStyle: Optional[TextStyle] = None,
+        inputStyle: Optional[TextStyle] = None,
         hintStyle: Optional[TextStyle] = None,
         # --- Colors (CSS string or Color role) ---
         fillColor: Optional[str] = None,
@@ -2390,6 +2391,7 @@ class InputDecoration:
 
         self.contentPadding = contentPadding
         self.labelStyle = labelStyle
+        self.inputStyle = inputStyle
         self.hintStyle = hintStyle
 
         self.filled = filled
@@ -2452,6 +2454,7 @@ class InputDecoration:
             make_hashable(self.errorBorder),
             make_hashable(self.contentPadding),
             make_hashable(self.labelStyle),
+            make_hashable(self.inputStyle),
             make_hashable(self.hintStyle),
             self.filled,
         )

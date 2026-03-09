@@ -12,17 +12,29 @@ except ImportError:
 source_file = "src/pythra/pythra/reconciler_cython.pyx"
 extension_name = "pythra.reconciler_cython"
 
+key_source_file = "src/pythra/pythra/key_cython.pyx"
+key_extension_name = "pythra.key_cython"
+
 ext_modules = []
 
 # Only attempt to compile if file exists and Cython is present
-if CYTHON_AVAILABLE and os.path.exists(source_file):
-    ext_modules = [
-        Extension(
-            name=extension_name,
-            sources=[source_file],
-            extra_compile_args=['-O3'] if os.name != 'nt' else ['/Ox'],
-        ),
-    ]
+if CYTHON_AVAILABLE:
+    if os.path.exists(source_file):
+        ext_modules.append(
+            Extension(
+                name=extension_name,
+                sources=[source_file],
+                extra_compile_args=['-O3'] if os.name != 'nt' else ['/Ox'],
+            ),
+        )
+    if os.path.exists(key_source_file):
+        ext_modules.append(
+            Extension(
+                name=key_extension_name,
+                sources=[key_source_file],
+                extra_compile_args=['-O3'] if os.name != 'nt' else ['/Ox'],
+            ),
+        )
 
 setup(
     # CRITICAL FIX: Tell setup.py that packages are in 'src'

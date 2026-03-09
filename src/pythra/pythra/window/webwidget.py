@@ -312,6 +312,183 @@ sys.stdout = FilteredOutput(sys.stdout)  # Filter normal #print() statements
 sys.stderr = FilteredOutput(sys.stderr)  # Filter error messages and warnings
 
 
+# =============================================================================
+# CROSS-PLATFORM APPLICATION ICON SETUP
+# =============================================================================
+# This section configures the application icon for each platform.
+# It runs once at module load time, right after the QApplication is created.
+#
+# 🪟 Windows: Sets AppUserModelID so the taskbar groups our app icon properly
+#             (otherwise it shows the generic Python icon)
+# 🍎 macOS:   Sets the window icon which updates the Dock icon at runtime
+# 🐧 Linux:   Sets the window icon AND links to the .desktop file for Wayland
+# =============================================================================
+
+from PySide6.QtGui import QIcon
+
+def _setup_platform_icon():
+    """
+    Configure the application icon once for the current platform.
+    
+    Icon search priority:
+    1. Platform-specific directory (windows/, macos/, linux/)
+    2. assets/icons/icon.ico or assets/appIcon.png (legacy fallback)
+    
+    On Linux (Wayland): Automatically installs .desktop file and hicolor
+    icons to ~/.local/share/ so the taskbar shows the app's icon instead
+    of the generic gear icon. Wayland ignores setWindowIcon() entirely.
+    
+    This is a best-effort operation — it silently does nothing if called
+    outside a GUI context (e.g. from a CLI command like `pythra upgrade`).
+    """
+    try:
+        from pathlib import Path
+        import shutil as _shutil
+        
+        # Guard: only run if a QApplication exists (skip for CLI tools)
+        if app is None:
+            return
+        
+        # --- Resolve the project root ---
+        main_script = os.path.abspath(sys.argv[0])
+        if 'lib' in os.path.normpath(main_script).split(os.sep):
+            project_root = str(Path(main_script).parent.parent)
+        else:
+            project_root = str(Path(main_script).parent)
+
+        # --- Read app_id and app_name from config if available ---
+        app_id = 'com.pythra.app'
+        app_name = 'PyThra App'
+        try:
+            import yaml
+            config_path = os.path.join(project_root, 'config.yaml')
+            if os.path.exists(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    cfg = yaml.safe_load(f)
+                if isinstance(cfg, dict):
+                    app_id = cfg.get('app_id', app_id)
+                    app_name = cfg.get('app_name', app_name)
+        except Exception:
+            pass
+        
+        # --- 1. WINDOWS: Set AppUserModelID for correct taskbar icon grouping ---
+        if sys.platform == 'win32':
+            try:
+                import ctypes
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+            except Exception:
+                pass
+
+        # --- 2. Set the application-wide icon (all platforms) ---
+        icon_search_paths = []
+        resolved_icon = None
+        
+        if sys.platform == 'win32':
+            icon_search_paths = [
+                os.path.join(project_root, 'windows', 'appIcon.ico'),
+                os.path.join(project_root, 'assets', 'icons', 'icon.ico'),
+            ]
+        elif sys.platform == 'darwin':
+            icon_search_paths = [
+                os.path.join(project_root, 'macos', 'appIcon.icns'),
+            ]
+        else:
+            # Linux: prefer largest hicolor PNG
+            icon_search_paths = [
+                os.path.join(project_root, 'linux', 'hicolor', '512x512', 'apps', 'appIcon.png'),
+                os.path.join(project_root, 'linux', 'hicolor', '256x256', 'apps', 'appIcon.png'),
+                os.path.join(project_root, 'linux', 'hicolor', '128x128', 'apps', 'appIcon.png'),
+            ]
+        
+        # Universal fallback: PNG in assets
+        icon_search_paths.append(os.path.join(project_root, 'assets', 'appIcon.png'))
+        
+        for icon_path in icon_search_paths:
+            if os.path.exists(icon_path):
+                app.setWindowIcon(QIcon(icon_path))
+                resolved_icon = icon_path
+                break
+
+        # --- 3. LINUX: Auto-install .desktop + hicolor icons for Wayland taskbar ---
+        # Wayland completely ignores setWindowIcon() for the taskbar.
+        # It relies 100% on setDesktopFileName() matching a real .desktop file
+        # installed in ~/.local/share/applications/ with matching hicolor icons.
+        if sys.platform.startswith('linux'):
+            try:
+                home = Path.home()
+                apps_dir = home / '.local' / 'share' / 'applications'
+                icons_base = home / '.local' / 'share' / 'icons' / 'hicolor'
+                
+                apps_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Determine executable — if running from a compiled binary,
+                # use the binary itself; otherwise use python3 + script
+                if getattr(sys, 'frozen', False):
+                    # Running as compiled binary (Nuitka/PyInstaller)
+                    exec_line = f'Exec={sys.executable}'
+                else:
+                    exec_line = f'Exec=python3 {os.path.abspath(main_script)}'
+                
+                # Find the best icon to reference (absolute path for dev .desktop)
+                icon_line = f'Icon={app_id}'  # Default: FreeDesktop theme lookup
+                if resolved_icon:
+                    icon_line = f'Icon={os.path.abspath(resolved_icon)}'
+                
+                # Write the .desktop file
+                desktop_content = f"""[Desktop Entry]
+Type=Application
+Name={app_name}
+Comment=A PyThra desktop application
+{exec_line}
+{icon_line}
+Terminal=false
+Categories=Utility;
+StartupWMClass={app_id}
+"""
+                desktop_path = apps_dir / f'{app_id}.desktop'
+                desktop_path.write_text(desktop_content)
+                
+                # Install hicolor icons to system dir
+                linux_hicolor = os.path.join(project_root, 'linux', 'hicolor')
+                if os.path.isdir(linux_hicolor):
+                    for size_dir in Path(linux_hicolor).iterdir():
+                        if not size_dir.is_dir():
+                            continue
+                        for apps_subdir in size_dir.iterdir():
+                            if not apps_subdir.is_dir():
+                                continue
+                            for icon_file in apps_subdir.iterdir():
+                                if icon_file.is_file():
+                                    dest_dir = icons_base / size_dir.name / apps_subdir.name
+                                    dest_dir.mkdir(parents=True, exist_ok=True)
+                                    dest_file = dest_dir / f'{app_id}.png'
+                                    _shutil.copy2(str(icon_file), str(dest_file))
+                
+                # Silently update icon cache
+                try:
+                    import subprocess as _sp
+                    _sp.run(
+                        ['gtk-update-icon-cache', str(icons_base)],
+                        capture_output=True, timeout=5
+                    )
+                except Exception:
+                    pass
+                
+            except Exception:
+                pass  # Icon install is best-effort
+            
+            # Tell Wayland which .desktop file to use
+            app.setDesktopFileName(app_id)
+            
+    except Exception:
+        # Icon setup is best-effort — never block app startup
+        pass
+
+
+# Run the platform icon setup 
+_setup_platform_icon()
+
+
 
 def watch_for_power_events(sleep_manager, on_resume_callback):
     """
