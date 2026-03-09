@@ -4,10 +4,39 @@ import http.server
 import socketserver
 import threading
 import os
+import sys
+import socket
 import atexit
 import signal
 from pathlib import Path
 from typing import Dict
+
+
+class _ReusableTCPServer(socketserver.TCPServer):
+    """
+    TCPServer with SO_REUSEADDR (and SO_REUSEPORT on Linux) enabled.
+    
+    This prevents 'Address already in use' errors when the server is
+    restarted quickly (e.g. via `pythra run` hot-reload), because the
+    kernel allows re-binding a port that's still in TIME_WAIT state
+    from the previous process.
+    """
+    allow_reuse_address = True          # SO_REUSEADDR
+    allow_reuse_port = False            # set True on Linux below
+    daemon_threads = True               # Don't let request threads block exit
+    request_queue_size = 16             # Handle queued connections during restart
+
+    def server_bind(self):
+        """Override to add SO_REUSEPORT on Linux for aggressive port reuse."""
+        # SO_REUSEPORT lets a new process bind even if the old one hasn't
+        # fully released the socket yet (common during fast restarts).
+        if sys.platform.startswith('linux'):
+            try:
+                self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+            except (AttributeError, OSError):
+                pass  # Not available on all kernels
+        super().server_bind()
+
 
 class MultiDirectoryRequestHandler(http.server.SimpleHTTPRequestHandler):
     """
@@ -58,11 +87,20 @@ class MultiDirectoryRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Accept-Ranges', 'bytes')
         super().end_headers()
 
+    def log_message(self, format, *args):
+        """Suppress noisy per-request logging except for errors."""
+        # Only log non-200 responses
+        if len(args) >= 2 and '200' not in str(args[1]):
+            super().log_message(format, *args)
+
 
 class AssetServer(threading.Thread):
     """
     A multi-directory static file server that runs in a background thread.
     It serves a main asset directory and additional directories for plugins.
+    
+    Uses SO_REUSEADDR + SO_REUSEPORT to survive fast restarts (e.g. pythra run hot-reload).
+    Shutdown is robust: timeout-guarded so a stuck request can't prevent port release.
     """
     def __init__(self, directory: str, port: int = 8000, extra_serve_dirs: Dict[str, str] = None):
         """
@@ -82,6 +120,7 @@ class AssetServer(threading.Thread):
         self.extra_serve_dirs = extra_serve_dirs or {}
         self.server = None
         self._shutdown_registered = False
+        self._stopped = threading.Event()
 
     def run(self):
         """Starts the HTTP server on a separate thread."""
@@ -92,23 +131,28 @@ class AssetServer(threading.Thread):
             base_directory = self.directory
             extra_directories = self.extra_serve_dirs
 
-        # Use a context manager for robust server setup and teardown
-        # Use context manager for robust server setup and teardown
-
         try:
-            with socketserver.TCPServer(("", self.port), Handler) as httpd:
-                print(f"✅ Asset server started on http://localhost:{self.port}")
-                print(f"   Serving main assets from: {self.directory}")
-                for prefix, path in self.extra_serve_dirs.items():
-                    print(f"   Serving plugin '{prefix}' from: {path}")
-                
-                self.server = httpd
-                httpd.serve_forever()
+            httpd = _ReusableTCPServer(("", self.port), Handler)
+            print(f"✅ Asset server started on http://localhost:{self.port}")
+            print(f"   Serving main assets from: {self.directory}")
+            for prefix, path in self.extra_serve_dirs.items():
+                print(f"   Serving plugin '{prefix}' from: {path}")
+            
+            self.server = httpd
+            httpd.serve_forever(poll_interval=0.5)
         except OSError as e:
-            print(f"❌ FATAL: Could not start asset server on port {self.port}. Is it already in use?")
-            print(f"   Error: {e}")
-            # In a real app, you might want a more graceful exit here.
-            os._exit(1) # Force exit if server can't start
+            if not self._stopped.is_set():
+                print(f"❌ FATAL: Could not start asset server on port {self.port}. Is it already in use?")
+                print(f"   Error: {e}")
+                os._exit(1)
+        finally:
+            # Ensure socket is released no matter how we exit
+            if self.server:
+                try:
+                    self.server.server_close()
+                except Exception:
+                    pass
+            self._stopped.set()
 
     def start(self):
         """Start the thread and ensure shutdown hooks are registered from
@@ -122,11 +166,45 @@ class AssetServer(threading.Thread):
         super().start()
 
     def stop(self):
-        """Stops the HTTP server if it is running."""
+        """
+        Stops the HTTP server robustly.
+        
+        Uses a timeout-guarded shutdown so a stuck in-flight request
+        can't prevent the port from being released. If shutdown()
+        doesn't complete within 2 seconds, we force-close the socket.
+        """
+        if self._stopped.is_set():
+            return
+            
+        self._stopped.set()
+        
         if self.server:
             print("[AssetServer] Shutting down...")
-            self.server.shutdown()
-            self.server.server_close()
+            
+            # shutdown() blocks until serve_forever() returns, but if a
+            # request handler is stuck, it can hang. Use a thread + timeout.
+            def _do_shutdown():
+                try:
+                    self.server.shutdown()
+                except Exception:
+                    pass
+            
+            shutdown_thread = threading.Thread(target=_do_shutdown, daemon=True)
+            shutdown_thread.start()
+            shutdown_thread.join(timeout=2.0)
+            
+            # Force-close the socket regardless, so the port is freed
+            try:
+                self.server.server_close()
+            except Exception:
+                pass
+            
+            # Last resort: close the raw socket fd
+            try:
+                self.server.socket.close()
+            except Exception:
+                pass
+            
             print("[AssetServer] Shutdown complete.")
 
     def register_shutdown_hooks(self):
