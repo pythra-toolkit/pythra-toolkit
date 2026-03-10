@@ -531,6 +531,7 @@ class Framework:
             'PythraGradientClipPath': "render/js/gradient_border.js",
             'PythraVirtualList': "render/js/virtual_list.js",
             'PythraVirtualGrid': "render/js/virtual_grid.js",
+            'PythraTextField': "render/js/textfield.js",
             #'PythraMarkdownEditor': "render/js/dropdown.js", # Placeholder key to suppress warning, actual loaded via plugin
         }
         # Build a cache key. None means 'ALL' engines load; use a stable frozenset.
@@ -598,6 +599,7 @@ class Framework:
                         if (typeof PythraVirtualGrid !== 'undefined') window.PythraVirtualGrid = PythraVirtualGrid;\n
                         if (typeof generateRoundedPath !== 'undefined') window.generateRoundedPath = generateRoundedPath;\n
                         if (typeof scalePathAbsoluteMLA !== 'undefined') window.scalePathAbsoluteMLA = scalePathAbsoluteMLA;\n
+                        if (typeof PythraTextField !== 'undefined') window.PythraTextField = PythraTextField;\n
                     }} catch (e) {{ console.error('Error loading {filename}:', e); }}"""
                 )
 
@@ -680,6 +682,8 @@ class Framework:
                 required_engines.add('PythraVirtualList')
             if props.get("init_virtual_grid"):
                 required_engines.add('PythraVirtualGrid')
+            if props.get("init_textfield"):
+                required_engines.add('PythraTextField')
             if props.get("responsive_clip_path"):
                 required_engines.update(['ResponsiveClipPath', 'generateRoundedPath', 'scalePathAbsoluteMLA'])
 
@@ -1454,6 +1458,18 @@ class Framework:
                 options_json = _dumps(options)
                 js_commands.append(f"window._pythra_instances['{html_id}'] = new PythraDropdown('{html_id}', {options_json});")
             # --- END OF BLOCK ---
+
+            if props.get("init_textfield"):
+                imports.add("import { PythraTextField } from './js/textfield.js';")
+                options = props.get("textfield_options", {})
+                options_json = _dumps(options)
+                js_commands.append(f"""
+                    if (typeof PythraTextField !== 'undefined') {{
+                        if (!window._pythra_instances['{html_id}']) {{
+                            window._pythra_instances['{html_id}'] = new PythraTextField('{html_id}', {options_json});
+                        }}
+                    }}
+                """)
 
             # Check for our new Slider's flag
             if props.get("init_slider"):

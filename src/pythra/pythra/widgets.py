@@ -6472,6 +6472,66 @@ class Scaffold(Widget):
 # TEXTFIELD WIDGET - The "Text Input Box" for User Data Entry
 # =============================================================================
 
+class _RawInput(Widget):
+    """An internal atomic widget that renders a raw HTML <input> element for TextField."""
+    def __init__(self, key: Key, render_props_data: Dict):
+        super().__init__(key=key, children=[])
+        self._render_props_data = render_props_data
+        
+    def render_props(self) -> Dict[str, Any]:
+        return self._render_props_data
+
+    @staticmethod
+    def _generate_html_stub(widget_instance, html_id, props) -> str:
+        on_input_handler = f"handleInput('{props.get('onChangedName', '')}', this.value)"
+        input_type = props.get('inputType', 'text')
+        placeholder = html.escape(str(props.get('placeholder', '')), quote=True)
+        value = html.escape(str(props.get('value', '')), quote=True)
+        disabled_str = 'disabled' if not props.get('enabled', True) else ''
+        css_class = props.get('css_class', '')
+        
+        return f"""
+        <input 
+            id="{html_id}" 
+            class="textfield-input {css_class}" 
+            type="{input_type}" 
+            value="{value}"
+            placeholder="{placeholder}"
+            oninput="clearTimeout(this.to); this.to=setTimeout(()=>{{{on_input_handler}}}, 300);"
+            {disabled_str}
+        >
+        """
+
+class _RawLabel(Widget):
+    """An internal atomic widget that renders a raw HTML <label> element for TextField."""
+    def __init__(self, key: Key, text: str, css_class: str):
+        super().__init__(key=key, children=[])
+        self.text = text
+        self.css_class = css_class
+        
+    def render_props(self) -> Dict[str, Any]:
+         return {'text': self.text, 'css_class': self.css_class}
+         
+    @staticmethod
+    def _generate_html_stub(widget, html_id, props) -> str:
+         return f'<label id="{html_id}" class="textfield-label {props["css_class"]}">{html.escape(props["text"])}</label>'
+
+
+class _RawContainer(Widget):
+    """An internal lightweight container that allows multiple children and a CSS class without the overhead of standard Container validation."""
+    def __init__(self, key: Key, children: List[Widget], css_class: str, init_textfield: bool = False, label_id: str = ""):
+        super().__init__(key=key, children=children)
+        self.css_class = css_class
+        self.init_textfield = init_textfield
+        self.label_id = label_id
+        
+    def render_props(self) -> Dict[str, Any]:
+        return {
+            'css_class': self.css_class, 
+            'init_textfield': self.init_textfield, 
+            'textfield_options': {'labelId': self.label_id} if self.init_textfield else {}
+        }
+
 
 class TextField(Widget):
     """
@@ -6589,20 +6649,14 @@ class TextField(Widget):
 
     def __init__(
         self,
-        # value: str,
-        # Deprecated:
-        # onChanged: Callable[[str], None],
         key: Key,  # A Key is MANDATORY for focus to be preserved
         controller: TextEditingController,
         decoration: InputDecoration = InputDecoration(),
-        leading: Optional[Icon] = None,
-        trailing: Optional[Icon] = None,
+        leading: Optional[Widget] = None, # Can be an icon or any other widget
+        trailing: Optional[Widget] = None, # Can be an icon or any other widget
         enabled: bool = True,
         obscureText: bool = False,  # For passwords
     ):
-
-        super().__init__(key=key, children=[])
-
         if not isinstance(key, Key):
             raise TypeError(
                 "TextField requires a unique Key to preserve focus during rebuilds."
@@ -6615,17 +6669,12 @@ class TextField(Widget):
         self.enabled = enabled
         self.obscureText = obscureText
         self.leading = leading
+        self.trailing = trailing
 
-        # The name for the callback is now derived using a generated UUID,
-        # ensuring it is globally unique and avoiding ID collision across lifecycles.
         self.onChangedName = f"ctrl_{uuid.uuid4().hex}"
-
-        # The actual callback function is a lambda that updates the controller.
-        # This is registered once with the API.
         self.onChanged = lambda new_value: setattr(self.controller, "text", new_value)
 
         # --- CSS Class Management ---
-        # The style key is now based entirely on the InputDecoration object.
         self.style_key = make_hashable(self.decoration)
 
         if self.style_key not in TextField.shared_styles:
@@ -6640,33 +6689,61 @@ class TextField(Widget):
             state_classes.append("disabled")
         if self.decoration and self.decoration.errorText:
             state_classes.append("error")
+        if self.leading:
+            state_classes.append("has-leading")
+        if self.trailing:
+            state_classes.append("has-trailing")
 
         self.current_css_class = (
             f"{self.css_class} {' '.join(state_classes)} textfield-root-container"
         )
+        base_class = self.css_class
 
-        # --- Central Callback Registration ---
-        # The framework's API only needs to know about this callback once.
-        # This is a good place to register it.
-        # Api.instance().register_callback(self.onChangedName, self.onChanged)
+        # --- Construct Component Tree ---
+        input_props = {
+            "value": self.controller.text,
+            "onChangedName": self.onChangedName,
+            "onChanged": self.onChanged,
+            "placeholder": self.decoration.hintText if self.decoration.hintText else " ",
+            "enabled": self.enabled,
+            "inputType": "password" if self.obscureText else "text",
+            "css_class": base_class,
+        }
+        
+        input_widget = _RawInput(key=Key(f"{key.value}_input"), render_props_data=input_props)
+        label_widget = _RawLabel(key=Key(f"{key.value}_label"), text=self.decoration.label or "", css_class=base_class)
+        outline_widget = _RawContainer(key=Key(f"{key.value}_outline"), children=[], css_class=f"textfield-outline {base_class}")
+        
+        inner_children = []
+        if self.leading: 
+            inner_children.append(_RawContainer(key=Key(f"{key.value}_leading"), css_class=f"textfield-leading {base_class}", children=[self.leading]))
+        inner_children.append(input_widget)
+        if self.trailing: 
+            inner_children.append(_RawContainer(key=Key(f"{key.value}_trailing"), css_class=f"textfield-trailing {base_class}", children=[self.trailing]))
+        inner_children.append(label_widget)
+        inner_children.append(outline_widget)
+        
+        container = _RawContainer(
+            key=Key(f"{key.value}_container"), 
+            children=inner_children, 
+            css_class=f"textfield-container {base_class}",
+            init_textfield=True,
+            label_id=f"{key.value}_label"
+        )
+        
+        helper_text = self.decoration.errorText or ""
+        helper_widget = _RawContainer(
+            key=Key(f"{key.value}_helper"), 
+            children=[Text(helper_text)] if helper_text else [], 
+            css_class=f"textfield-helper-text {base_class}"
+        )
+        
+        super().__init__(key=key, children=[container, helper_widget])
 
     def render_props(self) -> Dict[str, Any]:
         """Return properties needed by the Reconciler to generate HTML and JS."""
         return {
-            "value": self.controller.text,
-            "onChangedName": self.onChangedName,
-            "onChanged": self.onChanged,
-            "label": self.decoration.label,
-            "leading": self.leading,
-            "placeholder": self.decoration.hintText,  # Use hintText as placeholder
-            "errorText": (
-                ""
-                if not self.decoration.errorText or None
-                else self.decoration.errorText
-            ),
-            "enabled": self.enabled,
-            "obscureText": self.obscureText,
-            "css_class": self.get_shared_css_class(),  # self.current_css_class,
+            "css_class": self.current_css_class,
         }
 
     # OVERRIDE THE NEW METHODS
@@ -6680,52 +6757,10 @@ class TextField(Widget):
         static = self.get_static_css_classes()
         return {self.css_class}
 
-    @staticmethod
-    def _generate_html_stub(
-        widget_instance: "TextField", html_id: str, props: Dict
-    ) -> str:
-        """
-        Custom stub generator. It now ALWAYS includes the helper-text div,
-        which will be shown or hidden by CSS.
-        """
-        container_id = html_id
-        input_id = f"{html_id}_input"
-        helper_text_id = f"{html_id}_helper"  # Give the helper an ID for updates
+    # _generate_html_stub is DELIBERATELY OMITTED so TextField falls back to
+    # the framework's native nested element generation, rendering this as a
+    # standard DOM sub-tree populated with our composition tree from __init__.
 
-        css_class = props.get("css_class", "")
-        base_class = css_class.replace("textfield-root-container", "").strip()
-        label_text = props.get("label", "")
-        # Get the error text, default to an empty string
-        helper_text = props.get("errorText", "")
-        helper_safe = html.escape(helper_text) if helper_text else ""
-
-        placeholder_text = str(props.get("placeholder", ""))
-        if not placeholder_text:
-            placeholder_text = " "  # Ensure space so :placeholder-shown works properly for floating label
-
-        on_input_handler = (
-            f"handleInput('{props.get('onChangedName', '')}', this.value)"
-        )
-        input_type = "password" if props.get("obscureText", False) else "text"
-
-        return f"""
-        <div id="{container_id}" class="textfield-root-container {base_class}">
-            <div class="textfield-container {base_class}">
-                <input 
-                    id="{input_id}" 
-                    class="textfield-input {base_class}" 
-                    type="{input_type}" 
-                    value="{html.escape(str(props.get('value', '')), quote=True)}"
-                    placeholder="{html.escape(placeholder_text, quote=True)}"
-                    oninput="clearTimeout(this.to); this.to=setTimeout(()=>{{{on_input_handler}}}, 300);"
-                    {('disabled' if not props.get('enabled', True) else '').strip()}
-                >
-                <label for="{input_id}" class="textfield-label {base_class}">{html.escape(label_text) if label_text else ''}</label>
-                <div class="textfield-outline {base_class}"></div>
-            </div>
-            <div id="{helper_text_id}" class="textfield-helper-text {base_class}">{helper_safe}</div>
-        </div>
-        """
 
     @staticmethod
     def generate_css_rule(style_key: Tuple, css_class: str) -> str:
@@ -6914,7 +6949,6 @@ class TextField(Widget):
         return f"""
         /* === Styles for {css_class} === */
 
-
         .textfield-root-container.{css_class} {{
             display: flex; flex-direction: column; margin: 0px;
             border-radius: 4px;
@@ -6924,16 +6958,32 @@ class TextField(Widget):
             position: relative; padding-top: 0px;
             background-color: {fill_color or 'rgba(0, 0, 0, 0.04)'};
             {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css} /* Top corners only generally for filled */
-            cursor: text;
-        }}
-        .textfield-root-container.{css_class} .textfield-input {{
-            width: 100%; height: 56px; padding: {content_padding_css}; font-size: {input_font_size}px;
-            color: {input_font_color or Colors.onSurface}; {input_font_family} background-color: transparent;
             border-top: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
             border-left: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
             border-right: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
             border-bottom:{border_width}px {border_style} {border_color or '#757575'}; outline: {'none' if filled else border_color}; box-sizing: border-box;
-            transition: border-bottom-color 0.2s, background-color 0.2s;
+            transition: border-bottom-color 0.2s, background-color 0.2s, border-color 0.2s;
+            cursor: text;
+            display: flex;
+            align-items: center;
+        }}
+        .textfield-root-container.{css_class} .textfield-leading {{
+             margin-left: 12px;
+             margin-right: 4px;
+             display: flex; align-items: center; justify-content: center;
+             z-index: 5;
+        }}
+        .textfield-root-container.{css_class} .textfield-trailing {{
+             margin-right: 12px;
+             margin-left: 4px;
+             display: flex; align-items: center; justify-content: center;
+             z-index: 5;
+        }}
+        .textfield-root-container.{css_class} .textfield-input {{
+            flex-grow: 1;
+            width: 100%; height: 56px; padding: {content_padding_css}; font-size: {input_font_size}px;
+            color: {input_font_color or Colors.onSurface}; {input_font_family} background-color: transparent;
+            border: none; outline: none; box-sizing: border-box;
             {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css}
         }}
         {hide_placeholder}
@@ -6946,7 +6996,10 @@ class TextField(Widget):
             position: absolute; left: 16px; top: 18px; font-size: {label_font_size}px; {label_font_family}
             color: {label_font_color or label_color or '#757575'}; pointer-events: none;
             transform-origin: left top; 
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s, top 0.2s cubic-bezier(0.4, 0, 0.2, 1), left 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        .textfield-root-container.{css_class}.has-leading .textfield-label {{
+            left: 48px; /* account for leading icon padding */
         }}
         .textfield-root-container.{css_class} .textfield-outline {{
             display: none; /* using standard borders instead */
@@ -6960,7 +7013,7 @@ class TextField(Widget):
         }}
 
         /* --- FOCUSED & VALUE STATE (Scoped) --- */
-        .textfield-root-container.{css_class} .textfield-input:focus {{
+        .textfield-root-container.{css_class}:focus-within .textfield-container {{
             border-top: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
             border-left: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
             border-right: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
@@ -6969,7 +7022,15 @@ class TextField(Widget):
         .textfield-root-container.{css_class} .textfield-input:focus ~ .textfield-label,
         .textfield-root-container.{css_class} .textfield-input:not(:placeholder-shown) ~ .textfield-label {{
             transform: translateY(-{float(label_font_size) * 0.625}px) scale(0.75); /* Dynamic translation based on font base */
+            top: 4px; /* Adjust top so the label breaks the border line */
             color: {focus_color or '#FF94DA'};
+            background: {f'linear-gradient(to bottom, transparent 37%, {fill_color} 37%);' if not filled else 'transparent'};
+            padding: {'0 4px' if not filled else '0'};
+            z-index: 10;
+        }}
+        .textfield-root-container.{css_class}.has-leading .textfield-input:focus ~ .textfield-label,
+        .textfield-root-container.{css_class}.has-leading .textfield-input:not(:placeholder-shown) ~ .textfield-label {{
+            left: 12px; /* Return left to properly align with outline border edge, adjusted for padding */
         }}
         .textfield-root-container.{css_class}:focus-within .textfield-container {{
             background-color: {Colors.rgba(0,0,0,0.08)}; /* slight highlight */

@@ -1,0 +1,25 @@
+feat(ui): refactor TextField composition and fix floating label alpha-blending
+
+This commit drastically refactors the architecture of the [TextField](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6535:0-7063:11) widget to properly support nested child elements and resolves several UI quirks around the outlined Material label. It also resolves a blocking issue in the `AssetServer`.
+
+### Architectural Changes
+
+1. **TextField Component Tree Composition:** 
+   - *File:* [src/pythra/pythra/widgets.py](cci:7://file:/pythra-toolkit/src/pythra/pythra/widgets.py:0:0-0:0)
+   - *Details:* The [TextField](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6535:0-7063:11) previously returned a monolithic HTML string. It has been completely refactored into a composite layout. Internal strings have been decoupled into atomic [_RawInput](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6474:0-6502:11) and [_RawLabel](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6504:0-6516:122) widgets.
+   - *Compliance:* Future layout modifications inside the [TextField](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6535:0-7063:11) should construct and append [Widget](cci:1://file:/pythra-toolkit/src/pythra/pythra/widgets_more.py:5007:4-5016:42) instances to the internal [_RawContainer](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6519:0-6532:9) instead of injecting raw HTML or modifying the [_generate_html_stub](cci:1://file:/pythra-toolkit/src/pythra/pythra/widgets_more.py:4492:4-4498:101). 
+
+2. **Container Restructuring & Flexbox Support:**
+   - *File:* [src/pythra/pythra/widgets.py](cci:7://file:/pythra-toolkit/src/pythra/pythra/widgets.py:0:0-0:0)
+   - *Details:* Replaced [Container](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:72:0-406:66) validations within [TextField](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6535:0-7063:11) with [_RawContainer](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6519:0-6532:9). Moved outline CSS properties from the `<input>` element directly up to the parent `.textfield-container` to correctly wrap newly added `leading` and `trailing` nested widgets (e.g. `Icons`). 
+   - *Compliance:* Interactive child widgets injected via `leading` and `trailing` properties will now properly undergo the Reconciler lifecycle natively.
+
+3. **Dynamic Label Alpha Blending (JS Engine):**
+   - *Files:* [src/pythra/pythra/core.py](cci:7://file:/pythra-toolkit/src/pythra/pythra/core.py:0:0-0:0), [src/pythra/pythra/widgets.py](cci:7://file:/pythra-toolkit/src/pythra/pythra/widgets.py:0:0-0:0), [src/pythra/pythra/render_template/js/textfield.js](cci:7://file:/pythra-toolkit/src/pythra/pythra/render_template/js/textfield.js:0:0-0:0), [src/pythra/pythra/project_template/render/js/textfield.js](cci:7://file:/pythra-toolkit/src/pythra/pythra/project_template/render/js/textfield.js:0:0-0:0)
+   - *Details:* A static CSS masking technique falls apart when overlaying colored boxes. Implemented a robust frontend JavaScript Engine ([PythraTextField](cci:2://file:/pythra-toolkit/src/pythra/pythra/render_template/js/textfield.js:0:0-61:1)) that crawls the DOM, probes parent background hues, and dynamically injects precise, alpha-blended `linear-gradient` overlays on the [TextField](cci:2://file:/pythra-toolkit/src/pythra/pythra/widgets.py:6535:0-7063:11) label.
+   - *Compliance:* Any widget needing dynamic color probing or DOM crawling upon instantiation should follow this pattern: create a respective engine in `render_template/js`, register the engine in [core.py](cci:7://file:/pythra-toolkit/src/pythra/pythra/core.py:0:0-0:0)'s `engine_to_file_map`, and broadcast the initializing hook (`init_textfield: True`) down to the rendering context ([render_props](cci:1://file:/pythra-toolkit/src/pythra/pythra/widgets.py:2396:4-2398:17)).
+
+4. **AssetServer Hot-Reload Socket Fix:**
+   - *File:* [src/pythra/pythra/server.py](cci:7://file:/pythra-toolkit/src/pythra/pythra/server.py:0:0-0:0)
+   - *Details:* Rewrote the Python HTTP server instance shutdown sequence to enforce `SO_REUSEADDR` using `_ReusableTCPServer`.
+   - *Compliance:* This eliminates the recurring "Address already in use" traceback during aggressive application hot-reloads via `pythra run`.
