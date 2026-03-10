@@ -187,66 +187,15 @@ class _DerivedDropdownState(State):
                             )
                         ],
                     ),
-                    child=VirtualListView(
-                        controller=self.list_controller,
-                        key=Key(f'v_list_{parent_key}'),
-                        itemCount=4,
-                        itemBuilder=self.item_builder,
-                        itemExtent=60,
-                        initialItemCount=12,
-                        width=200,
-                        theme=ScrollbarTheme(
-                                width=14,
-                                thumbColor=Colors.lightpink,
-                                trackColor=Colors.hex("#3535353e"),
-                                thumbHoverColor=Colors.hex("#9c9b9b"),
-                                radius=6,
-                            ),
+                    child=Column(
+                        mainAxisAlignment=MainAxisAlignment.START,
+                        crossAxisAlignment=CrossAxisAlignment.START,
+                        key=Key(f"dropdown_item_Column_{parent_key}"),
+                        children=[
+                             self.item_builder(index)
+                             for index, item in enumerate(self.controller.items)
+                        ],
                     ),
-                    # Column(
-                    #     mainAxisAlignment=MainAxisAlignment.START,
-                    #     crossAxisAlignment=CrossAxisAlignment.START,
-                    #     key=Key(f"dropdown_item_Column_{parent_key}"),
-                    #     children=[
-                    #         Container(
-                    #             # height=self.theme.dropdownHeight,
-                    #             padding=self.theme.itemPadding
-                    #             or EdgeInsets.symmetric(horizontal=12, vertical=8),
-                    #             color=(
-                    #                 self.theme.selectedItemColor
-                    #                 if item == self.selected_value
-                    #                 else Colors.transparent
-                    #             ),
-                    #             width="100%",
-                    #             decoration=BoxDecoration(
-                    #                 borderRadius=self.theme.selectedItemShape
-                    #                 or BorderRadius.circular(4),
-                    #             ),
-                    #             key=Key(f"dropdown_item_{item}_padding_{parent_key}"),
-                    #             child=ListTile(
-                    #                 key=Key(f"dropdown_item_{item}_{parent_key}"),
-                    #                 title=Text(
-                    #                     item,
-                    #                     key=Key(
-                    #                         f"dropdown_item_title_{item}_{parent_key}"
-                    #                     ),
-                    #                     style=TextStyle(
-                    #                         color=self.theme.dropdownTextColor
-                    #                     ),
-                    #                 ),
-                    #                 onTap=self.select_item,
-                    #                 onTapName=f"item_tap_callback_{id(self.select_item)}",
-                    #                 onTapArg=[item],
-                    #                 selected=item == self.selected_value,
-                    #                 selectedTileColor=self.theme.selectedItemColor,
-                    #                 contentPadding=EdgeInsets.symmetric(
-                    #                     horizontal=12, vertical=8
-                    #                 ),
-                    #             ),
-                    #         )
-                    #         for item in self.controller.items
-                    #     ],
-                    # ),
                 )
             )
         # print("widget key: ", widget.key, parent_key)
