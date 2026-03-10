@@ -354,9 +354,7 @@ class _DerivedDropdownState(State):
                                     children=menu_items,
                                 ),
                                 decoration=BoxDecoration(
-                                    borderRadius=BorderRadius.circular(
-                                        self.theme.borderRadius
-                                    ),
+                                    borderRadius=shape_radius,
                                 ),
                             )
                             if self.is_open
