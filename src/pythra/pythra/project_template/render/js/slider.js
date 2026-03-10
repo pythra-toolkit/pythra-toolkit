@@ -100,7 +100,16 @@ export class PythraSlider { // <-- ADD 'export' HERE
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
             event.preventDefault(); // Prevent page scrolling
             
-            let percentage = parseFloat(this.container.style.getPropertyValue('--slider-percentage')) || 0;
+            // We can't rely on inline styles because Pythra sets --slider-percentage via CSS classes.
+            // Parse it directly from the computed style.
+            let computedStyle = window.getComputedStyle(this.container);
+            let percentageStr = computedStyle.getPropertyValue('--slider-percentage').trim();
+            // Remove % before parsing
+            if (percentageStr.endsWith('%')) {
+                percentageStr = percentageStr.slice(0, -1);
+            }
+            let percentage = parseFloat(percentageStr) || 0;
+            
             const range = this.options.max - this.options.min;
             let currentValue = this.options.min + (percentage / 100) * range;
             

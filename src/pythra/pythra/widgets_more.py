@@ -3126,6 +3126,8 @@ class Slider(Widget):
     def _generate_html_stub(widget_instance: 'Slider', html_id: str, props: Dict) -> str:
         # This method remains the same
         css_class = props.get('css_class', '')
+        # Rely primarily on CSS classes and let JavaScript handle the dynamic --slider-percentage updates
+        # Only inject the initial percentage if provided, otherwise let JS/CSS default to 0%
         style_prop = props.get('style', {})
         percentage_str = style_prop.get('--slider-percentage', '0%')
         style_attr = f'style="width: 100%; --slider-percentage: {percentage_str};"'
