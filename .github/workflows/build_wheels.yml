@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install virtualenv
+        run: pip install --upgrade virtualenv
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21.3
         env:
