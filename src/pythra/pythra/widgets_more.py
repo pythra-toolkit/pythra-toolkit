@@ -3131,7 +3131,7 @@ class Slider(Widget):
         style_attr = f'style="width: 100%; --slider-percentage: {percentage_str};"'
 
         return f"""
-        <div id="{html_id}" class="slider-container {css_class}" {style_attr}>
+        <div id="{html_id}" class="slider-container {css_class}" {style_attr} tabindex="0">
             <div class="slider-track"></div>
             <div class="slider-track-active"></div>
             <div class="slider-thumb"></div>
@@ -3174,10 +3174,32 @@ class Slider(Widget):
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             pointer-events: none;
         }}
+        .{css_class}.slider-container:focus-visible {{
+            outline: 2px solid {active_color};
+            outline-offset: 2px;
+        }}
         .{css_class}.slider-container:hover .slider-thumb {{ transform: translateX(-50%) scale(1.2); }}
+        .{css_class} .slider-thumb::after {{
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: {overlay_size * 2}px;
+            height: {overlay_size * 2}px;
+            background-color: {overlay_color};
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+            pointer-events: none;
+        }}
+        .{css_class}.slider-container:active .slider-thumb::after,
+        .{css_class}.slider-container.active .slider-thumb::after {{
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }}
+        .{css_class}.slider-container:active .slider-thumb,
         .{css_class}.slider-container.active .slider-thumb {{
             transform: translateX(-50%) scale(1.4);
-            box-shadow: 0 0 0 {overlay_size}px {overlay_color};
         }}
         """
 
