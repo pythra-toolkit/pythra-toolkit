@@ -2101,12 +2101,15 @@ class FloatingActionButton(Widget):
             active_rule = f".{css_class}:active {{ transform: scale(0.98); {ac_color}/* Example subtle press */ }}"
 
             # Disabled state (add .disabled class)
-            disabled_bg = disBgColor or Colors.rgba(0, 0, 0, 0.12)  # type: ignore # M3 Disabled container approx
-            disabled_fg = disFgColor or Colors.rgba(0, 0, 0, 0.38)  # type: ignore # M3 Disabled content approx
             disabled_rule = f".{css_class}.disabled {{ background-color: {disabled_bg}; color: {disabled_fg}; box-shadow: none; cursor: default; pointer-events: none; }}"
 
+            # Ripple Effect
+            ripple_keyframes = f"@keyframes ripple_{css_class} {{ 0% {{ transform: translate(-50%, -50%) scale(0); opacity: 0.2; }} 100% {{ transform: translate(-50%, -50%) scale(2.5); opacity: 0; }} }}"
+            ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
+            ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
+
             return "\n".join(
-                [main_rule, icon_rule, hover_rule, active_rule, disabled_rule]
+                [main_rule, icon_rule, hover_rule, active_rule, disabled_rule, ripple_keyframes, ripple_base, ripple_active_anim]
             )
 
         except Exception as e:
