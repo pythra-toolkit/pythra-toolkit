@@ -3377,7 +3377,7 @@ class Checkbox(Widget):
         on_click_handler = f"handleClick('{props.get('onPressedName', '')}')"
 
         return f"""
-        <div id="{html_id}" class="checkbox-container {css_class}" onclick="{on_click_handler}">
+        <div id="{html_id}" class="checkbox-container {css_class}" onclick="{on_click_handler}" tabindex="0">
             <svg class="checkbox-svg" viewBox="0 0 24 24">
                 <path class="checkbox-checkmark" d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
             </svg>
@@ -3416,6 +3416,11 @@ class Checkbox(Widget):
             display: inline-flex; align-items: center; justify-content: center;
             transition: background-color 0.15s ease-out, border-color 0.15s ease-out;
             -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }}
+        .{css_class}.checkbox-container:focus-visible {{
+            outline: 2px solid {active_color};
+            outline-offset: 2px;
         }}
         .{css_class} .checkbox-svg {{
             width: 100%; height: 100%;
@@ -3655,7 +3660,7 @@ class Switch(Widget):
         on_click_handler = f"handleClick('{props.get('onPressedName', '')}')"
 
         return f"""
-        <div id="{html_id}" class="switch-container {css_class}" onclick="{on_click_handler}">
+        <div id="{html_id}" class="switch-container {css_class}" onclick="{on_click_handler}" tabindex="0">
             <div class="switch-track"></div>
             <div class="switch-thumb"></div>
         </div>
@@ -3693,6 +3698,11 @@ class Switch(Widget):
             flex-shrink: 0;
             transition: background-color 0.2s ease-in-out;
             background-color: {track_color};
+            outline: none;
+        }}
+        .{css_class}.switch-container:focus-visible {{
+            outline: 2px solid {active_track_color};
+            outline-offset: 2px;
         }}
         .{css_class} .switch-thumb {{
             position: absolute;
@@ -3857,7 +3867,7 @@ class Radio(Widget):
         on_click_handler = f"handleClick('{props.get('onPressedName', '')}')"
 
         return f"""
-        <div id="{html_id}" class="radio-container {css_class}" onclick="{on_click_handler}">
+        <div id="{html_id}" class="radio-container {css_class}" onclick="{on_click_handler}" tabindex="0">
             <div class="radio-dot"></div>
         </div>
         """.strip()
@@ -3893,6 +3903,11 @@ class Radio(Widget):
             cursor: pointer;
             transition: border-color 0.2s ease-in-out;
             -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }}
+        .{css_class}.radio-container:focus-visible {{
+            outline: 2px solid {active_color};
+            outline-offset: 2px;
         }}
         .{css_class} .radio-dot {{
             width: 10px; height: 10px;
