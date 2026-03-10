@@ -4031,11 +4031,7 @@ class Dropdown(Widget):
                  onChanged: Callable[[Any], None],
                  hintText: str = "Select an option",
                  dropDirection: Union[VerticalDirection, str] = VerticalDirection.DOWN,
-                 # --- Theme properties can be added here later ---
-                 backgroundColor: str = Colors.surfaceContainerHighest,
-                 textColor: str = Colors.onSurface,
-                 borderColor: str = Colors.outline,
-                 borderRadius: int = 4,
+                 decoration: InputDecoration = InputDecoration(),
                  theme: Optional[DropdownTheme] = None,
                  ):
 
@@ -4050,26 +4046,28 @@ class Dropdown(Widget):
         self.onChanged = onChanged
         self.hintText = hintText
         self.dropDirection = dropDirection
+        self.decoration = decoration
         
         # --- Style Properties ---
-        self.backgroundColor = self.theme.backgroundColor or backgroundColor
-        self.textColor = self.theme.textColor or textColor 
-        self.borderColor = self.theme.borderColor or borderColor
-        self.borderRadius = self.theme.borderRadius or borderRadius
-        self.hoverColor = self.theme.hoverColor or Colors.rgba(0, 0, 0, 0.08)
-        self.dropdownHoverColor = self.theme.dropdownHoverColor or Colors.rgba(0, 0, 0, 0.08)
-        self.itemHoverColor = self.theme.itemHoverColor or Colors.rgba(103, 80, 164, 0.1)
-        self.width = f"{self.theme.width}px" if isinstance(self.theme.width, (int, float)) else f"{self.theme.width}"
-        self.dropDownHeight = f"{self.theme.dropDownHeight}px" if isinstance(self.theme.dropDownHeight, (int, float)) else f"{self.theme.dropDownHeight}"
-        self.borderWidth = self.theme.borderWidth or 1
-        self.fontSize = self.theme.fontSize
-        self.padding = self.theme.padding.to_css_value() or "8px 12px"
-        self.dropdownColor = self.theme.dropdownColor
-        self.dropdownTextColor = self.theme.dropdownTextColor
-        self.selectedItemColor = self.theme.selectedItemColor
-        self.selectedItemShape = self.theme.selectedItemShape
-        self.dropdownMargin = self.theme.dropdownMargin.to_css_value()
-        self.itemPadding = self.theme.itemPadding
+        self.hoverColor = getattr(self.theme, 'hoverColor', Colors.rgba(0, 0, 0, 0.08))
+        self.dropdownHoverColor = getattr(self.theme, 'dropdownHoverColor', Colors.rgba(0, 0, 0, 0.08))
+        self.itemHoverColor = getattr(self.theme, 'itemHoverColor', Colors.rgba(103, 80, 164, 0.1))
+        
+        theme_width = getattr(self.theme, 'width', "100%")
+        self.width = f"{theme_width}px" if isinstance(theme_width, (int, float)) else f"{theme_width}"
+        
+        theme_dd_height = getattr(self.theme, 'dropDownHeight', "auto")
+        self.dropDownHeight = f"{theme_dd_height}px" if isinstance(theme_dd_height, (int, float)) else f"{theme_dd_height}"
+
+        self.dropdownColor = getattr(self.theme, 'dropdownColor', Colors.hex("#FFFFFF"))
+        self.dropdownTextColor = getattr(self.theme, 'dropdownTextColor', Colors.hex("#000000"))
+        self.selectedItemColor = getattr(self.theme, 'selectedItemColor', Colors.hex("#E0E0E0"))
+        self.selectedItemShape = getattr(self.theme, 'selectedItemShape', BorderRadius.all(4))
+        
+        margin = getattr(self.theme, 'dropdownMargin', EdgeInsets.only(top=45))
+        self.dropdownMargin = margin.to_css_value() if hasattr(margin, 'to_css_value') else margin
+        
+        self.itemPadding = getattr(self.theme, 'itemPadding', EdgeInsets.symmetric(horizontal=12, vertical=8))
 
         # --- Callback Management ---
         self.on_changed_name = f"dropdown_change_{self.key.value}"
@@ -4077,8 +4075,8 @@ class Dropdown(Widget):
         # will send the new value, and the framework will call this function.
         
         # --- CSS Style Management ---
-        self.style_key = (self.backgroundColor, self.textColor, self.borderColor, self.borderRadius, self.hoverColor, self.dropdownHoverColor,
-                            self.itemHoverColor, self.width, self.dropDownHeight, self.borderWidth, self.fontSize, self.padding, self.dropdownColor, 
+        self.style_key = (make_hashable(self.decoration), self.hoverColor, self.dropdownHoverColor,
+                            self.itemHoverColor, self.width, self.dropDownHeight, self.dropdownColor, 
                             self.dropdownTextColor, self.selectedItemColor, self.selectedItemShape, 
                             self.dropdownMargin, self.itemPadding, self.dropDirection)
         
@@ -4148,11 +4146,48 @@ class Dropdown(Widget):
     @staticmethod
     def generate_css_rule(style_key: Tuple, css_class: str) -> str:
         """Generates the CSS for the dropdown's appearance and states."""
-        (bg_color, text_color, border_color, border_radius, hover_color, dropdown_hover_color, item_hover_color, width, drop_down_height, border_width, font_size, padding, dropdown_color, 
-                            dropdown_text_color, selected_item_color, selected_item_shape, 
-                            dropdown_margin, item_padding, drop_direction) = style_key
+        (decoration_tuple, hover_color, dropdown_hover_color, item_hover_color, width, drop_down_height, 
+         dropdown_color, dropdown_text_color, selected_item_color, selected_item_shape, 
+         dropdown_margin, item_padding, drop_direction) = style_key
 
-        to_top_height = f"-{int(drop_down_height.replace('px', '').replace('%', '').replace('vh', '')) + 50}px"
+        try:
+            decoration = InputDecoration(
+                label=decoration_tuple[0],
+                hintText=decoration_tuple[1],
+                errorText=decoration_tuple[2],
+                fillColor=decoration_tuple[3],
+                focusColor=decoration_tuple[4],
+                labelColor=decoration_tuple[5],
+                errorColor=decoration_tuple[6],
+                borderRadius=BorderRadius(*decoration_tuple[7]) if decoration_tuple[7] else None,
+                border=BorderSide(*decoration_tuple[8]) if decoration_tuple[8] else None,
+                focusedBorder=BorderSide(*decoration_tuple[9]) if decoration_tuple[9] else None,
+                errorBorder=BorderSide(*decoration_tuple[10]) if decoration_tuple[10] else None,
+                contentPadding=EdgeInsets(*decoration_tuple[11]) if decoration_tuple[11] else None,
+                labelStyle=TextStyle(*decoration_tuple[12]) if decoration_tuple[12] else None,
+                inputStyle=TextStyle(*decoration_tuple[13]) if decoration_tuple[13] else None,
+                hintStyle=TextStyle(*decoration_tuple[14]) if decoration_tuple[14] else None,
+                filled=decoration_tuple[15],
+            )
+        except (IndexError, TypeError) as e:
+            print(f"Error unpacking style_key for Dropdown {css_class}. Using default decoration. Error: {e}")
+            decoration = InputDecoration()
+
+        filled = decoration.filled
+        fill_color = decoration.fillColor or 'rgba(0, 0, 0, 0.04)'
+        border_radius_css = decoration.borderRadius.to_css() if hasattr(decoration, "borderRadius") and decoration.borderRadius else "border-radius: 4px;"
+        
+        border_width = decoration.border.width if hasattr(decoration, "border") and decoration.border else 1
+        border_style = decoration.border.style if hasattr(decoration, "border") and decoration.border else "solid"
+        border_color = decoration.border.color if hasattr(decoration, "border") and decoration.border else "#757575"
+        
+        content_padding_css = decoration.contentPadding.to_css_value() if hasattr(decoration, "contentPadding") and decoration.contentPadding else "8px 12px"
+        text_color = decoration.inputStyle.color if hasattr(decoration, "inputStyle") and decoration.inputStyle and decoration.inputStyle.color else Colors.onSurface
+
+        try:
+            to_top_height = f"-{int(drop_down_height.replace('px', '').replace('%', '').replace('vh', '')) + 50}px"
+        except Exception:
+            to_top_height = "-50px"
 
         return f"""
         .{css_class}.dropdown-container {{
@@ -4165,16 +4200,20 @@ class Dropdown(Widget):
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: {padding};
-            background-color: {bg_color};
+            padding: {content_padding_css};
+            background-color: {fill_color};
             color: {text_color};
-            border: {border_width}px solid {border_color};
-            border-radius: {border_radius}px;
+            {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css}
+            border-top: {'none' if filled else f"{border_width}px {border_style} {border_color}"};
+            border-left: {'none' if filled else f"{border_width}px {border_style} {border_color}"};
+            border-right: {'none' if filled else f"{border_width}px {border_style} {border_color}"};
+            border-bottom:{border_width}px {border_style} {border_color}; outline: {'none' if filled else border_color}; box-sizing: border-box;
             cursor: pointer;
-            transition: border-color 0.2s;
+            transition: border-bottom-color 0.2s, background-color 0.2s, border-color 0.2s;
         }}
         .{css_class}.open .dropdown-value-container {{
-            border-color: {Colors.primary}; /* Highlight when open */
+            border-bottom-color: {decoration.focusColor}; /* Highlight when open */
+            {'border-color: ' + str(decoration.focusColor) + ';' if not filled else ''}
         }}
         .{css_class} .dropdown-caret {{
             width: 20px;
@@ -4195,7 +4234,7 @@ class Dropdown(Widget):
             background-color: {dropdown_color};
             color: {dropdown_text_color};
             border: 1px solid {border_color};
-            border-radius: {border_radius}px;
+            {border_radius_css}
             list-style: none;
             margin: {dropdown_margin};
             padding: 4px 0;

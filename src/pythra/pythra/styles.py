@@ -2642,23 +2642,16 @@ class RadioTheme:
 
 
 class DropdownTheme:
-    """Encapsulates the styling properties for the Dropdown widget."""
+    """Encapsulates the styling properties for the Dropdown widget menu and specific attributes not covered by InputDecoration."""
 
     def __init__(
         self,
-        backgroundColor=Colors.hex("#FFFFFF"),
-        borderColor=Colors.hex("#AAAAAA"),
         hoverColor=Colors.rgba(0, 0, 0, 0.1),
         dropdownHoverColor=Colors.rgba(0, 0, 0, 0.08),
         itemHoverColor=Colors.rgba(103, 80, 164, 0.1),
         width="100%",
         height="auto",
         dropDownHeight="auto",
-        borderWidth=1.0,
-        borderRadius=8.0,
-        textColor=Colors.hex("#000000"),
-        fontSize=14.0,
-        padding=EdgeInsets.symmetric(vertical=8, horizontal=12),
         dropdownColor=Colors.hex("#FFFFFF"),
         dropdownTextColor=Colors.hex("#000000"),
         selectedItemColor=Colors.hex("#E0E0E0"),
@@ -2666,19 +2659,12 @@ class DropdownTheme:
         dropdownMargin=EdgeInsets.only(top=45),
         itemPadding=EdgeInsets.symmetric(horizontal=12, vertical=8),
     ):
-        self.backgroundColor = backgroundColor
-        self.borderColor = borderColor
         self.hoverColor = hoverColor
         self.dropdownHoverColor = dropdownHoverColor
         self.itemHoverColor = itemHoverColor
         self.width = width
         self.height = height
         self.dropDownHeight = dropDownHeight
-        self.borderWidth = borderWidth
-        self.borderRadius = borderRadius
-        self.textColor = textColor
-        self.fontSize = fontSize
-        self.padding = padding
         self.dropdownColor = dropdownColor
         self.dropdownTextColor = dropdownTextColor
         self.selectedItemColor = selectedItemColor

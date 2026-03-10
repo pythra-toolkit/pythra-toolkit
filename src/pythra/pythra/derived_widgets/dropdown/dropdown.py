@@ -32,12 +32,14 @@ class DerivedDropdown(StatefulWidget):
         key: Key,
         controller: DerivedDropdownController,
         onChanged: Optional[Callable[[str], None]] = None,
+        decoration: InputDecoration = InputDecoration(),
         theme: Optional[DerivedDropdownTheme] = None,
     ):
 
         # Store configuration on the widget instance.
         self.controller = controller
         self.onChanged = onChanged
+        self.decoration = decoration
         self.theme = theme if theme else DerivedDropdownTheme()
 
         # print("key init: ", key)
@@ -56,6 +58,7 @@ class _DerivedDropdownState(State):
         self.is_open: bool = False
         self.controller: DerivedDropdownController = None
         self.theme: DerivedDropdownTheme = None
+        self.decoration: InputDecoration = None
         self.selected_value: Optional[Any] = None
         self.list_controller = VirtualListController()
         self.parent_key = None
@@ -151,7 +154,8 @@ class _DerivedDropdownState(State):
 
         # Get the authoritative configuration from the widget instance
         self.controller = widget.controller
-        self.theme = widget.theme if widget.theme else DropdownTheme(width=300)
+        self.theme = widget.theme if widget.theme else DerivedDropdownTheme(width=300)
+        self.decoration = widget.decoration if hasattr(widget, 'decoration') and widget.decoration else InputDecoration()
         self.selected_value = self.controller.value
 
         # --- SOLUTION: Use the parent widget's key to create stable child keys ---
@@ -174,7 +178,7 @@ class _DerivedDropdownState(State):
                     # padding=EdgeInsets.all(4),
                     decoration=BoxDecoration(
                         color=self.theme.dropdownColor,
-                        borderRadius=BorderRadius.circular(self.theme.borderRadius),
+                        borderRadius=self.decoration.borderRadius if self.decoration and self.decoration.borderRadius else BorderRadius.circular(8),
                         boxShadow=[
                             BoxShadow(
                                 color=Colors.rgba(0, 0, 0, 0.15),
@@ -247,6 +251,29 @@ class _DerivedDropdownState(State):
             )
         # print("widget key: ", widget.key, parent_key)
         # --- Build the Main Display Box ---
+        
+        filled = self.decoration.filled if self.decoration else False
+        fill_color = self.decoration.fillColor or 'rgba(0, 0, 0, 0.04)' if self.decoration else Colors.surfaceContainerHighest
+        border_radius_obj = self.decoration.borderRadius if self.decoration and self.decoration.borderRadius else BorderRadius.all(4)
+        border_width = self.decoration.border.width if self.decoration and hasattr(self.decoration, "border") and self.decoration.border else 1
+        border_style = self.decoration.border.style if self.decoration and hasattr(self.decoration, "border") and self.decoration.border else "solid"
+        border_color = getattr(self.decoration.border, 'color', "#757575") if self.decoration and hasattr(self.decoration, "border") and self.decoration.border else "#757575"
+        if self.is_open and self.decoration and self.decoration.focusColor:
+            border_color = getattr(self.decoration.focusedBorder, 'color', self.decoration.focusColor) if hasattr(self.decoration, "focusedBorder") and self.decoration.focusedBorder else self.decoration.focusColor
+            border_width = self.decoration.focusedBorder.width if hasattr(self.decoration, "focusedBorder") and self.decoration.focusedBorder else 2
+
+        content_padding = self.decoration.contentPadding if self.decoration and self.decoration.contentPadding else EdgeInsets.symmetric(horizontal=12, vertical=8)
+        text_color = self.decoration.inputStyle.color if self.decoration and hasattr(self.decoration, "inputStyle") and self.decoration.inputStyle and self.decoration.inputStyle.color else Colors.onSurface
+        
+        # Emulate the borders used in TextField logic for filled vs outline
+        border_side_top = border_side_left = border_side_right = border_side_bottom = BorderSide(width=border_width, style=border_style, color=border_color)
+        if filled:
+            border_side_top = border_side_left = border_side_right = BorderSide(width=0, color='transparent')
+        box_border = Border(top=border_side_top, left=border_side_left, right=border_side_right, bottom=border_side_bottom)
+
+        # Build shape
+        shape_radius = border_radius_obj
+
         main_box = TextButton(
             key=Key(f"dropdown_button_{parent_key}_{self.controller.items, self.selected_value}"),
             onPressed=self.toggle_dropdown,
@@ -258,18 +285,16 @@ class _DerivedDropdownState(State):
             onPressedName=f"my_dropdown_toggle_callback_{id(self.toggle_dropdown)}",
             style=ButtonStyle(
                 padding=EdgeInsets.all(0),
-                shape=BorderRadius.circular(self.theme.borderRadius),
+                shape=shape_radius,
             ),  # Remove default button padding
             child=Container(
                 key=Key(f"dropdown_button_{parent_key}_container"),
-                padding=self.theme.padding,
+                padding=content_padding,
                 width=self.theme.width,
                 decoration=BoxDecoration(
-                    color=self.theme.backgroundColor,
-                    border=BorderSide(
-                        width=self.theme.borderWidth, color=self.theme.borderColor
-                    ),
-                    borderRadius=BorderRadius.circular(self.theme.borderRadius),
+                    color=fill_color,
+                    border=box_border,
+                    borderRadius=shape_radius,
                 ),
                 child=Row(
                     key=Key(f"dropdown_button_{parent_key}_row"),
@@ -277,11 +302,9 @@ class _DerivedDropdownState(State):
                     crossAxisAlignment=CrossAxisAlignment.CENTER,
                     children=[
                         Text(
-                            self.selected_value or "Select...",
+                            self.selected_value or (self.decoration.hintText if self.decoration else None) or "Select...",
                             key=Key(f"dropdown_button_{parent_key}_text"),
-                            style=TextStyle(
-                                color=self.theme.textColor, fontSize=self.theme.fontSize
-                            ),
+                            style=self.decoration.inputStyle if self.decoration and self.decoration.inputStyle else TextStyle(color=text_color),
                         ),
                         SizedBox(
                             width=8,
@@ -290,7 +313,7 @@ class _DerivedDropdownState(State):
                         Icon(
                             Icons.arrow_drop_down_rounded,
                             key=Key(f"dropdown_button_{parent_key}_icon"),
-                            color=self.theme.textColor,
+                            color=text_color,
                             size=20,
                         ),
                     ],
@@ -402,8 +425,11 @@ class myFruitDropDownState(State):
             key=Key("fruit_dropdown"),
             controller=self.dropdown_controller,
             onChanged=lambda v: self.set_fruit(v),
+            decoration=InputDecoration(
+                fillColor=Colors.hex("#F9F9F9"),
+                border=BorderSide(width=1.0, style=BorderStyle.SOLID, color=Colors.hex("#CCCCCC"))
+            ),
             theme=DerivedDropdownTheme(
-                borderColor=Colors.hex("#CCCCCC"),
                 dropdownColor=Colors.hex("#F9F9F9"),
                 selectedItemColor=Colors.hex("#E0E0E0"),
             ),
