@@ -3375,9 +3375,10 @@ class Checkbox(Widget):
         """Generates the HTML stub. Now with .strip() to prevent whitespace issues."""
         css_class = props.get('css_class', '')
         on_click_handler = f"handleClick('{props.get('onPressedName', '')}')"
+        on_keydown_handler = f"if(event.key === 'Enter' || event.key === ' ') {{ event.preventDefault(); this.click(); }}"
 
         return f"""
-        <div id="{html_id}" class="checkbox-container {css_class}" onclick="{on_click_handler}" tabindex="0">
+        <div id="{html_id}" class="checkbox-container {css_class}" onclick="{on_click_handler}" onkeydown="{on_keydown_handler}" tabindex="0">
             <svg class="checkbox-svg" viewBox="0 0 24 24">
                 <path class="checkbox-checkmark" d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
             </svg>
@@ -3658,9 +3659,10 @@ class Switch(Widget):
         """Generates the HTML structure for the switch (track and thumb)."""
         css_class = props.get('css_class', '')
         on_click_handler = f"handleClick('{props.get('onPressedName', '')}')"
+        on_keydown_handler = f"if(event.key === 'Enter' || event.key === ' ') {{ event.preventDefault(); this.click(); }}"
 
         return f"""
-        <div id="{html_id}" class="switch-container {css_class}" onclick="{on_click_handler}" tabindex="0">
+        <div id="{html_id}" class="switch-container {css_class}" onclick="{on_click_handler}" onkeydown="{on_keydown_handler}" tabindex="0">
             <div class="switch-track"></div>
             <div class="switch-thumb"></div>
         </div>
@@ -3865,9 +3867,10 @@ class Radio(Widget):
         """Generates the HTML structure: an outer circle and an inner dot."""
         css_class = props.get('css_class', '')
         on_click_handler = f"handleClick('{props.get('onPressedName', '')}')"
+        on_keydown_handler = f"if(event.key === 'Enter' || event.key === ' ') {{ event.preventDefault(); this.click(); }}"
 
         return f"""
-        <div id="{html_id}" class="radio-container {css_class}" onclick="{on_click_handler}" tabindex="0">
+        <div id="{html_id}" class="radio-container {css_class}" onclick="{on_click_handler}" onkeydown="{on_keydown_handler}" tabindex="0">
             <div class="radio-dot"></div>
         </div>
         """.strip()
