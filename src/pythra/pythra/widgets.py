@@ -1040,9 +1040,14 @@ class TextButton(Widget):
                 default_text_styles = "font-weight: 500; font-size: 14px; letter-spacing: 0.1px; line-height: 20px;"
                 text_style_rule = f".{css_class} > * {{ {default_text_styles} }}"
 
+            # Ripple Effect
+            ripple_keyframes = f"@keyframes ripple_{css_class} {{ 0% {{ transform: translate(-50%, -50%) scale(0); opacity: 0.15; }} 100% {{ transform: translate(-50%, -50%) scale(2.5); opacity: 0; }} }}"
+            ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
+            ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
+
             # print("\n".join([main_rule, text_style_rule, hover_rule, active_rule, disabled_rule]))
             return "\n".join(
-                [main_rule, text_style_rule, hover_rule, active_rule, disabled_rule]
+                [main_rule, text_style_rule, hover_rule, active_rule, disabled_rule, ripple_keyframes, ripple_base, ripple_active_anim]
             )
 
         except Exception as e:
@@ -1432,8 +1437,13 @@ class ElevatedButton(Widget):
                 # Target direct children or specific class if Text widget adds one
                 text_style_rule = f".{css_class} > * {{ {text_style_css} }}"
 
+            # Ripple Effect
+            ripple_keyframes = f"@keyframes ripple_{css_class} {{ 0% {{ transform: translate(-50%, -50%) scale(0); opacity: 0.2; }} 100% {{ transform: translate(-50%, -50%) scale(2.5); opacity: 0; }} }}"
+            ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: {repr(fgColor)} if {repr(fgColor)} else 'currentColor'; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
+            ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
+
             return "\n".join(
-                [main_rule, hover_rule, active_rule, disabled_rule, text_style_rule]
+                [main_rule, hover_rule, active_rule, disabled_rule, text_style_rule, ripple_keyframes, ripple_base, ripple_active_anim]
             )
 
         except Exception as e:
@@ -1733,6 +1743,11 @@ class IconButton(Widget):
             )
             disabled_rule = f".{css_class.rstrip()}.disabled {{ color: {disabled_color}; background-color: transparent; cursor: default; pointer-events: none; }}"
 
+            # Ripple Effect
+            ripple_keyframes = f"@keyframes ripple_{css_class.rstrip()} {{ 0% {{ transform: translate(-50%, -50%) scale(0); opacity: 0.2; }} 100% {{ transform: translate(-50%, -50%) scale(2.5); opacity: 0; }} }}"
+            ripple_base = f".{css_class.rstrip()}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
+            ripple_active_anim = f".{css_class.rstrip()}:active::after {{ animation: ripple_{css_class.rstrip()} 0.6s ease-out; }}"
+
             return "\n".join(
                 [
                     main_rule,
@@ -1741,6 +1756,9 @@ class IconButton(Widget):
                     active_rule,
                     active_rule_mod,
                     disabled_rule,
+                    ripple_keyframes,
+                    ripple_base,
+                    ripple_active_anim,
                 ]
             )
 
@@ -7010,6 +7028,14 @@ class TextField(Widget):
         }}
         .textfield-root-container.{css_class} .textfield-helper-text:empty {{
              display: none; 
+        }}
+
+        /* --- HOVER STATE (Scoped) --- */
+        .textfield-root-container.{css_class}:hover:not(:focus-within) .textfield-container {{
+            border-bottom-color: #1C1B1F;
+            border-top-color: {{'transparent' if filled else '#1C1B1F'}};
+            border-left-color: {{'transparent' if filled else '#1C1B1F'}};
+            border-right-color: {{'transparent' if filled else '#1C1B1F'}};
         }}
 
         /* --- FOCUSED & VALUE STATE (Scoped) --- */
