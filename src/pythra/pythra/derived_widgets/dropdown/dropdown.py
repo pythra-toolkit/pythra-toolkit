@@ -81,7 +81,7 @@ class _DerivedDropdownState(State):
         """Opens or closes the dropdown menu."""
         self.is_open = not self.is_open
         # if key[1] == self.selected_value:
-        # print(self.selected_value)
+        print(self.selected_value)
         # print("Pressed dropdown key: ", key[0], key[1], key[2])
         self.setState()
 
@@ -170,7 +170,7 @@ class _DerivedDropdownState(State):
                 Container(
                     key=Key(f"dropdown_menu_container{parent_key}"),
                     margin=self.theme.dropdownMargin.edit(operation='+', top=40),
-                    padding=self.theme.padding,
+                    padding=self.theme.itemPadding,
                     color=self.theme.dropdownColor,
                     width=self.theme.width,
                     height=self.theme.dropdownHeight,
