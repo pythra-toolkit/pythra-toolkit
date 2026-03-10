@@ -14,25 +14,23 @@ export class PythraSlider { // <-- ADD 'export' HERE
 
         this.options = options;
         this.dragBool = false;
-
+        
         // ... THE REST OF THE FILE REMAINS EXACTLY THE SAME ...
         this.track = this.container.querySelector('.slider-track');
         this.thumb = this.container.querySelector('.slider-thumb');
-
+        
         this.handleDragStart = this.handleDragStart.bind(this);
         this.handleDragMove = this.handleDragMove.bind(this);
         this.handleDragEnd = this.handleDragEnd.bind(this);
-        this.handleKeyDown = this.handleKeyDown.bind(this);
 
         this.container.addEventListener('mousedown', this.handleDragStart);
         this.container.addEventListener('touchstart', this.handleDragStart, { passive: false });
-        this.container.addEventListener('keydown', this.handleKeyDown);
     }
 
     handleDragStart(event) {
         event.preventDefault();
         this.container.classList.add('active');
-
+        
         document.addEventListener('mousemove', this.handleDragMove);
         document.addEventListener('mouseup', this.handleDragEnd);
         document.addEventListener('touchmove', this.handleDragMove);
@@ -47,95 +45,43 @@ export class PythraSlider { // <-- ADD 'export' HERE
     }
 
     handleDragEnd(event) {
-        if (this.container) {
-            this.container.classList.remove('active');
-        }
-
+        this.container.classList.remove('active');
+        
         document.removeEventListener('mousemove', this.handleDragMove);
         document.removeEventListener('mouseup', this.handleDragEnd);
         document.removeEventListener('touchmove', this.handleDragMove);
         document.removeEventListener('touchend', this.handleDragEnd);
-
-        if (event) {
-            this.dragBool = true;
-            this.updatePosition(event);
-        }
-    }
-
-    handleKeyDown(event) {
-        // Arrow key mappings
-        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
-            event.preventDefault(); // Prevent scrolling
-            
-            const range = this.options.max - this.options.min;
-            let step = range * 0.05; // Default to 5% steps for continuous
-
-            if (this.options.divisions) {
-                step = range / this.options.divisions;
-            }
-
-            let currentPercentage = parseFloat(this.container.style.getPropertyValue('--slider-percentage')) || 0;
-            let currentValue = this.options.min + (currentPercentage / 100) * range;
-
-            let newValue = currentValue;
-            if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
-                newValue += step;
-            } else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
-                newValue -= step;
-            }
-
-            // Clamp value
-            newValue = Math.max(this.options.min, Math.min(this.options.max, newValue));
-
-            let percentage = ((newValue - this.options.min) / range) * 100;
-
-            this.container.style.setProperty('--slider-percentage', `${percentage}%`);
-            
-            if (this.lastSentValue !== newValue) {
-                this.lastSentValue = newValue;
-                if (window.pywebview && this.options.onDragName) {
-                    window.pywebview.on_drag_update(this.options.onDragName, newValue, true); // send terminal state
-                }
-            }
-        }
+        // console.log("drag ended")
+        this.dragBool = true;
+        console.log("drag ended", this.dragBool, event);
+        this.updatePosition(event);
     }
 
     updatePosition(event) {
         if (!this.track) return;
         const rect = this.track.getBoundingClientRect();
-
-        let clientX = event.clientX;
-        if (event.type && event.type.startsWith('touch')) {
-            clientX = event.touches && event.touches.length > 0 ? event.touches[0].clientX : event.changedTouches[0].clientX;
-        } else if (event.touches) {
-            clientX = event.touches.length > 0 ? event.touches[0].clientX : event.changedTouches[0].clientX;
-        }
-
+        const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+        
         let positionX = clientX - rect.left;
         let percentage = (positionX / rect.width) * 100;
-
+        
         percentage = Math.max(0, Math.min(100, percentage));
-
-        const range = this.options.max - this.options.min;
-        let newValue = this.options.min + (percentage / 100) * range;
-
-        if (this.options.divisions) {
-            const step = range / this.options.divisions;
-            newValue = this.options.min + Math.round((newValue - this.options.min) / step) * step;
-            percentage = ((newValue - this.options.min) / range) * 100;
-        }
-
+        
         this.container.style.setProperty('--slider-percentage', `${percentage}%`);
-
-        if (this.lastSentValue !== newValue || this.dragBool) {
-            this.lastSentValue = newValue;
-            if (window.pywebview && this.options.onDragName) {
-                window.pywebview.on_drag_update(this.options.onDragName, newValue, this.dragBool);
-            }
+        console.log(percentage, this.options.onDragName);
+        
+        const range = this.options.max - this.options.min;
+        const newValue = this.options.min + (percentage / 100) * range;
+        console.log(percentage, this.options.onDragName, newValue);
+        
+        if (window.pywebview && this.options.onDragName) {
+            window.pywebview.on_drag_update(this.options.onDragName, newValue, this.dragBool);
         }
-
-        if (this.dragBool) {
-            this.dragBool = false;
+        if (this.dragBool){
+            console.log("hasDrag: Ended")
+            this.dragBool = false
+        } else {
+            console.log("dragging")
         }
     }
 
@@ -143,7 +89,6 @@ export class PythraSlider { // <-- ADD 'export' HERE
         if (!this.container) return;
         this.container.removeEventListener('mousedown', this.handleDragStart);
         this.container.removeEventListener('touchstart', this.handleDragStart);
-        this.container.removeEventListener('keydown', this.handleKeyDown);
-        this.handleDragEnd(null);
+        this.handleDragEnd();
     }
 }

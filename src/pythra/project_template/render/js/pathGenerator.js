@@ -52,3 +52,5 @@ export function generateRoundedPath(points, radius) {
     console.log(pathCommands.join(' '));
     return pathCommands.join(' ');
 }
+
+window.generateRoundedPath = generateRoundedPath;

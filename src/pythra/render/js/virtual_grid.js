@@ -86,24 +86,10 @@ export class PythraVirtualGrid {
         const containerWidth = this.scrollEl.clientWidth;
         if (containerWidth === 0) return; // Not visible yet?
 
-        let crossAxisCount = this.options.crossAxisCount || 2;
+        const crossAxisCount = this.options.crossAxisCount || 2;
         const mainAxisSpacing = this.options.mainAxisSpacing || 0;
         const crossAxisSpacing = this.options.crossAxisSpacing || 0;
         const childAspectRatio = this.options.childAspectRatio || 1.0;
-        const childMinWidth = this.options.childMinWidth;
-
-        // Dynamic column count based on min width
-        if (childMinWidth && childMinWidth > 0) {
-            // Rough calculation: how many items can fit?
-            // width = (count * minWidth) + ((count - 1) * spacing)
-            // width = count * (minWidth + spacing) - spacing
-            // width + spacing = count * (minWidth + spacing)
-            // count = (width + spacing) / (minWidth + spacing)
-
-            const potentialCount = Math.floor((containerWidth + crossAxisSpacing) / (childMinWidth + crossAxisSpacing));
-            crossAxisCount = Math.max(1, potentialCount);
-            // console.log(`Dynamic Grid: width=${containerWidth}, min=${childMinWidth} -> count=${crossAxisCount}`);
-        }
 
         // Calculate item width
         // Total width = (itemWidth * count) + (spacing * (count - 1))
@@ -111,8 +97,6 @@ export class PythraVirtualGrid {
         // itemWidth = (Total width - (spacing * (count - 1))) / count
         const totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
         this.itemWidth = (containerWidth - totalSpacing) / crossAxisCount;
-
-        this.currentCrossAxisCount = crossAxisCount; // Store for render
 
         // Calculate item height based on aspect ratio
         this.itemHeight = this.itemWidth / childAspectRatio;
@@ -123,7 +107,7 @@ export class PythraVirtualGrid {
 
     updateSizerHeight() {
         const itemCount = this.options.itemCount;
-        const crossAxisCount = this.currentCrossAxisCount || this.options.crossAxisCount || 2;
+        const crossAxisCount = this.options.crossAxisCount || 2;
         const rowCount = Math.ceil(itemCount / crossAxisCount);
         const totalHeight = (rowCount * this.rowHeight) - (this.options.mainAxisSpacing || 0); // Subtract last spacing
 
@@ -156,7 +140,7 @@ export class PythraVirtualGrid {
 
         const scrollTop = this.scrollEl.scrollTop;
         const viewportHeight = this.scrollEl.clientHeight;
-        const crossAxisCount = this.currentCrossAxisCount || this.options.crossAxisCount || 2;
+        const crossAxisCount = this.options.crossAxisCount || 2;
         const crossAxisSpacing = this.options.crossAxisSpacing || 0;
 
         // Calculate visible rows

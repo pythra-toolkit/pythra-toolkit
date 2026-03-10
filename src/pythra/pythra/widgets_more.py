@@ -1211,8 +1211,6 @@ class SnackBar(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
 
-
-
 # =============================================================================
 # CENTER WIDGET - The "Perfect Centering Machine" for Layout Alignment
 # =============================================================================
@@ -3030,7 +3028,7 @@ class Slider(Widget):
 
         if not isinstance(controller, SliderController):
             raise TypeError("Slider widget requires a SliderController instance.")
-        
+
         # Initialize default theme if none provided
         theme = theme or SliderTheme()
 
@@ -3069,7 +3067,7 @@ class Slider(Widget):
             self.overlayColor, self.trackHeight, self.trackRadius, self.thumbSize,
             self.thumbBorderWidth, self.thumbBorderColor, self.thumbBorderRadius, self.overlaySize
         )
-        
+
         if self.style_key not in Slider.shared_styles:
             self.css_class = f"shared-slider-{len(Slider.shared_styles)}"
             Slider.shared_styles[self.style_key] = self.css_class
@@ -3085,13 +3083,13 @@ class Slider(Widget):
 
         self.controller.isDragEnded = drag_ended
         clamped_value = max(self.min, min(self.max, new_value))
-        
+
         snapped_value = clamped_value
         if self.divisions is not None and self.divisions > 0:
             step = (self.max - self.min) / self.divisions
             snapped_value = self.min + round((clamped_value - self.min) / step) * step
             snapped_value = max(self.min, min(self.max, snapped_value))
-            
+
         if self.onChanged:
             self.onChanged(snapped_value)
 
@@ -3131,34 +3129,30 @@ class Slider(Widget):
         style_prop = props.get('style', {})
         percentage_str = style_prop.get('--slider-percentage', '0%')
         style_attr = f'style="width: 100%; --slider-percentage: {percentage_str};"'
-        
+
         return f"""
-        <div id="{html_id}" class="slider-container {css_class}" {style_attr} tabindex="0">
+        <div id="{html_id}" class="slider-container {css_class}" {style_attr}>
             <div class="slider-track"></div>
             <div class="slider-track-active"></div>
             <div class="slider-thumb"></div>
         </div>
         """
-        
+
     @staticmethod
     def generate_css_rule(style_key: Tuple, css_class: str) -> str:
         """Generates themed CSS for the slider's appearance and states."""
         # --- Unpack all theme properties from the style_key ---
         (active_color, inactive_color, thumb_color, overlay_color,
          track_height, track_radius, thumb_size, thumb_border_width, thumb_border_color, thumb_border_radius, overlay_size) = style_key
-        
+
         # Calculate track border radius based on height
         # track_radius = track_height / 2.0
-        
+
         return f"""
         .{css_class}.slider-container {{
             position: relative; width: 100%; height: 20px;
             display: flex; align-items: center; cursor: pointer;
             -webkit-tap-highlight-color: transparent;
-            outline: none;
-        }}
-        .{css_class}.slider-container:focus-visible .slider-thumb {{
-            box-shadow: 0 0 0 2px {active_color}, 0 0 0 {overlay_size}px {overlay_color};
         }}
         .{css_class} .slider-track, .{css_class} .slider-track-active {{
             position: absolute; width: 100%; height: {track_height}px;
@@ -3180,9 +3174,9 @@ class Slider(Widget):
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             pointer-events: none;
         }}
-        .{css_class}.slider-container:hover .slider-thumb {{ transform: translateX(-50%) scale(1.1); box-shadow: 0 0 0 {overlay_size - 4}px {overlay_color}; }}
-        .{css_class}.slider-container:active .slider-thumb {{
-            transform: translateX(-50%) scale(1.1);
+        .{css_class}.slider-container:hover .slider-thumb {{ transform: translateX(-50%) scale(1.2); }}
+        .{css_class}.slider-container.active .slider-thumb {{
+            transform: translateX(-50%) scale(1.4);
             box-shadow: 0 0 0 {overlay_size}px {overlay_color};
         }}
         """

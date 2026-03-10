@@ -38,10 +38,10 @@ export class CustomScrollBar {
     _setupElements() {
         // Create the track and thumb. The CSS will style them correctly.
         this.track = document.createElement('div');
-        this.track.className = 'simplebar-track simplebar-vertical'; // Class name is styled by the parent's CSS
-
+        this.track.className = 'pythra-scrollbar-track-y'; // Class name is styled by the parent's CSS
+        
         this.thumb = document.createElement('div');
-        this.thumb.className = 'simplebar-scrollbar simplebar-visible';
+        this.thumb.className = 'pythra-scrollbar-thumb-y';
 
         this.track.appendChild(this.thumb);
         // Append the track to the CONTAINER element.
@@ -51,7 +51,7 @@ export class CustomScrollBar {
     _setupEvents() {
         this.scrollTarget.addEventListener('scroll', this._update);
         this.thumb.addEventListener('mousedown', this._handleMouseDown);
-
+        
         this.resizeObserver = new ResizeObserver(this._update);
         this.resizeObserver.observe(this.scrollTarget);
     }
@@ -63,17 +63,14 @@ export class CustomScrollBar {
             this.track.style.display = 'none';
             return;
         }
-
+        
         this.track.style.display = 'block';
 
         const thumbHeight = Math.max(20, (clientHeight / scrollHeight) * clientHeight); // Add min height for thumb
-
-        // Ensure thumbPosition respects the bottom bounds of the track exactly
-        const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
-        const thumbPosition = scrollPercentage * (clientHeight - thumbHeight);
+        const thumbPosition = (scrollTop / scrollHeight) * clientHeight;
 
         this.thumb.style.height = `${thumbHeight}px`;
-        this.thumb.style.transform = `translate3d(0px, ${thumbPosition}px, 0px)`;
+        this.thumb.style.top = `${thumbPosition}px`;
     }
 
     _handleMouseDown(e) {
@@ -93,12 +90,9 @@ export class CustomScrollBar {
         if (!this.isDragging) return;
         e.preventDefault();
         const deltaY = e.clientY - this.dragStartY;
-        // Calculate the ratio between actual scrollable height vs thumb track travel distance
-        const thumbNodeHeight = parseFloat(this.thumb.style.height) || 20;
-        const scrollRatio = (this.scrollTarget.scrollHeight - this.scrollTarget.clientHeight) /
-            (this.scrollTarget.clientHeight - thumbNodeHeight);
-
-        this.scrollTarget.scrollTop = this.initialScrollTop + (deltaY * scrollRatio);
+        // --- AND FIX IS HERE ---
+        const scrollRatio = this.scrollTarget.scrollHeight / this.scrollTarget.clientHeight;
+        this.scrollTarget.scrollTop = this.initialScrollTop + deltaY * scrollRatio;
     }
 
     _handleMouseUp(e) {
