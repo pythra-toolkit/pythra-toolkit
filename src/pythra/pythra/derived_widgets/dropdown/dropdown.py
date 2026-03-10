@@ -187,14 +187,21 @@ class _DerivedDropdownState(State):
                             )
                         ],
                     ),
-                    child=Column(
-                        mainAxisAlignment=MainAxisAlignment.START,
-                        crossAxisAlignment=CrossAxisAlignment.START,
-                        key=Key(f"dropdown_item_Column_{parent_key}"),
-                        children=[
-                             self.item_builder(index)
-                             for index, item in enumerate(self.controller.items)
-                        ],
+                    child=VirtualListView(
+                        controller=self.list_controller,
+                        key=Key(f'v_list_{parent_key}'),
+                        itemCount=len(self.controller.items),
+                        itemBuilder=self.item_builder,
+                        itemExtent=60,
+                        initialItemCount=min(12, len(self.controller.items)),
+                        width=self.theme.width,
+                        theme=ScrollbarTheme(
+                                width=14,
+                                thumbColor=Colors.lightpink,
+                                trackColor=Colors.hex("#3535353e"),
+                                thumbHoverColor=Colors.hex("#9c9b9b"),
+                                radius=6,
+                            ),
                     ),
                 )
             )
