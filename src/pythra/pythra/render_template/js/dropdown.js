@@ -43,6 +43,12 @@ export class PythraDropdown {
 
     toggleMenu(event) {
         event.stopPropagation(); // Prevent click from bubbling to the document
+        
+        // Prevent opening if entire Dropdown is disabled
+        if (this.container.classList.contains('disabled') || this.container.dataset.disabled === "true") {
+            return;
+        }
+
         const isCurrentlyOpen = this.container.classList.toggle('open');
         console.log("Value container Clicked");
         
@@ -58,6 +64,13 @@ export class PythraDropdown {
     handleItemClick(event) {
         // Find the actual dropdown item in case the user clicked a deeply nested child Widget
         const itemElement = event.currentTarget.closest('.dropdown-item') || event.currentTarget;
+        
+        // Prevent action if item represents a disabled DropdownMenuItem
+        if (itemElement.classList.contains('disabled') || itemElement.dataset.disabled === "true") {
+            event.stopPropagation();
+            return;
+        }
+
         const selectedValue = itemElement.dataset.value;
         const selectedLabel = itemElement.dataset.label || itemElement.textContent;
 
@@ -75,7 +88,7 @@ export class PythraDropdown {
             window.pywebview.on_input_changed(this.options.onChangedName, selectedValue);
         }
         
-        // 3. Close the menu
+        // 4. Close the menu
         this.closeMenu();
     }
     

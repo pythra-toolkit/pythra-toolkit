@@ -3967,11 +3967,12 @@ class DropdownMenuItem(Widget):
     Allows passing a fully customized child widget (like Text with a specific TextStyle)
     instead of just a raw string label.
     """
-    def __init__(self, key: Key, value: Any, child: Widget, label: Optional[str] = None):
+    def __init__(self, key: Key, value: Any, child: Widget, label: Optional[str] = None, disabled: bool = False):
         super().__init__(key=key, children=[child])
         self.value = value
         self.child = child
         self.label = label
+        self.disabled = disabled
 
     def render_props(self) -> Dict[str, Any]:
         return {}
@@ -3985,7 +3986,8 @@ class DropdownMenuItem(Widget):
         # We rely on the parent Dropdown to handle the click event class logic.
         # Ensure data-value is present so the JS engine can capture the selection.
         label_attr = f' data-label="{html.escape(widget_instance.label, quote=True)}"' if widget_instance.label else ''
-        return f'<li class="dropdown-item" id="{html_id}" data-value="{value_escaped}"{label_attr}>{{children}}</li>'
+        disabled_attr = ' data-disabled="true"' if widget_instance.disabled else ''
+        return f'<li class="dropdown-item{ " disabled" if widget_instance.disabled else ""}" id="{html_id}" data-value="{value_escaped}"{label_attr}{disabled_attr}>{{children}}</li>'
 
 # =============================================================================
 # DROPDOWN - The Classic "Select from a List" Control
@@ -4062,6 +4064,7 @@ class Dropdown(Widget):
                  dropDirection: Union[VerticalDirection, str] = VerticalDirection.DOWN,
                  decoration: InputDecoration = InputDecoration(),
                  theme: Optional[DropdownTheme] = None,
+                 disabled: bool = False,
                  ):
 
         # Extract Widget children from DropdownMenuItems to mount them
@@ -4078,6 +4081,7 @@ class Dropdown(Widget):
         self.hintText = hintText
         self.dropDirection = dropDirection
         self.decoration = decoration
+        self.disabled = disabled
         
         # --- Style Properties ---
         self.hoverColor = getattr(self.theme, 'hoverColor', Colors.rgba(0, 0, 0, 0.08))
@@ -4099,6 +4103,9 @@ class Dropdown(Widget):
         self.dropdownMargin = margin.to_css_value() if hasattr(margin, 'to_css_value') else margin
         
         self.itemPadding = getattr(self.theme, 'itemPadding', EdgeInsets.symmetric(horizontal=12, vertical=8))
+        
+        self.elevation = getattr(self.theme, 'elevation', 8)
+        self.disabledColor = getattr(self.theme, 'disabledColor', Colors.hex("#BDBDBD"))
 
         # --- Callback Management ---
         self.on_changed_name = f"dropdown_change_{self.key.value}"
@@ -4109,7 +4116,7 @@ class Dropdown(Widget):
         self.style_key = (make_hashable(self.decoration), self.hoverColor, self.dropdownHoverColor,
                             self.itemHoverColor, self.width, self.dropDownHeight, self.dropdownColor, 
                             self.dropdownTextColor, self.selectedItemColor, self.selectedItemShape, 
-                            self.dropdownMargin, self.itemPadding, self.dropDirection)
+                            self.dropdownMargin, self.itemPadding, self.dropDirection, self.elevation, self.disabledColor)
         
         if self.style_key not in Dropdown.shared_styles:
             self.css_class = f"shared-dropdown-{len(Dropdown.shared_styles)}"
@@ -4174,7 +4181,7 @@ class Dropdown(Widget):
         menu_items_body = "{children}" if has_dropdown_widgets else items_html
 
         return f"""
-        <div id="{html_id}" class="dropdown-container {css_class}">
+        <div id="{html_id}" class="dropdown-container {css_class}{' disabled' if widget_instance.disabled else ''}"{' data-disabled="true"' if widget_instance.disabled else ''}>
             <div class="dropdown-value-container">
                 <span>{html.escape(current_label)}</span>
                 <svg class="dropdown-caret" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"></path></svg>
@@ -4190,7 +4197,7 @@ class Dropdown(Widget):
         """Generates the CSS for the dropdown's appearance and states."""
         (decoration_tuple, hover_color, dropdown_hover_color, item_hover_color, width, drop_down_height, 
          dropdown_color, dropdown_text_color, selected_item_color, selected_item_shape, 
-         dropdown_margin, item_padding, drop_direction) = style_key
+         dropdown_margin, item_padding, drop_direction, elevation, disabled_color) = style_key
 
         try:
             decoration = InputDecoration(
@@ -4285,8 +4292,22 @@ class Dropdown(Widget):
             visibility: hidden;
             transform: translateY(-10px);
             transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 {elevation / 2}px {elevation}px rgba(0,0,0,0.15);
             overflow-y: auto;
+        }}
+        /* Elegant Native Scrollbars for Pythra Menu */
+        .{css_class} .dropdown-menu::-webkit-scrollbar {{
+            width: 8px;
+        }}
+        .{css_class} .dropdown-menu::-webkit-scrollbar-track {{
+            background: transparent;
+        }}
+        .{css_class} .dropdown-menu::-webkit-scrollbar-thumb {{
+            background: {hover_color}; 
+            border-radius: 4px;
+        }}
+        .{css_class} .dropdown-menu::-webkit-scrollbar-thumb:hover {{
+            background: {item_hover_color}; 
         }}
         .{css_class}.open .dropdown-menu {{
             opacity: 1;
@@ -4294,10 +4315,21 @@ class Dropdown(Widget):
             transform: translateY({0 if drop_direction.lower() == 'down' else to_top_height});
             z-index: 1500;
         }}
+        .{css_class}.disabled {{
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }}
         .{css_class} .dropdown-item {{
             padding: 8px 12px;
             cursor: pointer;
             transition: background-color 0.2s;
+        }}
+        .{css_class} .dropdown-item.disabled {{
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            background-color: transparent !important;
         }}
         .{css_class} .dropdown-item:hover {{
             background-color: {item_hover_color}; /* Hover color */
