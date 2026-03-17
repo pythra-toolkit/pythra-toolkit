@@ -1054,6 +1054,7 @@ class Framework:
         props = node_data["props"]
         widget_instance = node_data["widget_instance"]
 
+
         stub = self.reconciler._generate_html_stub(widget_instance, html_id, props)
         # print("stub: ", stub)
 
@@ -1062,6 +1063,9 @@ class Framework:
             for child_key in node_data.get("children_keys", [])
         )
 
+        if "{children}" in stub:
+            return stub.replace("{children}", children_html)
+        
         if ">" in stub and "</" in stub:
             tag = self.reconciler._get_widget_render_tag(widget_instance)
             closing_tag = f"</{tag}>"

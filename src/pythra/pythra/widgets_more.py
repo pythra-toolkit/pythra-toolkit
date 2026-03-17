@@ -3959,6 +3959,35 @@ class Radio(Widget):
         """
 
 # =============================================================================
+# DROPDOWN MENU ITEM - Specialized item for the Dropdown menu
+# =============================================================================
+class DropdownMenuItem(Widget):
+    """
+    An item in a Material Design drop-down menu.
+    Allows passing a fully customized child widget (like Text with a specific TextStyle)
+    instead of just a raw string label.
+    """
+    def __init__(self, key: Key, value: Any, child: Widget, label: Optional[str] = None):
+        super().__init__(key=key, children=[child])
+        self.value = value
+        self.child = child
+        self.label = label
+
+    def render_props(self) -> Dict[str, Any]:
+        return {}
+        
+    def get_required_css_classes(self) -> Set[str]:
+        return set()
+
+    @staticmethod
+    def _generate_html_stub(widget_instance: 'DropdownMenuItem', html_id: str, props: Dict) -> str:
+        value_escaped = html.escape(str(widget_instance.value), quote=True)
+        # We rely on the parent Dropdown to handle the click event class logic.
+        # Ensure data-value is present so the JS engine can capture the selection.
+        label_attr = f' data-label="{html.escape(widget_instance.label, quote=True)}"' if widget_instance.label else ''
+        return f'<li class="dropdown-item" id="{html_id}" data-value="{value_escaped}"{label_attr}>{{children}}</li>'
+
+# =============================================================================
 # DROPDOWN - The Classic "Select from a List" Control
 # =============================================================================
 class Dropdown(Widget):
@@ -4027,7 +4056,7 @@ class Dropdown(Widget):
     def __init__(self,
                  key: Key,
                  controller: DropdownController,
-                 items: List[Union[str, Tuple[str, Any]]],
+                 items: List[Union[str, Tuple[str, Any], 'DropdownMenuItem']],
                  onChanged: Callable[[Any], None],
                  hintText: str = "Select an option",
                  dropDirection: Union[VerticalDirection, str] = VerticalDirection.DOWN,
@@ -4035,7 +4064,9 @@ class Dropdown(Widget):
                  theme: Optional[DropdownTheme] = None,
                  ):
 
-        super().__init__(key=key)
+        # Extract Widget children from DropdownMenuItems to mount them
+        children_widgets = [item for item in items if isinstance(item, DropdownMenuItem)]
+        super().__init__(key=key, children=children_widgets)
 
         if not isinstance(controller, DropdownController):
             raise TypeError("Dropdown requires a DropdownController instance.")
@@ -4089,7 +4120,10 @@ class Dropdown(Widget):
     def _get_label_for_value(self, value: Any) -> str:
         """Finds the display label corresponding to a given value."""
         for item in self.items:
-            if isinstance(item, tuple):
+            if isinstance(item, DropdownMenuItem):
+                if item.value == value:
+                    return item.label or str(item.value)
+            elif isinstance(item, tuple):
                 label, item_value = item
                 if item_value == value:
                     return label
@@ -4124,12 +4158,19 @@ class Dropdown(Widget):
         
         # Build the list of dropdown items (<li> elements)
         items_html = ""
+        has_dropdown_widgets = False
+        
         for item in items:
-            if isinstance(item, tuple):
+            if isinstance(item, DropdownMenuItem):
+                has_dropdown_widgets = True
+                pass # The reconciler mounts DropdownMenuItem children asynchronously via the {children} tag
+            elif isinstance(item, tuple):
                 label, value = item
                 items_html += f'<li class="dropdown-item" data-value="{html.escape(str(value), quote=True)}">{html.escape(label)}</li>'
             else: # Simple list of strings
                 items_html += f'<li class="dropdown-item" data-value="{html.escape(str(item), quote=True)}">{html.escape(item)}</li>'
+        
+        menu_items_body = "{children}" if has_dropdown_widgets else items_html
 
         return f"""
         <div id="{html_id}" class="dropdown-container {css_class}">
@@ -4138,7 +4179,7 @@ class Dropdown(Widget):
                 <svg class="dropdown-caret" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"></path></svg>
             </div>
             <ul class="dropdown-menu">
-                {items_html}
+                {menu_items_body}
             </ul>
         </div>
         """

@@ -46,8 +46,10 @@ export class PythraDropdown {
     }
 
     handleItemClick(event) {
-        const selectedValue = event.currentTarget.dataset.value;
-        const selectedLabel = event.currentTarget.textContent;
+        // Find the actual dropdown item in case the user clicked a deeply nested child Widget
+        const itemElement = event.currentTarget.closest('.dropdown-item') || event.currentTarget;
+        const selectedValue = itemElement.dataset.value;
+        const selectedLabel = itemElement.dataset.label || itemElement.textContent;
 
         console.log("Dropdown option Clicked");
         
