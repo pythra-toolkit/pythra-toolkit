@@ -19,6 +19,16 @@ export class PythraDropdown {
         this.menu = this.container.querySelector('.dropdown-menu');
         this.items = this.menu.querySelectorAll('.dropdown-item');
 
+        // Apply initial selected style
+        const initialValue = this.options.selectedValue;
+        if (initialValue !== undefined && initialValue !== null) {
+            this.items.forEach(item => {
+                if (item.dataset.value === String(initialValue)) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
         // Bind 'this' to maintain context in event handlers
         this.toggleMenu = this.toggleMenu.bind(this);
         this.handleItemClick = this.handleItemClick.bind(this);
@@ -55,8 +65,12 @@ export class PythraDropdown {
         
         // 1. Update the display value immediately for instant feedback
         this.valueContainer.querySelector('span').textContent = selectedLabel;
+
+        // 2. Update visual selection class
+        this.items.forEach(item => item.classList.remove('selected'));
+        itemElement.classList.add('selected');
         
-        // 2. Send the selected *value* back to the Python backend
+        // 3. Send the selected *value* back to the Python backend
         if (window.pywebview && this.options.onChangedName) {
             window.pywebview.on_input_changed(this.options.onChangedName, selectedValue);
         }

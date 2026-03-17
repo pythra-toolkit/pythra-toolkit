@@ -4138,6 +4138,7 @@ class Dropdown(Widget):
             "init_dropdown": True, # Flag for the JS initializer
             "dropdown_options": {
                 "onChangedName": self.on_changed_name,
+                "selectedValue": self.controller.selectedValue,
             },
             # This is the new, unified callback pattern
             "onChangedName": self.on_changed_name,
@@ -4300,6 +4301,10 @@ class Dropdown(Widget):
         }}
         .{css_class} .dropdown-item:hover {{
             background-color: {item_hover_color}; /* Hover color */
+        }}
+        .{css_class} .dropdown-item.selected {{
+            background-color: {selected_item_color};
+            font-weight: bold;
         }}
         .{css_class} .dropdown-value-container:hover {{
             background-color: {hover_color}; /* Hover color */
