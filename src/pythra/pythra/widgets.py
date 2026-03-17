@@ -7035,10 +7035,10 @@ class TextField(Widget):
 
         /* --- HOVER STATE (Scoped) --- */
         .textfield-root-container.{css_class}:hover:not(:focus-within) .textfield-container {{
-            border-bottom-color: #1C1B1F;
-            border-top-color: {{'transparent' if filled else '#1C1B1F'}};
-            border-left-color: {{'transparent' if filled else '#1C1B1F'}};
-            border-right-color: {{'transparent' if filled else '#1C1B1F'}};
+            border-bottom-color: {'transparent' if filled else  '#1C1B1F'};
+            border-top-color: {'transparent' if filled else '#1C1B1F'};
+            border-left-color: {'transparent' if filled else '#1C1B1F'};
+            border-right-color: {'transparent' if filled else '#1C1B1F'};
         }}
 
         /* --- FOCUSED & VALUE STATE (Scoped) --- */

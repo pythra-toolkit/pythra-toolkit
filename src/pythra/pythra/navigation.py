@@ -43,9 +43,6 @@ class NavigatorState(State):
         
     def push(self, route: PageRoute):
         self.history.append(route)
-
-        # print("[Navugator push widgetState]: ", route.widget_instance.get_state())
-        # route.widget_instance.get_state().syncState()
         self.setState()
 
     def preload(self, route: PageRoute):

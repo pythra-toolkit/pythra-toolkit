@@ -2656,7 +2656,7 @@ class DropdownTheme:
         dropdownTextColor=Colors.hex("#000000"),
         selectedItemColor=Colors.hex("#E0E0E0"),
         selectedItemShape=BorderRadius.all(4),
-        dropdownMargin=EdgeInsets.only(top=45),
+        dropdownMargin=EdgeInsets.only(top=12),
         itemPadding=EdgeInsets.symmetric(horizontal=12, vertical=8),
     ):
         self.hoverColor = hoverColor

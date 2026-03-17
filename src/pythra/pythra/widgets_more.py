@@ -4250,6 +4250,7 @@ class Dropdown(Widget):
             opacity: 1;
             visibility: visible;
             transform: translateY({0 if drop_direction.lower() == 'down' else to_top_height});
+            z-index: 1500;
         }}
         .{css_class} .dropdown-item {{
             padding: 8px 12px;

@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pythra.styles import *
 from pythra.widgets import *
 from pythra.state import *
-from pythra.core import Framework 
+from pythra.core import Framework
 from .controller import DerivedDropdownController
 from .style import DerivedDropdownTheme
 from typing import Callable, List, Optional
@@ -32,14 +32,12 @@ class DerivedDropdown(StatefulWidget):
         key: Key,
         controller: DerivedDropdownController,
         onChanged: Optional[Callable[[str], None]] = None,
-        decoration: InputDecoration = InputDecoration(),
         theme: Optional[DerivedDropdownTheme] = None,
     ):
 
         # Store configuration on the widget instance.
         self.controller = controller
         self.onChanged = onChanged
-        self.decoration = decoration
         self.theme = theme if theme else DerivedDropdownTheme()
 
         # print("key init: ", key)
@@ -58,7 +56,6 @@ class _DerivedDropdownState(State):
         self.is_open: bool = False
         self.controller: DerivedDropdownController = None
         self.theme: DerivedDropdownTheme = None
-        self.decoration: InputDecoration = None
         self.selected_value: Optional[Any] = None
         self.list_controller = VirtualListController()
         self.parent_key = None
@@ -81,7 +78,7 @@ class _DerivedDropdownState(State):
         """Opens or closes the dropdown menu."""
         self.is_open = not self.is_open
         # if key[1] == self.selected_value:
-        print(self.selected_value)
+        # print(self.selected_value)
         # print("Pressed dropdown key: ", key[0], key[1], key[2])
         self.setState()
 
@@ -106,45 +103,6 @@ class _DerivedDropdownState(State):
         #    However, to ensure the dropdown closes instantly, we'll call it.
         self.setState()
 
-    def item_builder(self, n) -> Widget:
-        print('index: ',n)
-        item = self.controller.items[n]
-        return Container(
-                                # height=self.theme.dropdownHeight,
-                                padding=self.theme.itemPadding
-                                or EdgeInsets.symmetric(horizontal=12, vertical=8),
-                                color=(
-                                    self.theme.selectedItemColor
-                                    if item == self.selected_value
-                                    else Colors.transparent
-                                ),
-                                width="100%",
-                                decoration=BoxDecoration(
-                                    borderRadius=self.theme.selectedItemShape
-                                    or BorderRadius.circular(4),
-                                ),
-                                key=Key(f"dropdown_item_{item}_padding_{self.parent_key}"),
-                                child=ListTile(
-                                    key=Key(f"dropdown_item_{item}_{self.parent_key}"),
-                                    title=Text(
-                                        item,
-                                        key=Key(
-                                            f"dropdown_item_title_{item}_{self.parent_key}"
-                                        ),
-                                        style=TextStyle(
-                                            color=self.theme.dropdownTextColor
-                                        ),
-                                    ),
-                                    onTap=self.select_item,
-                                    onTapName=f"item_tap_callback_{id(self.select_item)}",
-                                    onTapArg=[item],
-                                    selected=item == self.selected_value,
-                                    selectedTileColor=self.theme.selectedItemColor,
-                                    contentPadding=EdgeInsets.symmetric(
-                                        horizontal=12, vertical=8
-                                    ),
-                                ),
-                            )
 
     def build(self) -> Widget:
         """Builds the dropdown UI, including the overlay menu if it's open."""
@@ -154,14 +112,12 @@ class _DerivedDropdownState(State):
 
         # Get the authoritative configuration from the widget instance
         self.controller = widget.controller
-        self.theme = widget.theme if widget.theme else DerivedDropdownTheme(width=300)
-        self.decoration = widget.decoration if hasattr(widget, 'decoration') and widget.decoration else InputDecoration()
+        self.theme = widget.theme if widget.theme else DropdownTheme(width=300)
         self.selected_value = self.controller.value
 
         # --- SOLUTION: Use the parent widget's key to create stable child keys ---
         parent_key = widget.key.value
         self.parent_key = parent_key
-        self.item_builder(0)
 
         # --- Build the DerivedDropdown Menu (only if open) ---
         menu_items = []
@@ -169,16 +125,16 @@ class _DerivedDropdownState(State):
             menu_items.append(
                 Container(
                     key=Key(f"dropdown_menu_container{parent_key}"),
-                    margin=self.theme.dropdownMargin.edit(operation='+', top=40),
-                    padding=self.theme.itemPadding,
+                    margin=self.theme.dropdownMargin.edit(operation="+", top=40),
+                    padding=self.theme.padding,
                     color=self.theme.dropdownColor,
                     width=self.theme.width,
                     height=self.theme.dropdownHeight,
-                    zAxisIndex= 1900,
+                    zAxisIndex=1900,
                     # padding=EdgeInsets.all(4),
                     decoration=BoxDecoration(
                         color=self.theme.dropdownColor,
-                        borderRadius=self.decoration.borderRadius if self.decoration and self.decoration.borderRadius else BorderRadius.circular(8),
+                        borderRadius=BorderRadius.circular(self.theme.borderRadius),
                         boxShadow=[
                             BoxShadow(
                                 color=Colors.rgba(0, 0, 0, 0.15),
@@ -187,51 +143,63 @@ class _DerivedDropdownState(State):
                             )
                         ],
                     ),
-                    child=VirtualListView(
-                        controller=self.list_controller,
-                        key=Key(f'v_list_{parent_key}'),
-                        itemCount=len(self.controller.items),
-                        itemBuilder=self.item_builder,
-                        itemExtent=60,
-                        initialItemCount=min(12, len(self.controller.items)),
-                        width=self.theme.width,
-                        theme=ScrollbarTheme(
-                                width=14,
-                                thumbColor=Colors.lightpink,
-                                trackColor=Colors.hex("#3535353e"),
-                                thumbHoverColor=Colors.hex("#9c9b9b"),
-                                radius=6,
-                            ),
+                    child=SingleChildScrollView(
+                        key=Key(f"dropdown_item_Column_scroll_{parent_key}"),
+                        child=Column(
+                            mainAxisAlignment=MainAxisAlignment.START,
+                            crossAxisAlignment=CrossAxisAlignment.START,
+                            key=Key(f"dropdown_item_Column_{parent_key}"),
+                            children=[
+                                Container(
+                                    # height=self.theme.dropdownHeight,
+                                    padding=self.theme.itemPadding
+                                    or EdgeInsets.symmetric(horizontal=12, vertical=8),
+                                    color=(
+                                        self.theme.selectedItemColor
+                                        if item == self.selected_value
+                                        else Colors.transparent
+                                    ),
+                                    width="100%",
+                                    decoration=BoxDecoration(
+                                        borderRadius=self.theme.selectedItemShape
+                                        or BorderRadius.circular(4),
+                                    ),
+                                    key=Key(
+                                        f"dropdown_item_{item}_padding_{parent_key}"
+                                    ),
+                                    child=ListTile(
+                                        key=Key(f"dropdown_item_{item}_{parent_key}"),
+                                        title=Text(
+                                            item,
+                                            key=Key(
+                                                f"dropdown_item_title_{item}_{parent_key}"
+                                            ),
+                                            style=TextStyle(
+                                                color=self.theme.dropdownTextColor
+                                            ),
+                                        ),
+                                        onTap=self.select_item,
+                                        onTapName=f"item_tap_callback_{parent_key}_{item}",
+                                        onTapArg=[item],
+                                        selected=item == self.selected_value,
+                                        selectedTileColor=self.theme.selectedItemColor,
+                                        contentPadding=EdgeInsets.symmetric(
+                                            horizontal=12, vertical=8
+                                        ),
+                                    ),
+                                )
+                                for item in self.controller.items
+                            ],
+                        ),
                     ),
                 )
             )
         # print("widget key: ", widget.key, parent_key)
         # --- Build the Main Display Box ---
-        
-        filled = self.decoration.filled if self.decoration else False
-        fill_color = self.decoration.fillColor or 'rgba(0, 0, 0, 0.04)' if self.decoration else Colors.surfaceContainerHighest
-        border_radius_obj = self.decoration.borderRadius if self.decoration and self.decoration.borderRadius else BorderRadius.all(4)
-        border_width = self.decoration.border.width if self.decoration and hasattr(self.decoration, "border") and self.decoration.border else 1
-        border_style = self.decoration.border.style if self.decoration and hasattr(self.decoration, "border") and self.decoration.border else "solid"
-        border_color = getattr(self.decoration.border, 'color', "#757575") if self.decoration and hasattr(self.decoration, "border") and self.decoration.border else "#757575"
-        if self.is_open and self.decoration and self.decoration.focusColor:
-            border_color = getattr(self.decoration.focusedBorder, 'color', self.decoration.focusColor) if hasattr(self.decoration, "focusedBorder") and self.decoration.focusedBorder else self.decoration.focusColor
-            border_width = self.decoration.focusedBorder.width if hasattr(self.decoration, "focusedBorder") and self.decoration.focusedBorder else 2
-
-        content_padding = self.decoration.contentPadding if self.decoration and self.decoration.contentPadding else EdgeInsets.symmetric(horizontal=12, vertical=8)
-        text_color = self.decoration.inputStyle.color if self.decoration and hasattr(self.decoration, "inputStyle") and self.decoration.inputStyle and self.decoration.inputStyle.color else Colors.onSurface
-        
-        # Emulate the borders used in TextField logic for filled vs outline
-        border_side_top = border_side_left = border_side_right = border_side_bottom = BorderSide(width=border_width, style=border_style, color=border_color)
-        if filled:
-            border_side_top = border_side_left = border_side_right = BorderSide(width=0, color='transparent')
-        box_border = Border(top=border_side_top, left=border_side_left, right=border_side_right, bottom=border_side_bottom)
-
-        # Build shape
-        shape_radius = border_radius_obj
-
         main_box = TextButton(
-            key=Key(f"dropdown_button_{parent_key}_{self.controller.items, self.selected_value}"),
+            key=Key(
+                f"dropdown_button_{parent_key}_{self.controller.items, self.selected_value}"
+            ),
             onPressed=self.toggle_dropdown,
             onPressedArgs=[
                 "dropdown_button_",
@@ -241,16 +209,18 @@ class _DerivedDropdownState(State):
             onPressedName=f"my_dropdown_toggle_callback_{id(self.toggle_dropdown)}",
             style=ButtonStyle(
                 padding=EdgeInsets.all(0),
-                shape=shape_radius,
+                shape=BorderRadius.circular(self.theme.borderRadius),
             ),  # Remove default button padding
             child=Container(
                 key=Key(f"dropdown_button_{parent_key}_container"),
-                padding=content_padding,
+                padding=self.theme.padding,
                 width=self.theme.width,
                 decoration=BoxDecoration(
-                    color=fill_color,
-                    border=box_border,
-                    borderRadius=shape_radius,
+                    color=self.theme.backgroundColor,
+                    border=BorderSide(
+                        width=self.theme.borderWidth, color=self.theme.borderColor
+                    ),
+                    borderRadius=BorderRadius.circular(self.theme.borderRadius),
                 ),
                 child=Row(
                     key=Key(f"dropdown_button_{parent_key}_row"),
@@ -258,9 +228,11 @@ class _DerivedDropdownState(State):
                     crossAxisAlignment=CrossAxisAlignment.CENTER,
                     children=[
                         Text(
-                            self.selected_value or (self.decoration.hintText if self.decoration else None) or "Select...",
+                            self.selected_value or "Select...",
                             key=Key(f"dropdown_button_{parent_key}_text"),
-                            style=self.decoration.inputStyle if self.decoration and self.decoration.inputStyle else TextStyle(color=text_color),
+                            style=TextStyle(
+                                color=self.theme.textColor, fontSize=self.theme.fontSize
+                            ),
                         ),
                         SizedBox(
                             width=8,
@@ -269,7 +241,7 @@ class _DerivedDropdownState(State):
                         Icon(
                             Icons.arrow_drop_down_rounded,
                             key=Key(f"dropdown_button_{parent_key}_icon"),
-                            color=text_color,
+                            color=self.theme.textColor,
                             size=20,
                         ),
                     ],
@@ -310,7 +282,9 @@ class _DerivedDropdownState(State):
                                     children=menu_items,
                                 ),
                                 decoration=BoxDecoration(
-                                    borderRadius=shape_radius,
+                                    borderRadius=BorderRadius.circular(
+                                        self.theme.borderRadius
+                                    ),
                                 ),
                             )
                             if self.is_open
@@ -320,11 +294,8 @@ class _DerivedDropdownState(State):
                         ),  # The menu will only appear if `is_open` is true
                     ),
                 ],
-            )
+            ),
         )
-
-
-
 
 
 # ==============================================================================
@@ -379,11 +350,8 @@ class myFruitDropDownState(State):
             key=Key("fruit_dropdown"),
             controller=self.dropdown_controller,
             onChanged=lambda v: self.set_fruit(v),
-            decoration=InputDecoration(
-                fillColor=Colors.hex("#F9F9F9"),
-                border=BorderSide(width=1.0, style=BorderStyle.SOLID, color=Colors.hex("#CCCCCC"))
-            ),
             theme=DerivedDropdownTheme(
+                borderColor=Colors.hex("#CCCCCC"),
                 dropdownColor=Colors.hex("#F9F9F9"),
                 selectedItemColor=Colors.hex("#E0E0E0"),
             ),
