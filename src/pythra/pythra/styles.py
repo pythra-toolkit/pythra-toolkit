@@ -2658,6 +2658,8 @@ class DropdownTheme:
         selectedItemShape=BorderRadius.all(4),
         dropdownMargin=EdgeInsets.only(top=12),
         itemPadding=EdgeInsets.symmetric(horizontal=12, vertical=8),
+        elevation=8,
+        disabledColor=Colors.hex("#BDBDBD"),
     ):
         self.hoverColor = hoverColor
         self.dropdownHoverColor = dropdownHoverColor
@@ -2671,6 +2673,8 @@ class DropdownTheme:
         self.selectedItemShape = selectedItemShape
         self.dropdownMargin = dropdownMargin
         self.itemPadding = itemPadding
+        self.elevation = elevation
+        self.disabledColor = disabledColor
 
 
 @dataclass
