@@ -4102,7 +4102,14 @@ class Dropdown(Widget):
         margin = getattr(self.theme, 'dropdownMargin', EdgeInsets.only(top=45))
         self.dropdownMargin = margin.to_css_value() if hasattr(margin, 'to_css_value') else margin
         
-        self.itemPadding = getattr(self.theme, 'itemPadding', EdgeInsets.symmetric(horizontal=12, vertical=8))
+        item_padding = getattr(self.theme, 'itemPadding', EdgeInsets.symmetric(horizontal=12, vertical=8))
+        self.itemPadding = item_padding.to_css_value() if hasattr(item_padding, 'to_css_value') else item_padding
+        
+        item_margin = getattr(self.theme, 'itemMargin', EdgeInsets.all(0))
+        self.itemMargin = item_margin.to_css_value() if hasattr(item_margin, 'to_css_value') else item_margin
+        
+        menu_padding = getattr(self.theme, 'menuPadding', EdgeInsets.symmetric(vertical=4))
+        self.menuPadding = menu_padding.to_css_value() if hasattr(menu_padding, 'to_css_value') else menu_padding
         
         self.elevation = getattr(self.theme, 'elevation', 8)
         self.disabledColor = getattr(self.theme, 'disabledColor', Colors.hex("#BDBDBD"))
@@ -4116,7 +4123,8 @@ class Dropdown(Widget):
         self.style_key = (make_hashable(self.decoration), self.hoverColor, self.dropdownHoverColor,
                             self.itemHoverColor, self.width, self.dropDownHeight, self.dropdownColor, 
                             self.dropdownTextColor, self.selectedItemColor, self.selectedItemShape, 
-                            self.dropdownMargin, self.itemPadding, self.dropDirection, self.elevation, self.disabledColor)
+                            self.dropdownMargin, self.itemPadding, self.itemMargin, self.menuPadding, 
+                            self.dropDirection, self.elevation, self.disabledColor)
         
         if self.style_key not in Dropdown.shared_styles:
             self.css_class = f"shared-dropdown-{len(Dropdown.shared_styles)}"
@@ -4197,7 +4205,7 @@ class Dropdown(Widget):
         """Generates the CSS for the dropdown's appearance and states."""
         (decoration_tuple, hover_color, dropdown_hover_color, item_hover_color, width, drop_down_height, 
          dropdown_color, dropdown_text_color, selected_item_color, selected_item_shape, 
-         dropdown_margin, item_padding, drop_direction, elevation, disabled_color) = style_key
+         dropdown_margin, item_padding, item_margin, menu_padding, drop_direction, elevation, disabled_color) = style_key
 
         try:
             decoration = InputDecoration(
@@ -4286,7 +4294,7 @@ class Dropdown(Widget):
             {border_radius_css}
             list-style: none;
             margin: {dropdown_margin};
-            padding: 4px 0;
+            padding: {menu_padding};
             z-index: 100;
             opacity: 0;
             visibility: hidden;
@@ -4321,9 +4329,11 @@ class Dropdown(Widget):
             pointer-events: none;
         }}
         .{css_class} .dropdown-item {{
-            padding: 8px 12px;
+            padding: {item_padding};
+            margin: {item_margin};
             cursor: pointer;
             transition: background-color 0.2s;
+            {selected_item_shape.to_css() if hasattr(selected_item_shape, 'to_css') else ''}
         }}
         .{css_class} .dropdown-item.disabled {{
             opacity: 0.5;
