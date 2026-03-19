@@ -221,6 +221,19 @@ class Framework:
         self._js_utils_cache: Dict[frozenset, str] = {}
         # Cache for file contents to avoid reopening the same file repeatedly
         self._js_file_content_cache: Dict[str, str] = {}
+        self._engine_to_file_map = {
+            'generateRoundedPath': "render/js/pathGenerator.js",
+            'ResponsiveClipPath': "render/js/clipPathUtils.js", 
+            'scalePathAbsoluteMLA': "render/js/clipPathUtils.js",
+            'PythraSlider': "render/js/slider.js",
+            'PythraDropdown': "render/js/dropdown.js",
+            'PythraGestureDetector': "render/js/gesture_detector.js",
+            'PythraGradientClipPath': "render/js/gradient_border.js",
+            'PythraVirtualList': "render/js/virtual_list.js",
+            'PythraVirtualGrid': "render/js/virtual_grid.js",
+            'PythraTextField': "render/js/textfield.js",
+            'PythraVirtualizedDropdownInternal': "render/js/virtual_dropdown.js"
+        }
 
         self._result = None  # Stores UI update results
         # Track whether initial files were written and keep their last content
@@ -252,6 +265,50 @@ class Framework:
     def list_packages(self, package_type: Optional[PackageType] = None) -> List[Any]:
         """List all discovered packages, optionally filtered by type"""
         return self.package_manager.list_packages(package_type)
+
+    def get_html_id_for_key(self, key: Key) -> Optional[str]: # pyright: ignore[reportInvalidTypeForm]
+        """
+        Look up the live browser element ID (e.g. ``'fw_id_42'``) for a widget
+        identified by a ``Key``.
+
+        The reconciler stores every rendered widget in
+        ``reconciler.context_maps["main"]`` keyed by the widget's
+        ``get_unique_id()`` return value (which is the widget's ``Key`` when one
+        is set).  This method searches that map and returns the corresponding
+        ``html_id`` string that uniquely identifies the DOM element in the
+        browser.
+
+        Args:
+            key: The ``Key`` object that was assigned to the widget at
+                 construction time (e.g. ``Key("my_button")``).
+
+        Returns:
+            The DOM element id string (``"fw_id_<n>"``) when found, or
+            ``None`` if no rendered widget with that key exists in the current
+            render map.
+
+        Example::
+
+            fw = Framework.instance()
+            html_id = fw.get_html_id_for_key(Key("my_button"))
+            if html_id:
+                fw.window.evaluate_js(fw.id, f"document.getElementById('{html_id}').style.opacity = '0.5';")
+        """
+        main_map = self.reconciler.get_map_for_context("main")
+
+        # Fast path: the map is keyed by get_unique_id() which equals the Key
+        # when the widget has one.
+        node_data = main_map.get(key)
+        if node_data is not None:
+            return node_data.get("html_id")
+
+        # Slow path: search all entries for a stored `key` field that matches.
+        # This handles widgets whose map key is an internal UUID (no explicit Key).
+        for node_data in main_map.values():
+            if node_data.get("key") == key:
+                return node_data.get("html_id")
+
+        return None
 
     def _ensure_default_assets(self):
         """
@@ -532,10 +589,13 @@ class Framework:
             'PythraVirtualList': "render/js/virtual_list.js",
             'PythraVirtualGrid': "render/js/virtual_grid.js",
             'PythraTextField': "render/js/textfield.js",
+            'PythraVirtualizedDropdownInternal': "render/js/virtual_dropdown.js"
             #'PythraMarkdownEditor': "render/js/dropdown.js", # Placeholder key to suppress warning, actual loaded via plugin
         }
         # Build a cache key. None means 'ALL' engines load; use a stable frozenset.
         cache_key = frozenset(required_engines) if required_engines is not None else frozenset({'__ALL__'})
+
+        self._engine_to_file_map = engine_to_file_map
 
         # Return cached result if present
         cached = self._js_utils_cache.get(cache_key)
@@ -555,7 +615,7 @@ class Framework:
                     files_to_load.add(engine_to_file_map[engine])
                 else:
                     pass
-                    # print(f"⚠️  Unknown engine requested: {engine}")
+                    print(f"⚠️  Unknown engine requested: {engine}")
 
         all_js_code = []
         loaded_files = set()
@@ -690,11 +750,13 @@ class Framework:
             # Check for js_init configuration
             js_init = props.get("js_init")
             if js_init and isinstance(js_init, dict):
-                engine_name = js_init.get("engine")
+                # engine_name = js_init.get("engine")
+                # print(engine_name)
                 if engine_name:
                     required_engines.add(engine_name)
             if props.get("_js_init"):
                 engine_name = props["_js_init"].get("engine")
+                # print(engine_name)
                 if engine_name:
                     required_engines.add(engine_name)
 
@@ -1033,7 +1095,7 @@ class Framework:
         return None
 
     def _generate_html_from_map(
-        self, root_key: Optional[Union[Key, str]], rendered_map: Dict
+        self, root_key: Optional[Union[Key, str]], rendered_map: Dict # pyright: ignore[reportInvalidTypeForm]
     ) -> str:
         """Generates the full HTML string by recursively traversing the flat rendered_map."""
         if root_key is None or root_key not in rendered_map:
@@ -1116,7 +1178,7 @@ class Framework:
         """
         return ""
 
-    def _generate_dom_patch_script(self, patches: List[Patch], js_initializers=None) -> str:
+    def _generate_dom_patch_script(self, patches: List[Patch], js_initializers=None) -> str: # type: ignore
         """
         Converts the list of Patch objects into a JSON payload for the JS Bridge.
         
@@ -1217,22 +1279,27 @@ class Framework:
 
                     elif init_type == "virtual_list":
                         target_id = init["target_id"]
+                        debug_print("Virtual List: ", target_id)
                         data = init.get("data", {})
+                        widget_instance =data['widget_instance']
+                        if widget_instance and widget_instance.key:
+                            widget_key_val = widget_instance.key.value
+                        else:
+                            # Fallback, though widgets with controllers should always have keys.
+                            widget_key_val = html_id # pyright: ignore[reportUndefinedVariable]
+                        # print(data)
+                        instance_name = f"{widget_key_val}_vlist"
                         estimated_height = data.get("estimated_height", 50) # Fallback if missing
                         item_count = data.get("item_count", 0)
+                        options_json = _dumps(data['virtual_list_options'])
                         processed_inits.append(f"""
+                        console.log("Vlist re initialized {target_id} instance name: {instance_name}");
                          setTimeout(() => {{
-                             if (typeof VirtualList !== 'undefined') {{
-                                 new VirtualList(
-                                     '{target_id}',
-                                     {item_count},
-                                     {estimated_height},
-                                     (i) => {{
-                                         const div = document.createElement("div");
-                                         div.dataset.index = i;
-                                         return div;
-                                     }}
-                                 );
+                             if (typeof PythraVirtualList !== 'undefined') {{
+                                 window._pythra_instances['{instance_name}'] = new PythraVirtualList(
+                                '{target_id}', 
+                                {options_json}
+                                );
                              }}
                          }}, 0);
                          """)
@@ -1286,6 +1353,7 @@ class Framework:
                         engine_name = js_init_data.get("engine")
                         instance_name = js_init_data.get("instance_name")
                         options_json = _dumps(js_init_data.get("options", {}))
+                        # print("init data: ", js_init_data)
 
                         processed_inits.append(f"""
                         setTimeout(() => {{
@@ -1331,6 +1399,7 @@ class Framework:
 
                 # Find the module path from the plugin manifest
                 js_module_info = self._find_js_module(engine_name)
+                engine_to_file_map = self._engine_to_file_map
                 # print("js_module_info: ", js_module_info)
                 if js_module_info:
                     # Check if path is absolute
@@ -1339,6 +1408,33 @@ class Framework:
                         module_path = os.path.join(self.project_root, module_path)
                     path_js = module_path
                     imports.add(f"import {{ {engine_name} }} from '{path_js}';")
+
+                    options_json = _dumps(options)
+                    js_commands.append(f"""
+                    function waitForAndInit(className, initCallback) {{
+                            const interval = setInterval(() => {{
+                                // Check if the class is now available on the window object
+                                if (typeof window[className] === 'function') {{
+                                    clearInterval(interval); // Stop checking
+                                    console.log(`Class ${{className}} is defined. Initializing...`);
+                                    initCallback(); // Run the initialization code
+                                }} else {{
+                                    console.log(`Waiting for class ${{className}}...`);
+                                }}
+                            }}, 100); // Check every 100ms
+                        }}
+                        waitForAndInit('{engine_name}', () => {{
+                            window._pythra_instances['{instance_name}'] = new {engine_name}(
+                                document.getElementById('{html_id}'),
+                                {options_json}
+                            );
+                            
+                        }});
+                        """)
+
+                elif engine_name.endswith('Internal'):
+                    engine_path = engine_to_file_map.get(engine_name, '').replace('render', '.')
+                    imports.add(f"import {{ {engine_name} }} from '{engine_path}';")
 
                     options_json = _dumps(options)
                     js_commands.append(f"""
@@ -1418,7 +1514,7 @@ class Framework:
 
             # --- VIRTUAL GRID LOGIC ---
             if props.get("init_virtual_grid"):
-                print("Initializing Virtual Grid...")
+                debug_print("Initializing Virtual Grid...")
                 imports.add("import { PythraVirtualGrid } from './js/virtual_grid.js';")
                 options = props.get("virtual_grid_options", {})
                 # print("options", options)
@@ -1451,7 +1547,7 @@ class Framework:
                 imports.add("import { PythraGestureDetector } from './js/gesture_detector.js';")
                 options = props.get("gesture_options", {})
                 options_json = _dumps(options)
-                print("options: ", options_json)
+                debug_print("options: ", options_json)
                 js_commands.append(f"window._pythra_instances['{html_id}'] = new PythraGestureDetector('{html_id}', {options_json});")
             # --- END OF BLOCK ---
 
@@ -1628,6 +1724,9 @@ class Framework:
         # print("Looking for JS module:", engine_name)
         # print("Plugins:", self.plugins)
         # print("Plugin JS Modules:", self.plugin_js_modules)
+        if engine_name.endswith('Internal'):
+            # print(f"{engine_name} is an internal engine")
+            return None
 
         # First check the new-style plugin_js_modules
         if engine_name in self.plugin_js_modules:
@@ -1807,6 +1906,7 @@ body {
     inset-area: unset !important;
     /* Add position-area equivalent if needed */
 }
+
          """
         # Prepare the strings we may write
         css_output = base_css + font_face_rules
@@ -1902,6 +2002,11 @@ body {
                     window.pywebview = channel.objects.pywebview;
                     console.log("PyWebChannel connected.");
                 }});
+                try {{
+                    setFloatingLabelBg(color=getFinalSolidColor());
+                }} catch (error) {{
+                    console.error(error);
+                }}
             }});
             function handleClick(name) {{ if(window.pywebview) window.pywebview.on_pressed_str(name, ()=>{{}}); }}
             function handleClickWithArgs(callback_name, ...args) {{
@@ -1921,6 +2026,70 @@ body {
                 if(window.pywebview) {{
                     window.pywebview.on_input_changed(name, value, ()=>{{}});
                 }}
+            }}
+            function setFloatingLabelBg(key, color) {{
+                let el;
+
+                if (key) {{
+                    el = document.querySelector(`[data-key="${{key}}"]`);
+                }} else {{
+                    el = document.querySelector(`[data-role="floating-label-container"]`);
+                }}
+                console.log("Floating label bg:", color);
+
+                if (!el) return;
+
+                el.style.setProperty('--ptf-bg', color);
+            }}
+            function getFinalSolidColor(key) {{
+                function getElement(key) {{
+                    if (key) {{
+                        return document.querySelector(`[data-key="${{key}}"]`);
+                    }} else {{
+                        return document.querySelector(`[data-role="dropdown-button"]`);
+                    }}
+                }}
+
+                const container = getElement(key);
+                console.log(container);
+                if (!container) return null;
+
+                function parseColor(colorStr) {{
+                    const matches = colorStr.match(/[\\d.]+/g);
+                    if (!matches) return [255, 255, 255, 1];
+                    const values = matches.map(Number);
+                    if (values.length === 3) values.push(1);
+                    return values;
+                }}
+
+                // Step 1: Find background behind container
+                let parent = container.parentElement;
+                let bgRgb = [255, 255, 255];
+
+                while (parent) {{
+                    const parentBg = window.getComputedStyle(parent).backgroundColor;
+
+                    if (parentBg !== 'rgba(0, 0, 0, 0)' && parentBg !== 'transparent') {{
+                        const parsed = parseColor(parentBg);
+                        bgRgb = parsed;
+
+                        if (parsed[3] >= 0.99) break;
+                    }}
+
+                    parent = parent.parentElement;
+                }}
+
+                // Step 2: Get container bg
+                const containerBg = window.getComputedStyle(container).backgroundColor;
+                const fgRgba = parseColor(containerBg);
+
+                // Step 3: Alpha blend
+                const alpha = fgRgba[3];
+                const r = Math.round((fgRgba[0] * alpha) + (bgRgb[0] * (1 - alpha)));
+                const g = Math.round((fgRgba[1] * alpha) + (bgRgb[1] * (1 - alpha)));
+                const b = Math.round((fgRgba[2] * alpha) + (bgRgb[2] * (1 - alpha)));
+
+                return `rgb(${{r}}, ${{g}}, ${{b}})`;
             }}
         </script>
         """

@@ -2280,73 +2280,6 @@ class BoxDecoration:
         )
 
 
-# class InputDecoration:
-#     """
-#     Defines the visual decoration for a TextField.
-
-#     This class encapsulates properties like labels, icons, hints, error text,
-#     and border styles, allowing for consistent and reusable text field styling
-#     that mimics Material Design's filled or outlined text fields.
-#     """
-#     def __init__(self,
-#                  label: Optional[str] = None,
-#                  hintText: Optional[str] = None,
-#                  errorText: Optional[str] = None,
-#                  # You can add prefixIcon and suffixIcon as Widget later
-
-#                  # --- Colors ---
-#                  fillColor: Optional[str] = None, # Background of the input
-#                  focusColor: Optional[str] = None, # Color of the border/label when focused
-
-#                  # --- Borders ---
-#                  # For simplicity, we can use a single border style and change its color based on state
-#                  border: Optional[BorderSide] = None,
-#                  focusedBorder: Optional[BorderSide] = None,
-#                  errorBorder: Optional[BorderSide] = None,
-
-#                  # --- Flags ---
-#                  filled: bool = True, # Determines if fillColor is used
-#                  ):
-#         self.label = label
-#         self.hintText = hintText
-#         self.errorText = errorText
-
-#         self.fillColor = fillColor
-#         self.focusColor = focusColor
-
-#         self.border = border
-#         self.focusedBorder = focusedBorder
-#         self.errorBorder = errorBorder
-
-#         self.filled = filled
-
-#     def to_tuple(self) -> Tuple:
-#         """
-#         Creates a hashable tuple representation for use in style keys.
-#         This is crucial for the shared styling system.
-#         """
-#         # make_hashable will handle converting BorderSide to a tuple
-#         return (
-#             self.label, self.hintText, self.errorText, self.fillColor,
-#             self.focusColor, make_hashable(self.border),
-#             make_hashable(self.focusedBorder), make_hashable(self.errorBorder),
-#             self.filled
-#         )
-
-#     def __eq__(self, other):
-#         if not isinstance(other, InputDecoration):
-#             return NotImplemented
-#         return self.to_tuple() == other.to_tuple()
-
-#     def __hash__(self):
-#         return hash(self.to_tuple())
-
-
-# in pythra/styles.py
-
-# ... (other imports) ...
-# Make sure BorderSide is defined before this class or imported
-# from .styles import BorderSide, Colors
 
 
 class InputDecoration:
@@ -2468,10 +2401,6 @@ class InputDecoration:
         return hash(self.to_tuple())
 
 
-# In pythra/styles.py
-
-
-# ... (keep all your other style classes)
 
 
 @dataclass
@@ -2497,6 +2426,8 @@ class ScrollbarTheme:
     thumbPadding: int = 0
     trackMargin: Optional[EdgeInsets] = 0
 
+    contentPadding: Optional[EdgeInsets] = EdgeInsets.all(0)
+
     def to_tuple(self) -> Tuple:
         """Returns a hashable tuple representation for use as a style key."""
         return (
@@ -2509,6 +2440,7 @@ class ScrollbarTheme:
             self.trackRadius,
             self.thumbPadding,
             self.trackMargin,
+            self.contentPadding.to_css_value()
         )
 
 

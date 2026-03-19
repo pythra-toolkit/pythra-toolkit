@@ -1,18 +1,19 @@
-export class PythraTextField {
-    
-    constructor(id, options) {
+
+
+export class PythraVirtualizedDropdownInternal {
+     constructor(id, options) {
         this.containerId = id;
         
         // The Reconciler generates dynamic IDs (e.g. fw_id_16). 
         // Best approach is finding the container using its ID, 
         // and querying the descendant label utilizing the specific CSS classes
-        this.container = document.getElementById(this.containerId);
+        this.container = document.querySelector(`[data-key="${options.dropdownButtonKey}"]`);
         
         if (!this.container) return;
         
         // Find the inner label element using querySelector
-        this.label = this.container.querySelector('.textfield-label');
-        console.log(`text field init: ${this.label}`)
+        this.label = this.container.querySelector(`[data-key="${options.floatingLabelContainerKey}"]`);
+        console.log(this.label, options.key)
         if (!this.label) return;
         this.updateLabelBackground();
 
@@ -59,5 +60,9 @@ export class PythraTextField {
 
         // Apply the dynamic linear gradient to visually mask the top border cleanly
         this.label.style.background = `linear-gradient(to bottom, transparent 35%, ${finalSolidColor} 35%)`;
+        // el = document.querySelector(`[data-role="floating-label-container"]`);
+        // el.style.setProperty('--ptf-bg', color);
     }
 }
+
+window.PythraVirtualizedDropdownInternal = PythraVirtualizedDropdownInternal

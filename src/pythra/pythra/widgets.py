@@ -160,6 +160,7 @@ class Container(Widget):
         style: Optional[Dict[str, str]] = None,
         js_init={},
         pointerEvents: Optional[str] = None,  # New property for 'auto', 'none', etc.
+        role: Optional[str] = None,
     ):
 
         super().__init__(key=key, children=[child] if child else [])
@@ -181,6 +182,7 @@ class Container(Widget):
         self.style = style
         self.js_init = js_init
         self.pointerEvents = pointerEvents
+        self.role = role
 
         # Handle cssClass parameter - convert to list if string
         self.cssClass = (
@@ -208,6 +210,7 @@ class Container(Widget):
                 tuple(sorted(self.cssClass)),
                 tuple(sorted(self.style.items())) if self.style else None,
                 self.pointerEvents,  # Add to style key
+                self.key.value if self.key else None,
             )
         )
 
@@ -235,6 +238,8 @@ class Container(Widget):
         return {
             "css_class": css_class,
             "style": instance_styles,
+            "data-key": self.key.value if self.key else None,
+            "role": self.role,
             "_js_init": getattr(self, "js_init", {}),
         }
 
@@ -265,6 +270,7 @@ class Container(Widget):
                 css_classes_tuple,
                 style_dict_tuple,
                 pointerEvents,
+                key_value,
             ) = style_key
 
             styles = ["box-sizing: border-box;"]
@@ -272,6 +278,17 @@ class Container(Widget):
 
             # if not visible:
             #     styles.append("display: none;")
+
+            # if role:
+            extra_rules.append(f"""
+                    [data-role="floating-label-container"] {{
+                        background: linear-gradient(
+                            to bottom,
+                            transparent 35%,
+                            var(--ptf-bg, white) 35%
+                        );  
+                    }}
+                    """)
 
             # --- HANDLE GRADIENT BACKGROUND ---
             if gradient_tuple:
@@ -2565,7 +2582,7 @@ class Scrollbar(Widget):
         key: Optional[Key] = None,
         theme: Optional[ScrollbarTheme] = None,
         width: Optional[Any] = "100%",
-        height: Optional[Any] = "100%",
+        height: Optional[Any] = 200,
         autoHide: bool = True,
         virtualization_options: Optional[Dict] = None,
     ):
@@ -2580,9 +2597,9 @@ class Scrollbar(Widget):
         """
         super().__init__(key=key, children=[child])
         self.child = child
-        self.theme = theme or ScrollbarTheme()
         self.width = width
         self.height = height
+        self.theme = theme or ScrollbarTheme(height=self.height)
         self.autoHide = autoHide
         self.virtualization_options = virtualization_options  # <-- STORE IT
 
@@ -2676,7 +2693,9 @@ class Scrollbar(Widget):
                 track_radius,
                 thumb_padding,
                 track_margin,
+                content_padding,
             ) = style_key
+            # print(style_key)
 
             # These selectors precisely target the DOM elements created by SimpleBar.
             return f"""
@@ -2715,14 +2734,16 @@ class Scrollbar(Widget):
                     background-color: {thumb_hover_color};
                 }}
                 .{css_class} {{
-                    /* height: -webkit-fill-available; */
-                    height: inherit;
+                    height: {height}px;
                 }}
                 .{css_class}  .simplebar-track.simplebar-horizontal {{
                     display: none;
                 }}
                 .simplebar-scrollbar {{
                     display: none;
+                }}
+                .{css_class} .simplebar-content-wrapper {{
+                    padding: {content_padding};
                 }}
             """
         except Exception as e:
@@ -3870,6 +3891,7 @@ class _VirtualListViewState(State):
             initial_items_html[str(i)] = self.build_item_for_js(i)
 
         self._virtualization_options = {
+            "type": "list",
             "itemCount": widget.itemCount,  # type: ignore
             "itemExtent": widget.itemExtent,  # type: ignore
             "itemBuilderName": self.item_builder_name,
@@ -3972,7 +3994,7 @@ class _VirtualListViewState(State):
         # print("virtualization_options: ", self._virtualization_options)
         widget = self.get_widget()
         if not widget:
-            print("!!widget is not found!! vlist")
+            print("⚠️ VirtualListView: widget is not found")
             # Return a placeholder if the widget is somehow gone
             return Container(width=0, height=0)
 
@@ -3981,10 +4003,111 @@ class _VirtualListViewState(State):
             key=widget.key,
             width=widget.width,  # type: ignore
             height=widget.height,  # type: ignore
-            theme=widget.theme,  # type: ignore
+            theme=widget.theme, # type: ignore
             child=Container(key=Key(f"{widget.key.value}_content"), alignment=Alignment.center()),  # type: ignore
             virtualization_options=self._virtualization_options,
         )
+
+
+class VirtualListView(StatefulWidget):
+    """
+    A highly-performant, scrollable list that only renders the items currently
+    visible on screen. It is the essential choice for lists containing hundreds,
+    thousands, or even millions of items.
+
+    **What is VirtualListView?**
+    VirtualListView is a "smart" list. Instead of creating all of its item widgets at once
+    (which would crash the browser for large lists), it only builds and renders the handful
+    of items that can fit in the visible area. As the user scrolls, it efficiently recycles
+    the containers, swapping content in and out on the fly.
+
+    **Real-world analogy:**
+    Imagine a smart, infinitely long bookshelf viewer. Instead of trying to load every book
+    in the library at once, the viewer only renders the books on the single shelf you are
+    currently looking at. As you move the viewer up or down (scroll), it instantly loads
+    the next shelf's books while unloading the ones that are no longer visible. This allows
+    you to browse a massive library with instant performance.
+
+    **When to use VirtualListView:**
+    - **ALWAYS** for long lists (more than 50-100 items).
+    - Displaying large datasets: social media feeds, contact lists, log files, financial data tables.
+    - When a standard `ListView` becomes slow, janky, or consumes too much memory.
+    - Any time you need a smooth "infinite scroll" experience.
+
+    **Key Concepts:**
+    1.  **Virtualization**: The core technique. Only visible items exist in the DOM, keeping the app fast and lightweight.
+    2.  **`itemBuilder`**: A function you provide that acts as a factory. The list calls it on-demand with an `index` to get the widget for that specific item.
+    3.  **`itemExtent`**: The fixed height (for vertical lists) of each item. This is **crucial** for the virtualization logic to calculate which items should be visible and where to position the scrollbar. All items *must* have the same size.
+    4.  **`VirtualListController`**: An object you create to programmatically control the list, such as forcing it to refresh its data.
+
+    **Examples:**
+    ```python
+    # Controller to manage the list
+    list_controller = VirtualListController()
+
+    # The builder function that creates a widget for a given index
+    def user_card_builder(index: int):
+        return ListTile(
+            leading=Icon("person"),
+            title=Text(f"User Number {index + 1}"),
+            subtitle=Text("This is a virtualized list item.")
+        )
+
+    # The VirtualListView widget itself
+    VirtualListView(
+        key=Key("my-user-list"),
+        controller=list_controller,
+        itemCount=10000,          # Total number of items in our dataset
+        itemBuilder=user_card_builder, # The function to build each item
+        itemExtent=72             # The fixed height of each ListTile
+    )
+
+    # Later, to refresh the list after data changes:
+    # list_controller.refresh()
+    ```
+
+    **Key parameters:**
+    - **key**: A **required** unique `Key` to identify this stateful widget.
+    - **controller**: A **required** `VirtualListController` instance to manage the list.
+    - **itemCount**: The total number of items in the list.
+    - **itemBuilder**: A function that takes an `int` (index) and returns a `Widget`.
+    - **itemExtent**: The fixed size (usually height) in pixels of each item.
+    - **theme**: An optional `ScrollbarTheme` for the scrollbar's appearance.
+    - **width**, **height**: The dimensions of the scrollable container.
+
+    **Performance notes:**
+    This is the definitive solution for performance with large lists. Its memory and CPU usage
+    remain flat and low, regardless of whether `itemCount` is 100 or 1,000,000, because it
+    only ever renders a small, constant number of DOM elements.
+    """
+
+    def __init__(
+        self,
+        key: Key,
+        controller: VirtualListController,  # <-- Requires a controller
+        itemCount: int,
+        itemBuilder: Callable[[int], Widget],
+        itemExtent: float,
+        # --- REMOVE data_version ---
+        initialItemCount: int = 20,
+        theme: Optional[ScrollbarTheme] = None,
+        width: Optional[Any] = "100%",
+        height: Optional[Any] = "100%",
+    ):
+
+        self.controller = controller
+        self.itemCount = itemCount
+        self.itemBuilder = itemBuilder
+        self.itemExtent = itemExtent
+        self.initialItemCount = initialItemCount
+        self.theme = theme
+        self.width = width
+        self.height = height
+        super().__init__(key=key)
+
+    def createState(self) -> _VirtualListViewState:
+        return _VirtualListViewState()
+
 
 
 # =============================================================================
@@ -4047,7 +4170,7 @@ class _VirtualGridViewState(State):
         if not (self.framework and self.framework.window and widget):
             return
 
-        instance_name = f"{widget.key.value}_vlist"  # Using same naming convention as core.py expects for 'vlist' type, but maybe we change key logic in core
+        # instance_name = f"{widget.key.value}_vlist"  # Using same naming convention as core.py expects for 'vlist' type, but maybe we change key logic in core
         # Actually core.py generates instance name. Let's look at core.py...
         # It uses f"{widget_key_val}_vlist" for VirtualList.
         # We need to make sure core.py handles this new type.
@@ -4190,104 +4313,7 @@ class VirtualGridView(StatefulWidget):
         return _VirtualGridViewState()
 
 
-class VirtualListView(StatefulWidget):
-    """
-    A highly-performant, scrollable list that only renders the items currently
-    visible on screen. It is the essential choice for lists containing hundreds,
-    thousands, or even millions of items.
 
-    **What is VirtualListView?**
-    VirtualListView is a "smart" list. Instead of creating all of its item widgets at once
-    (which would crash the browser for large lists), it only builds and renders the handful
-    of items that can fit in the visible area. As the user scrolls, it efficiently recycles
-    the containers, swapping content in and out on the fly.
-
-    **Real-world analogy:**
-    Imagine a smart, infinitely long bookshelf viewer. Instead of trying to load every book
-    in the library at once, the viewer only renders the books on the single shelf you are
-    currently looking at. As you move the viewer up or down (scroll), it instantly loads
-    the next shelf's books while unloading the ones that are no longer visible. This allows
-    you to browse a massive library with instant performance.
-
-    **When to use VirtualListView:**
-    - **ALWAYS** for long lists (more than 50-100 items).
-    - Displaying large datasets: social media feeds, contact lists, log files, financial data tables.
-    - When a standard `ListView` becomes slow, janky, or consumes too much memory.
-    - Any time you need a smooth "infinite scroll" experience.
-
-    **Key Concepts:**
-    1.  **Virtualization**: The core technique. Only visible items exist in the DOM, keeping the app fast and lightweight.
-    2.  **`itemBuilder`**: A function you provide that acts as a factory. The list calls it on-demand with an `index` to get the widget for that specific item.
-    3.  **`itemExtent`**: The fixed height (for vertical lists) of each item. This is **crucial** for the virtualization logic to calculate which items should be visible and where to position the scrollbar. All items *must* have the same size.
-    4.  **`VirtualListController`**: An object you create to programmatically control the list, such as forcing it to refresh its data.
-
-    **Examples:**
-    ```python
-    # Controller to manage the list
-    list_controller = VirtualListController()
-
-    # The builder function that creates a widget for a given index
-    def user_card_builder(index: int):
-        return ListTile(
-            leading=Icon("person"),
-            title=Text(f"User Number {index + 1}"),
-            subtitle=Text("This is a virtualized list item.")
-        )
-
-    # The VirtualListView widget itself
-    VirtualListView(
-        key=Key("my-user-list"),
-        controller=list_controller,
-        itemCount=10000,          # Total number of items in our dataset
-        itemBuilder=user_card_builder, # The function to build each item
-        itemExtent=72             # The fixed height of each ListTile
-    )
-
-    # Later, to refresh the list after data changes:
-    # list_controller.refresh()
-    ```
-
-    **Key parameters:**
-    - **key**: A **required** unique `Key` to identify this stateful widget.
-    - **controller**: A **required** `VirtualListController` instance to manage the list.
-    - **itemCount**: The total number of items in the list.
-    - **itemBuilder**: A function that takes an `int` (index) and returns a `Widget`.
-    - **itemExtent**: The fixed size (usually height) in pixels of each item.
-    - **theme**: An optional `ScrollbarTheme` for the scrollbar's appearance.
-    - **width**, **height**: The dimensions of the scrollable container.
-
-    **Performance notes:**
-    This is the definitive solution for performance with large lists. Its memory and CPU usage
-    remain flat and low, regardless of whether `itemCount` is 100 or 1,000,000, because it
-    only ever renders a small, constant number of DOM elements.
-    """
-
-    def __init__(
-        self,
-        key: Key,
-        controller: VirtualListController,  # <-- Requires a controller
-        itemCount: int,
-        itemBuilder: Callable[[int], Widget],
-        itemExtent: float,
-        # --- REMOVE data_version ---
-        initialItemCount: int = 20,
-        theme: Optional[ScrollbarTheme] = None,
-        width: Optional[Any] = "100%",
-        height: Optional[Any] = "100%",
-    ):
-
-        self.controller = controller
-        self.itemCount = itemCount
-        self.itemBuilder = itemBuilder
-        self.itemExtent = itemExtent
-        self.initialItemCount = initialItemCount
-        self.theme = theme
-        self.width = width
-        self.height = height
-        super().__init__(key=key)
-
-    def createState(self) -> _VirtualListViewState:
-        return _VirtualListViewState()
 
 
 # =============================================================================
@@ -4497,11 +4523,11 @@ class ListView(Widget):
             padding_obj = padding_repr
             padding_style = ""
             if isinstance(padding_obj, EdgeInsets):
-                print(f"padding: {padding_repr};")
+                # print(f"padding: {padding_repr};")
                 padding_style = f"padding: {padding_obj.to_css_value()};"
             elif padding_repr:  # Handle fallback if not EdgeInsets obj
                 padding_style = f"padding: {padding_repr};"  # Assumes it's already CSS string? Risky.
-                print(f"padding: {padding_repr};")
+                # print(f"padding: {padding_repr};")
 
             # Combine styles
             styles = (

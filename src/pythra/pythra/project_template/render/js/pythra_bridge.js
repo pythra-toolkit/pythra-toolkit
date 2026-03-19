@@ -59,10 +59,34 @@ window.PythraBridge = {
 
         // Insert into DOM
         const beforeEl = before_id ? document.getElementById(before_id) : null;
-        if (beforeEl && parentEl.contains(beforeEl)) {
-            parentEl.insertBefore(insertedEl, beforeEl);
+
+        // Defensive: If inserting a dropdown <li class="dropdown-item"> into a dropdown
+        // container, prefer appending it into an existing <ul.dropdown-menu> inside
+        // the parent container. This prevents <li> elements from being inserted
+        // directly into the wrapper <div> (which was observed in incremental patches).
+        if (insertedEl && insertedEl.tagName === 'LI' && insertedEl.classList.contains('dropdown-item')) {
+            const menu = parentEl.querySelector('ul.dropdown-menu');
+            if (menu) {
+                const beforeElInMenu = before_id ? menu.querySelector(`#${before_id}`) : null;
+                if (beforeElInMenu && menu.contains(beforeElInMenu)) {
+                    menu.insertBefore(insertedEl, beforeElInMenu);
+                } else {
+                    menu.appendChild(insertedEl);
+                }
+            } else {
+                // No ul found; fall back to inserting into the parent container.
+                if (beforeEl && parentEl.contains(beforeEl)) {
+                    parentEl.insertBefore(insertedEl, beforeEl);
+                } else {
+                    parentEl.appendChild(insertedEl);
+                }
+            }
         } else {
-            parentEl.appendChild(insertedEl);
+            if (beforeEl && parentEl.contains(beforeEl)) {
+                parentEl.insertBefore(insertedEl, beforeEl);
+            } else {
+                parentEl.appendChild(insertedEl);
+            }
         }
 
         // Apply properties specifically (logic that might not be in the HTML stub)

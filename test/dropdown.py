@@ -52,9 +52,9 @@ from pythra import (
     ScrollbarTheme,
     TextEditingController,
     InputDecoration,
-    DerivedDropdown,
-    DerivedDropdownController,
-    DerivedDropdownTheme,
+    VirtualDropdown,
+    VirtualDropdownController,
+    VirtualDropdownTheme,
     BorderSide,
     GridView,  # <-- ADD THESE IMPORTS
 )
@@ -66,14 +66,14 @@ import math  # For the StarClipper
 class myLangDropDownState(State):       
 
     def build(self):
-        another_controller = DerivedDropdownController(
+        another_controller = VirtualDropdownController(
             value="Python", items=["Python", "Rust", "JavaScript", "C++"]
         )
-        return DerivedDropdown(
+        return VirtualDropdown(
             key=Key("lang_dropdown"),
             controller=another_controller,
             onChanged=lambda v: print(f"Language changed to: {v}"),
-            theme=DerivedDropdownTheme(
+            theme=VirtualDropdownTheme(
                 backgroundColor=Colors.lightgreen,
                 borderColor=Colors.hex("#AAA"),
                 width=200,
@@ -99,17 +99,16 @@ class myLangDropDown(StatefulWidget):
 
 
 class myFruitDropDownState(State):
-   
-    
+
     def build(self):
-        dropdown_controller = DerivedDropdownController(
+        dropdown_controller = VirtualDropdownController(
             value="Apple", items=["Apple", "Orange", "Banana", "Grape", "Mango"]
         )
-        return DerivedDropdown(
+        return VirtualDropdown(
             key=Key("fruit_dropdown"),
             controller=dropdown_controller,
             onChanged=lambda v: print(f"value changed to: {v}"),
-            theme=DerivedDropdownTheme(
+            theme=VirtualDropdownTheme(
                 backgroundColor=Colors.lightgreen,
                 borderColor=Colors.hex("#CCCCCC"),
                 width=200,
@@ -124,7 +123,6 @@ class myFruitDropDownState(State):
                 dropdownMargin=EdgeInsets.only(top=10),
             ),
         )
-
 
 
 class MyCars(StatefulWidget):
@@ -135,17 +133,17 @@ class MyCars(StatefulWidget):
         return MyCarsState()
 
 class MyCarsState(State):
-   
-    
+
     def build(self):
-        dropdown_controller = DerivedDropdownController(
-            value="Cadillac", items=["G 63", "Rolls-Royce", "BMW M8", "Maybach", "Cadillac"]
+        dropdown_controller = VirtualDropdownController(
+            value="Cadillac",
+            items=["G 63", "Rolls-Royce", "BMW M8", "Maybach", "Cadillac"],
         )
-        return DerivedDropdown(
+        return VirtualDropdown(
             key=Key("my_cars_dropdown"),
             controller=dropdown_controller,
             onChanged=lambda v: print(f"value changed to: {v}"),
-            theme=DerivedDropdownTheme(
+            theme=VirtualDropdownTheme(
                 backgroundColor=Colors.lightgreen,
                 borderColor=Colors.hex("#CCCCCC"),
                 width=200,
@@ -160,7 +158,6 @@ class MyCarsState(State):
                 dropdownMargin=EdgeInsets.only(top=10),
             ),
         )
-
 
 
 class myFruitDropDown(StatefulWidget):
@@ -230,7 +227,7 @@ if __name__ == "__main__":
     my_app = MyForm(key=Key("my_app_root"))
 
     app.set_root(my_app)
-    app.run(title="DerivedDropdown Test")
+    app.run(title="VirtualDropdown Test")
 
 
 # class DropDownState(State):
@@ -444,7 +441,7 @@ if __name__ == "__main__":
 # if __name__ == "__main__":
 #     app = Framework.instance()
 #     app.set_root(myApp(key=Key("my_app_root")))
-#     app.run(title="DerivedDropdown Test")
+#     app.run(title="VirtualDropdown Test")
 
 
 # # components/dropdown.py
@@ -475,12 +472,12 @@ if __name__ == "__main__":
 # )
 # from typing import List, Optional, Callable, Any, Generic, TypeVar
 
-# # A Generic TypeVar allows us to create strongly-typed DerivedDropdowns
+# # A Generic TypeVar allows us to create strongly-typed VirtualDropdowns
 # T = TypeVar('T')
 
-# class DerivedDropdownMenuItem(StatelessWidget, Generic[T]):
+# class VirtualDropdownMenuItem(StatelessWidget, Generic[T]):
 #     """
-#     Represents a single item in a DerivedDropdown menu.
+#     Represents a single item in a VirtualDropdown menu.
 #     """
 #     def __init__(self,
 #                  key: Optional[Key] = None,
@@ -490,7 +487,7 @@ if __name__ == "__main__":
 #         super().__init__(key=key)
 #         self.value = value
 #         self.child = child
-#         self.onTap = onTap # The parent DerivedDropdown will provide this
+#         self.onTap = onTap # The parent VirtualDropdown will provide this
 
 #     def build(self) -> Widget:
 #         """Renders the menu item as a clickable button."""
@@ -509,13 +506,13 @@ if __name__ == "__main__":
 #             )
 #         )
 
-# class DerivedDropdown(StatefulWidget, Generic[T]):
+# class VirtualDropdown(StatefulWidget, Generic[T]):
 #     """
 #     A Material Design-inspired dropdown button that displays a menu of items.
 #     """
 #     def __init__(self,
 #                  key: Key,
-#                  items: List[DerivedDropdownMenuItem[T]],
+#                  items: List[VirtualDropdownMenuItem[T]],
 #                  value: Optional[T],
 #                  onChanged: Callable[[T], None],
 #                  hint: Optional[Widget] = None,
@@ -528,10 +525,10 @@ if __name__ == "__main__":
 #         self.width = width
 
 #     def createState(self):
-#         return _DerivedDropdownState()
+#         return _VirtualDropdownState()
 
-# class _DerivedDropdownState(State, Generic[T]):
-    
+# class _VirtualDropdownState(State, Generic[T]):
+
 #     def initState(self):
 #         self._is_open = False
 
@@ -559,7 +556,7 @@ if __name__ == "__main__":
 #         menu_items = []
 #         for item in widget.items:
 #             menu_items.append(
-#                 DerivedDropdownMenuItem(
+#                 VirtualDropdownMenuItem(
 #                     key=item.key or Key(str(item.value)),
 #                     value=item.value,
 #                     child=item.child,
@@ -572,7 +569,7 @@ if __name__ == "__main__":
 #             width=widget.width,
 #             child=Stack(
 #                 children=[
-#                     # --- Layer 1: The Main DerivedDropdown Button ---
+#                     # --- Layer 1: The Main VirtualDropdown Button ---
 #                     TextButton(
 #                         onPressed=self._toggle_dropdown,
 #                         style=ButtonStyle(padding=EdgeInsets.all(0)),
@@ -592,7 +589,7 @@ if __name__ == "__main__":
 #                             )
 #                         )
 #                     ),
-                    
+
 #                     # --- Layer 2: The Options Menu (Positioned and Toggled) ---
 #                     Positioned(
 #                         top=45, # Position it just below the main button

@@ -6,69 +6,76 @@ from typing import Any, Dict, List, Optional, Set, Union
 # =============================================================================
 # KEY CLASS - The "ID Card" System for PyThra Widgets
 # =============================================================================
+try:
+    from . import key_cython as key
+    CYTHON_AVAILABLE = True
+    Key = key.Key_cython
+except ImportError:
+    CYTHON_AVAILABLE = False
 
-class Key:
-    """
-    Think of this as an "ID card" for widgets in your PyThra app!
-    
-    **Why do we need Keys?**
-    Imagine you have a list of 100 buttons, and you delete the 50th one.
-    Without keys, PyThra might get confused and think you deleted a different button!
-    Keys help PyThra keep track of which widget is which, even when things change.
-    
-    **Real-world analogy:**
-    - Like student ID numbers in a classroom roster
-    - Like license plates on cars
-    - Like barcodes on products in a store
-    
-    **When to use Keys:**
-    - Lists of widgets that can change (add/remove items)
-    - Widgets that hold important state (like form inputs)
-    - Any widget you want to "remember" across UI updates
-    
-    **Example:**
-    ```python
-    # Without keys - PyThra might mix up which button is which
-    for name in names:
-        Button(text=name, onClick=delete_person)
-    
-    # With keys - PyThra knows exactly which button belongs to which person  
-    for name in names:
-        Button(key=Key(name), text=name, onClick=delete_person)
-    ```
-    
-    Args:
-        value: Any unique identifier (string, number, etc.) that represents this widget
-    """
-    def __init__(self, value):
-        self.value = value
 
-    def __eq__(self, other):
-        return isinstance(other, Key) and self.value == other.value
-
-    def __hash__(self):
+    class Key:
         """
-        Creates a "fingerprint" number for this Key so Python can use it efficiently.
+        Think of this as an "ID card" for widgets in your PyThra app!
         
-        **Why is this needed?**
-        Python needs to be able to quickly compare keys and store them in dictionaries.
-        This method converts your key value into a number (hash) for fast lookups.
+        **Why do we need Keys?**
+        Imagine you have a list of 100 buttons, and you delete the 50th one.
+        Without keys, PyThra might get confused and think you deleted a different button!
+        Keys help PyThra keep track of which widget is which, even when things change.
         
-        **Special handling:**
-        - Lists get converted to tuples (because lists can change, tuples can't)
-        - This ensures your key works even if you use complex data structures
+        **Real-world analogy:**
+        - Like student ID numbers in a classroom roster
+        - Like license plates on cars
+        - Like barcodes on products in a store
+        
+        **When to use Keys:**
+        - Lists of widgets that can change (add/remove items)
+        - Widgets that hold important state (like form inputs)
+        - Any widget you want to "remember" across UI updates
+        
+        **Example:**
+        ```python
+        # Without keys - PyThra mi  ght mix up which button is which
+        for name in names:
+            Button(text=name, onClick=delete_person)
+        
+        # With keys - PyThra knows exactly which button belongs to which person  
+        for name in names:
+            Button(key=Key(name), text=name, onClick=delete_person)
+        ```
+        
+        Args:
+            value: Any unique identifier (string, number, etc.) that represents this widget
         """
-        # Ensure value is hashable or convert to a hashable type
-        if isinstance(self.value, (list, dict)):
-            # Example: convert list to tuple for hashing
-            return hash(tuple(self.value))
-        return hash(self.value)
+        def __init__(self, value):
+            self.value = value
 
-    def __repr__(self):
-        return f"Key({self.value!r})"
+        def __eq__(self, other):
+            return isinstance(other, Key) and self.value == other.value
 
-    def __str_key__(self) -> str:
-        return self.value
+        def __hash__(self):
+            """
+            Creates a "fingerprint" number for this Key so Python can use it efficiently.
+            
+            **Why is this needed?**
+            Python needs to be able to quickly compare keys and store them in dictionaries.
+            This method converts your key value into a number (hash) for fast lookups.
+            
+            **Special handling:**
+            - Lists get converted to tuples (because lists can change, tuples can't)
+            - This ensures your key works even if you use complex data structures
+            """
+            # Ensure value is hashable or convert to a hashable type
+            if isinstance(self.value, (list, dict)):
+                # Example: convert list to tuple for hashing
+                return hash(tuple(self.value))
+            return hash(self.value)
+
+        def __repr__(self):
+            return f"Key({self.value!r})"
+
+        def __str_key__(self) -> str:
+            return self.value
 
 # =============================================================================
 # HASHABLE HELPER - The "Style Comparator" for PyThra

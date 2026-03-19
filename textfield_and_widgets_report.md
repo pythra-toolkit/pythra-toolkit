@@ -72,7 +72,7 @@ Material Design achieves the "label on border" effect by either using a physical
 
 Here is a brief assessment of other input/interactive widgets in `widgets.py` and `widgets_more.py` that could use similar architectural polish:
 
-### `Dropdown` / `DerivedDropdown`
+### `Dropdown` / `VirtualDropdown`
 *   **Current State:** Highly functional but relies on complex absolute positioning and Javascript bridges for menu toggling.
 *   **Improvement:** Ensure the Dropdown button styling shares the exact same `InputDecoration` logic as `TextField` so forms look cohesive. Currently, Dropdown has its own `DropdownTheme` which scales differently than `InputDecoration`.
 

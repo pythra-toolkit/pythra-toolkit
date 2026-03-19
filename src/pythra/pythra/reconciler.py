@@ -172,7 +172,7 @@ NodeData = Dict[str, Any]
 
 @dataclass
 class ReconciliationResult:
-    patches: List[Patch] = field(default_factory=list)
+    patches: List[Patch] = field(default_factory=list) # pyright: ignore[reportInvalidTypeForm]
     new_rendered_map: Dict[Union[Key, str], NodeData] = field(default_factory=dict)
     active_css_details: Dict[str, Tuple[Callable, Any]] = field(default_factory=dict)
     registered_callbacks: Dict[str, Callable] = field(default_factory=dict)
@@ -364,6 +364,11 @@ class Reconciler:
             new_html_stub = self._generate_html_stub(
                 new_widget, old_data["html_id"], new_props
             )
+            # If the widget stub contains a `{children}` placeholder (used
+            # during initial render), strip it for incremental REPLACE patches
+            # so the client doesn't receive the literal token in the DOM.
+            if "{children}" in new_html_stub:
+                new_html_stub = new_html_stub.replace("{children}", "")
             result.patches.append(
                 Patch(
                     action="REPLACE",
@@ -491,7 +496,7 @@ class Reconciler:
             result.js_initializers.append(initializer_data)
 
         if "type" in new_props and "init_slider" in new_props:
-            print("SLIDER INIT")
+            # print("SLIDER INIT")
             debug_print("SLIDER INIT")
             if html_id != new_id:
                 old_id, new_id = new_id, html_id
@@ -504,7 +509,7 @@ class Reconciler:
             result.js_initializers.append(initializer_data)
 
         if "init_gesture_detector" in new_props:
-            print("GESTURE-DETECTOR INIT")
+            # print("GESTURE-DETECTOR INIT")
             debug_print("GESTURE-DETECTOR INIT")
             if html_id != new_id:
                 old_id, new_id = new_id, html_id
@@ -517,8 +522,8 @@ class Reconciler:
             result.js_initializers.append(initializer_data)
 
         if "init_virtual_list" in new_props:
-            print("VIRTUAL-LIST INIT: for ", html_id)
-            debug_print("VIRTUAL-LIST INIT: for ", html_id)
+            # print("VIRTUAL-LIST INIT: for ", html_id, "old id: ", new_props)
+            debug_print("VIRTUAL-LIST INIT: for ", html_id, "old id: ", new_id)
             if html_id != new_id:
                 old_id, new_id = new_id, html_id
             initializer_data = {
@@ -530,8 +535,8 @@ class Reconciler:
             result.js_initializers.append(initializer_data)
 
         if "init_virtual_grid" in new_props:
-            print("VIRTUAL-GRID INIT: for ", html_id)
-            debug_print("VIRTUAL-GRID INIT: for ", html_id)
+            # print("VIRTUAL-GRID INIT: for ", html_id)
+            debug_print("VIRTUAL-GRID INIT: for ", html_id, "old id: ", new_id)
             if html_id != new_id:
                 old_id, new_id = new_id, html_id
             initializer_data = {
@@ -543,7 +548,7 @@ class Reconciler:
             result.js_initializers.append(initializer_data)
 
         if "init_gradient_clip_border" in new_props:
-            print("GRADIENT-CLIP-BORDER INIT")
+            # print("GRADIENT-CLIP-BORDER INIT")
             debug_print("GRADIENT-CLIP-BORDER INIT")
             if html_id != new_id:
                 old_id, new_id = new_id, html_id
@@ -559,7 +564,9 @@ class Reconciler:
 
         # --- THIS IS THE NEW GENERIC INITIALIZER LOGIC ---
         js_init_data = new_props.get("_js_init")
+        
         if js_init_data and isinstance(js_init_data, dict):
+            # print("js_init_data: ", js_init_data)
             # We don't need the html_id here, as the framework will have it
             # when it processes the initializer list.
             result.js_initializers.append(
@@ -592,6 +599,12 @@ class Reconciler:
         # StatefulWidget and StatelessWidget are hosts, not renderable elements.
         if widget_type_name not in ["StatefulWidget", "StatelessWidget"]:
             stub_html = self._generate_html_stub(new_widget, html_id, new_props)
+            # Remove `{children}` placeholders from stubs used in incremental
+            # INSERT patches — initial full-page generation handles children
+            # replacement, but incremental INSERTs must not leave the
+            # literal placeholder in the DOM.
+            if "{children}" in stub_html:
+                stub_html = stub_html.replace("{children}", "")
             result.patches.append(
                 Patch(
                     action="INSERT",
@@ -805,7 +818,7 @@ class Reconciler:
         return tag_map.get(widget_type_name, "div")
 
     def _generate_html_stub(self, widget: "Widget", html_id: str, props: Dict) -> str:
-        tag, classes = self._get_widget_render_tag(widget), props.get("css_class", "")
+        tag, classes, _attrs = self._get_widget_render_tag(widget), props.get("css_class", ""), props.get("data-key", "")
 
         widget_type_name = type(widget).__name__
 
@@ -868,7 +881,7 @@ class Reconciler:
             cacheable = False
 
         # --- MODIFICATION TO HANDLE GENERIC ATTRIBUTES ---
-        attrs = ""
+        attrs = ""+ f' data-key="{_attrs}"' + f' data-role="{props.get("role", "")}"'
         # Add attributes from a dedicated 'attributes' prop if it exists
         if "attributes" in props:
             for attr_name, attr_value in props["attributes"].items():

@@ -698,7 +698,7 @@ class Api(QObject):
         """
         callback = self.callbacks.get(callback_name)
         #print("Callback tap debug info: ",callback, " " ,details)
-        print("Callback tap debug info: ",callback, " " ,details)
+        # print("Callback tap debug info: ",callback, " " ,details)
         if callback:
             try:
                 # Based on the callback name, we can construct the correct data class.

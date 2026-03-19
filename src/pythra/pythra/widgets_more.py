@@ -1,6 +1,7 @@
 # =============================================================================
 # PYTHRA EXTENDED WIDGET LIBRARY - Advanced "LEGO Blocks" for Specialized UI
 # =============================================================================
+# pyright: ignore[reportInvalidTypeForm]
 
 """
 PyThra Extended Widget Library (Part 2)
@@ -145,7 +146,7 @@ class Divider(Widget):
     # shared_styles: Dict[Tuple, str] = {}
 
     def __init__(self,
-                 key: Optional[Key] = None,
+                 key: Optional[Key] = None, # pyright: ignore[reportInvalidTypeForm]
                  height: float = 1, # Usually 1px high
                  thickness: Optional[float] = None, # Flutter uses thickness for line, height for space
                  indent: Optional[float] = 0, # Space before the line
@@ -2811,7 +2812,9 @@ class ListTile(Widget):
                  dense: bool = False,
                  selectedColor: Optional[str] = None,
                  selectedTileColor: Optional[str] = None,
-                 contentPadding: Optional[EdgeInsets] = None):
+                 contentPadding: Optional[EdgeInsets] = None,
+                 tooltip: Optional[str] = None
+                 ):
 
         # --- THIS IS THE KEY CHANGE ---
         # The reconciler will now see leading, title, etc., as regular children.
@@ -2832,6 +2835,7 @@ class ListTile(Widget):
         self.selectedColor = selectedColor
         self.selectedTileColor = selectedTileColor
         self.contentPadding = contentPadding
+        self.tooltip = tooltip
 
         # --- CORRECTED STYLE KEY ---
         # Only include properties that define the base, shared style.
@@ -2860,6 +2864,7 @@ class ListTile(Widget):
             'onTapName': self.onTapName if self.enabled else None,
             'onTapArg' : self.onTapArg,
             'onTap' : self.onTap,
+            'tooltip': self.tooltip,
             # Pass colors as CSS variables for the .selected rule to use
             'style': {
                 '--listtile-selected-fg': self.selectedColor,
@@ -3053,8 +3058,6 @@ class Slider(Widget):
         self.thumbBorderColor = thumbBorderColor or theme.thumbBorderColor or Colors.surfaceVariant
         self.thumbBorderRadius = thumbBorderRadius.to_css_value() if thumbBorderRadius else "50%"
         self.overlaySize = theme.overlaySize
-
-        print("thumbBorderRadius: ", self.thumbBorderRadius)
 
         # --- Callback Management (no change) ---
         self.on_drag_update_name = f"slider_update_{self.key.value}"
@@ -3967,12 +3970,13 @@ class DropdownMenuItem(Widget):
     Allows passing a fully customized child widget (like Text with a specific TextStyle)
     instead of just a raw string label.
     """
-    def __init__(self, key: Key, value: Any, child: Widget, label: Optional[str] = None, disabled: bool = False):
+    def __init__(self, key: Key, value: Any, child: Widget, label: Optional[str] = None, disabled: bool = False, tooltip: Optional[str] = None,):
         super().__init__(key=key, children=[child])
         self.value = value
         self.child = child
         self.label = label
         self.disabled = disabled
+        self.tooltip = tooltip
 
     def render_props(self) -> Dict[str, Any]:
         return {}
@@ -3987,7 +3991,8 @@ class DropdownMenuItem(Widget):
         # Ensure data-value is present so the JS engine can capture the selection.
         label_attr = f' data-label="{html.escape(widget_instance.label, quote=True)}"' if widget_instance.label else ''
         disabled_attr = ' data-disabled="true"' if widget_instance.disabled else ''
-        return f'<li class="dropdown-item{ " disabled" if widget_instance.disabled else ""}" id="{html_id}" data-value="{value_escaped}"{label_attr}{disabled_attr}>{{children}}</li>'
+        tooltip_attr = f' title="{html.escape(widget_instance.tooltip, quote=True)}"' if widget_instance.tooltip else ''
+        return f'<li class="dropdown-item{ " disabled" if widget_instance.disabled else ""}" id="{html_id}" data-value="{value_escaped}"{label_attr}{disabled_attr}{tooltip_attr}>{{children}}</li>'
 
 # =============================================================================
 # DROPDOWN - The Classic "Select from a List" Control
@@ -5171,7 +5176,7 @@ class ExpandableState(State):
         # Set the initial state based on the widget's property
         self.is_expanded = getattr(self.widget, "initiallyExpanded", None)
         self.onToggle = getattr(self.widget, "onToggle", None)
-        print(f"Initialized is_expanded: {self.is_expanded}")
+        # print(f"Initialized is_expanded: {self.is_expanded}")
 
     def didUpdateWidget(self, old_widget, new_widget):
         # Update the callback if the parent provided a new one
@@ -5186,7 +5191,7 @@ class ExpandableState(State):
 
     def toggle(self, *args, **kwargs):
         self.is_expanded = not self.is_expanded
-        print(f"is_expanded: {self.is_expanded}")
+        # print(f"is_expanded: {self.is_expanded}")
         self.setState()
 
     def build(self) -> Widget:

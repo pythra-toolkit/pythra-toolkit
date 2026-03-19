@@ -4,8 +4,9 @@ from typing import Callable, List, Optional
 # 1. CONTROLLER AND THEME (The Data and Style Models)
 # ==============================================================================
 
-class DerivedDropdownController:
-    """Manages the state of a DerivedDropdown, allowing it to be controlled externally."""
+
+class VirtualDropdownController:
+    """Manages the state of a VirtualDropdown, allowing it to be controlled externally."""
 
     def __init__(self, value=None, items: Optional[List[str]] = None):
         self.value = value

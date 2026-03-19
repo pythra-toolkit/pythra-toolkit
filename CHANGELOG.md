@@ -178,14 +178,14 @@ This release brings significant performance optimizations to navigation and rend
 ---
 ## [0.1.17] - 2026-01-06
 
-This release introduces the new `DerivedDropdown` widget system with enhanced theming capabilities and fixes critical package structure issues that affected CLI functionality.
+This release introduces the new `VirtualDropdown` widget system with enhanced theming capabilities and fixes critical package structure issues that affected CLI functionality.
 
 ### ✨ New Features
 
 * **Derived Menu & Theming System:**
-  * **DerivedDropdown:** A new, highly customizable dropdown widget (`derived_widgets`) has been added.
-  * **DerivedDropdownTheme:** Introduces `DerivedDropdownTheme` for consistent and flexible styling of dropdown menus, allowing developers to "start with the theme we created" for uniform UI design.
-  * **Controller Support:** Added `DerivedDropdownController` for programmatic control over dropdown state.
+  * **VirtualDropdown:** A new, highly customizable dropdown widget (`derived_widgets`) has been added.
+  * **VirtualDropdownTheme:** Introduces `VirtualDropdownTheme` for consistent and flexible styling of dropdown menus, allowing developers to "start with the theme we created" for uniform UI design.
+  * **Controller Support:** Added `VirtualDropdownController` for programmatic control over dropdown state.
 
 ### 🛠️ Fixed
 

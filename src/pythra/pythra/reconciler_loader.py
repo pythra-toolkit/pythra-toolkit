@@ -8,7 +8,6 @@ and provides graceful fallback to pure Python if the extension is unavailable.
 # Try to import Cython-accelerated functions
 try:
     from . import reconciler_cython
-    from . import key
     print("[DEV] cython reconciler available")
     CYTHON_AVAILABLE = True
     cython_diff_props = reconciler_cython.cython_diff_props
@@ -24,10 +23,10 @@ except ImportError:
     CythonPatch = None
 
 try:
-    from . import key
+    from . import key_cython as key
     print("[DEV] cython key available")
     CYTHON_AVAILABLE = True
-    Key = key.Key
+    Key = key.Key_cython
 
 except ImportError:
     print("[DEV] cython key not found")

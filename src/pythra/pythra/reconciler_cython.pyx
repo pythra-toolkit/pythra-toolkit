@@ -105,6 +105,13 @@ def cython_diff_node_recursive(
         reconciler._collect_details(new_widget, new_props, result)
         reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
         new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)
+        # Ensure cython path also strips any `{children}` placeholder so
+        # the REPLACE patch doesn't contain the literal token.
+        try:
+            if "{children}" in new_html_stub:
+                new_html_stub = new_html_stub.replace("{children}", "")
+        except Exception:
+            pass
         result.patches.append(
             Patch(action="REPLACE", html_id=old_data["html_id"], data={
                 "new_html": new_html_stub,

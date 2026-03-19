@@ -30,9 +30,9 @@ from .controllers import (
     ProgressIndicatorController,
 )
 from .events import TapDetails, PanUpdateDetails
-from .derived_widgets.dropdown.dropdown import DerivedDropdown
-from .derived_widgets.dropdown.controller import DerivedDropdownController
-from .derived_widgets.dropdown.style import DerivedDropdownTheme
+from .derived_widgets.dropdown.dropdown import VirtualDropdown
+from .derived_widgets.dropdown.controller import VirtualDropdownController
+from .derived_widgets.dropdown.style import VirtualDropdownTheme
 from .navigation import Navigator, NavigatorState, PageRoute
 
 
@@ -293,8 +293,8 @@ __all__ = [
     "GradientBorderContainer",
     "GradientClipPathBorder",
     # --- Derived ---
-    "DerivedDropdown",
-    "DerivedDropdownTheme",
+    "VirtualDropdown",
+    "VirtualDropdownTheme",
     "Navigator",
     "NavigatorState",
     "PageRoute",
@@ -304,7 +304,7 @@ __all__ = [
     "VirtualListController",
     "VirtualGridController",
     "DropdownController",
-    "DerivedDropdownController",
+    "VirtualDropdownController",
     "TapDetails",
     "PanUpdateDetails",
     "ProgressIndicator",
