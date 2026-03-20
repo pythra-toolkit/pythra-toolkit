@@ -1,0 +1,158 @@
+@startuml pythra_architecture
+
+title Pythra Toolkit Framework Architecture
+
+allowmixing
+
+header Python-based Declarative GUI with HTML Rendering
+
+package "Core Layer (Python)" #LightBlue {
+    class Framework << (S,#FF7700) Singleton >> {
+        - {static} _instance: Framework
+        - reconciler: Reconciler
+        - api: Api
+        - asset_server: AssetServer
+        - package_manager: PackageManager
+        - root_widget: Widget
+        - window: webwidget.Window
+        + {static} instance(): Framework
+        + set_root(widget: Widget)
+        + run(title, width, height, frameless)
+        + request_reconciliation(state: State)
+        - _perform_initial_render()
+        - _process_reconciliation()
+        - _build_widget_tree()
+        - _analyze_required_js_engines()
+    }
+
+    class Config {
+        - settings_dict: Dict
+        + get(key, default)
+    }
+
+    class PackageManager {
+        - sources: List[PackageSource]
+        + discover_all_packages()
+        + resolve_and_load_packages()
+    }
+
+    Framework *-- Config
+    Framework *-- Reconciler
+    Framework *-- Api
+    Framework *-- AssetServer
+    Framework *-- PackageManager
+}
+
+package "Widget Layer (Declarative)" #LightGreen {
+    abstract class Widget {
+        + key: Key
+        + get_children(): List[Widget]
+        + render_props(): Dict
+        + {static} set_framework(framework: Framework)
+    }
+
+    class StatelessWidget extends Widget {
+        + build(): Widget
+    }
+
+    class StatefulWidget extends Widget {
+        - _state: State
+        + createState(): State
+    }
+
+    class State {
+        - widget_ref: weakref.ref[StatefulWidget]
+        - framework: Framework
+        + initState()
+        + build(): Widget
+        + setState()
+        + didUpdateWidget(old, new)
+        + dispose()
+    }
+
+    StatefulWidget o-- State : links to
+    State o-- StatefulWidget : links back to
+}
+
+package "Render Pipeline & Diffing" #Thistle {
+    class Reconciler {
+        - context_maps: Dict[str, Dict]
+        + reconcile(previous_map, new_widget_root, parent_html_id): ReconciliationResult
+        - _diff_node_recursive()
+        - _diff_children_recursive()
+        - _insert_node_recursive()
+    }
+
+    class ReconciliationResult {
+        + patches: List[Patch]
+        + js_initializers: List[Dict]
+        + active_css_details: Dict
+        + registered_callbacks: Dict
+        + new_rendered_map: Dict
+    }
+
+    class Patch {
+        + action: PatchAction {INSERT, REMOVE, UPDATE, MOVE, REPLACE}
+        + html_id: String
+        + data: Dict
+    }
+
+    Reconciler ..> ReconciliationResult : returns
+    ReconciliationResult *-- Patch
+}
+
+package "View Layer (QtWebEngine/HTML)" #Yellow {
+    component "PySide6 QtWebEngine" as WebEngine {
+        component "index.html" as HTML
+        component "styles.css" as CSS
+        component "main.js" as MainJS
+        
+        package "JS Engines" as JSEngines {
+            component "Slider Engine"
+            component "Dropdown Engine"
+            component "VirtualList Engine"
+            component "GestureDetector"
+            component "ClipPath Utilities"
+        }
+    }
+}
+
+package "Communication Bridge" #Orange {
+    class Api {
+        - callbacks: Dict[str, Callable]
+        + register_callback(id, func)
+        + handle_js_call(data)
+    }
+}
+
+' --- Lifecycle and Interaction Flow ---
+
+Framework --> Widget : Manages (Root)
+State --> Framework : request_reconciliation()
+Framework --> Reconciler : reconcile()
+
+' Render Flow from Reconciler to JS
+ReconciliationResult --> MainJS : patches + js_initializers
+MainJS --> JSEngines : initialize + execute
+
+' Python to JS communication
+Framework --> WebEngine : evaluate_js() via window
+AssetServer --> WebEngine : serve assets via localhost
+
+' JS to Python communication
+MainJS --> Api : postMessage() / callbacks
+
+' Rebuild triggers
+note right of State::setState
+  1. Triggered by application logic.
+  2. Schedules reconciliation in Framework
+  via QTimer.singleShot(0, ...)
+end note
+
+note bottom of Reconciler
+  Diffs virtual tree and produces
+  precise JSON-based patches
+  for DOM manipulation in JS.
+end note
+
+@enduml
