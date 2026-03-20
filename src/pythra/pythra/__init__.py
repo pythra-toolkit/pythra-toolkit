@@ -173,6 +173,9 @@ from .widgets import (
     Expandable,
 )
 
+# FutureBuilder (async helper widget)
+from .future_builder import FutureBuilder, ConnectionState, Snapshot
+
 # --- Define __all__ for explicit export control ---
 # This list controls what `from framework import *` imports,
 # and also serves as documentation for the public API.
@@ -319,6 +322,9 @@ __all__ = [
     "VirtualGridView",
     "Expandable",
     "ExpandableTheme",
+    "FutureBuilder",
+    "ConnectionState",
+    "Snapshot",
 ]
 
 

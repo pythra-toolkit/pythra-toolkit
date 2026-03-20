@@ -733,6 +733,7 @@ class DebugWindow(QWebEngineView):
 
 class WebWindow(QWidget):
     resume_signal = Signal()   # queued, thread-safe
+    document_ready = Signal(bool)  # emitted when webview finishes loading
     def __init__(
         self,
         title,
@@ -849,6 +850,14 @@ class WebWindow(QWidget):
         app.applicationStateChanged.connect(self._on_application_state_changed)
         # Connect resume signal to slot that runs in the GUI thread
         self.resume_signal.connect(self._on_system_resume_slot)
+
+        # Track whether the underlying document has finished loading
+        self._document_ready = False
+        # Emit `document_ready` when webview load finishes
+        try:
+            self.webview.loadFinished.connect(self._on_load_finished)
+        except Exception:
+            pass
 
         self._base_dpi = None
         self._base_device_pixel_ratio = None
@@ -989,6 +998,24 @@ class WebWindow(QWidget):
         # default safe values
         fallback_dpi = 96.0
         fallback_dpr = 1.0
+
+    @Slot(bool)
+    def _on_load_finished(self, ok: bool):
+        """Called when the QWebEngineView finishes loading its page.
+
+        Emits `document_ready` and records readiness for external checks.
+        """
+        try:
+            self._document_ready = bool(ok)
+            debug_print(f"WebWindow: loadFinished -> {ok}")
+            # emit signal (queued)
+            self.document_ready.emit(bool(ok))
+        except Exception as e:
+            debug_print(f"Error in _on_load_finished: {e}")
+
+    def is_document_ready(self) -> bool:
+        """Return whether the webview has finished loading its initial document."""
+        return getattr(self, "_document_ready", False)
 
         # helper to finalize baseline using either values we obtained
         def finalize(base_dpr, base_dpi=None):

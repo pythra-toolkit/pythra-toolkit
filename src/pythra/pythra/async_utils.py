@@ -1,0 +1,93 @@
+"""
+Async helpers for Pythra: a shared ThreadPool and main-thread dispatcher.
+
+DO NOT PUT FRAMEWORK-SPECIFIC LOGIC HERE. Keep this module minimal and
+easy to mock in tests. It exposes:
+- `submit_task(callable) -> concurrent.futures.Future`
+- `dispatch_to_main(callable)` which uses `QTimer.singleShot(0, ...)`
+"""
+from __future__ import annotations
+
+from concurrent.futures import ThreadPoolExecutor, Future
+from typing import Callable, Optional
+from PySide6.QtCore import QTimer
+from PySide6.QtCore import QObject, Slot, QMetaObject, Qt, Signal, QCoreApplication
+
+# Module-level singleton executor. Consumers may override by assigning
+# to `executor` for testing or configuration.
+executor: Optional[ThreadPoolExecutor] = None
+
+
+# A small QObject that lives on the Qt main thread and exposes a slot
+# to invoke Python callables. Using QMetaObject.invokeMethod with
+# Qt.QueuedConnection guarantees the call will be executed on the
+# receiver's thread (i.e. the main Qt thread) even when invoked from
+# a worker thread.
+class _MainInvoker(QObject):
+    invoke_signal = Signal(object)
+
+    def __init__(self):
+        super().__init__()
+        self.invoke_signal.connect(self._on_invoke)
+
+    @Slot(object)
+    def _on_invoke(self, cb: Callable[[], None]):
+        try:
+            cb()
+        except Exception as e:
+            print(f"Exception in dispatched callback: {e}")
+
+
+# The invoker is lazily created so we can ensure it is moved to the
+# application's main thread when possible.
+_INVOKER: Optional[_MainInvoker] = None
+
+
+def _ensure_invoker() -> _MainInvoker:
+    global _INVOKER
+    if _INVOKER is None:
+        _INVOKER = _MainInvoker()
+        try:
+            app = QCoreApplication.instance()
+            if app is not None:
+                # Move the invoker to the application's main thread
+                _INVOKER.moveToThread(app.thread())
+        except Exception:
+            pass
+    return _INVOKER
+
+
+def get_executor(max_workers: int = 4) -> ThreadPoolExecutor:
+    global executor
+    if executor is None:
+        executor = ThreadPoolExecutor(max_workers=max_workers)
+    return executor
+
+
+def submit_task(fn: Callable[[], object]) -> Future:
+    """Submit a zero-arg callable to the shared thread pool and return a Future."""
+    ex = get_executor()
+    return ex.submit(fn)
+
+
+def dispatch_to_main(cb: Callable[[], None]) -> None:
+    """Schedule `cb` to run on the Qt main thread using QTimer.singleShot.
+
+    Keep this wrapper so callers can mock or replace the dispatcher in tests.
+    """
+    # Prefer using QMetaObject.invokeMethod on the invoker with a
+    # QueuedConnection so the callable runs on the invoker's thread.
+    try:
+        inv = _ensure_invoker()
+        print(f"Dispatching to main thread via invoker.signal.emit... {cb}")
+        inv.invoke_signal.emit(cb)
+        print("Dispatched to main thread (signal emitted).")
+        return
+    except Exception as e:
+        print(f"Signal dispatch failed: {e}; falling back to QTimer.singleShot")
+
+    try:
+        QTimer.singleShot(0, cb)
+        print("Dispatched to main thread via QTimer.singleShot.")
+    except Exception as e:
+        print(f"Error dispatching to main thread: {e}")
