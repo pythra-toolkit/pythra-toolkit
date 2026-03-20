@@ -1,238 +1,113 @@
 # main.py
 import os
 import sys
+
+from pythra.base import Key
+from pythra.styles import BorderRadius, ButtonStyle, CrossAxisAlignment, EdgeInsets, TextStyle
+from pythra.widgets import SizedBox
+
 # Add the project root directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# import colors
-from constants.colors import *
-
-# Welcome to your new Pythra App!
 from pythra import (
     Framework,
     StatefulWidget,
     State,
     Column,
-    Row,
-    Key,
-    Widget,
-    Container,
-    Text,
-    Alignment,
     Colors,
+    Row,
+    Text,
     Center,
-    ElevatedButton,
-    SizedBox,
-    MainAxisAlignment,
-    CrossAxisAlignment,
-    ClipPath,
-    EdgeInsets,
-    Icon,
     IconButton,
+    Icon,
     Icons,
-    ButtonStyle,
-    TextStyle,
-    Stack,
-    Positioned,
-    ClipBehavior,
-    GradientTheme,
+    Container,
+    MainAxisAlignment,
 )
 
 
-class HomePageState(State):
+# -----------------------------
+# State (logic + data)
+# -----------------------------
+class CounterState(State):
     def __init__(self):
-        self.count = 0
+        self.count = 0  # app state
 
-    def incrementCounter(self):
+    def increment(self):
         self.count += 1
-        print("self.count: ", self.count)
-        self.setState()
+        self.setState()  # triggers UI update
 
-    def decrementCounter(self):
+    def decrement(self):
         self.count -= 1
-        print("self.count: ", self.count)
         self.setState()
 
-    def build(self) -> Widget:
-        rotating_gradient_theme = GradientTheme(
-            gradientColors=["red", "yellow", "green", "blue", "red"],
-            rotationSpeed="4s",  # <-- Set a rotation speed to enable rotation
-        )
+    # -----------------------------
+    # UI (what gets rendered)
+    # -----------------------------
+    def build(self):
         return Container(
-            key=Key("home_page_Pythra_wrapper_container"),
+            key=Key("root_container"),
             height="100vh",
             width="100vw",
-            color=app_black,
+            color=Colors.background,
+            padding=EdgeInsets.all(20),
             child=Center(
-                key=Key("home_page_Pythra_center"),
-                child=Stack(
-                    key=Key("home_page_Pythra_center_Stack"),
-                    clipBehavior=ClipBehavior.NONE,
+                key=Key("counter_app"),
+                child=Column(
+                    key=Key("counter_column"),
+                    mainAxisAlignment=MainAxisAlignment.SPACE_BETWEEN,
+                    crossAxisAlignment=CrossAxisAlignment.CENTER,
                     children=[
-                        ClipPath(
-                            height="30vh",
-                            width="30vh",
-                            viewBox=[100, 100],
-                            points=[
-                                (0, 100),
-                                (20, 100),
-                                (20, 75),
-                                (80, 75),
-                                (80, 100),
-                                (100, 100),
-                                (100, 0),
-                                (0, 0),
-                            ],
-                            radius=8,
-                            key=Key("home_page_Pythra_home_page_clip_path"),
-                            child=Container(
-                                key=Key("home_page_Pythra_home_page_container"),
-                                height="30vh",
-                                width="30vh",
-                                gradient=rotating_gradient_theme,
-                                padding=EdgeInsets.all(2),
-                                child=ClipPath(
-                                    height="29.4vh",
-                                    width="29.4vh",
-                                    viewBox=[100, 100],
-                                    points=[
-                                        # _ |
-                                        (0, 100),
-                                        (18.5, 100),
-                                        (18.5, 74.8),
-                                        (81.5, 74.8),
-                                        (81.5, 100),
-                                        (100, 100),
-                                        (100, 0),
-                                        (0, 0),
-                                    ],
-                                    radius=8,
-                                    key=Key(
-                                        "home_page_Pythra_home_page_clip_path_child"
-                                    ),
-                                    child=Container(
-                                        key=Key(
-                                            "home_page_Pythra_home_page_column_cont"
-                                        ),
-                                        color=app_white,
-                                        padding=EdgeInsets.all(12),
-                                        height="100%",
-                                        child=Column(
-                                            key=Key(
-                                                "home_page_Pythra_home_page_column"
-                                            ),
-                                            children=[
-                                                Row(
-                                                    crossAxisAlignment=CrossAxisAlignment.END,
-                                                    key=Key(
-                                                        "home_page_Pythra_counter_headerRow"
-                                                    ),
-                                                    children=[
-                                                        Text(
-                                                            "Pythra",
-                                                            key=Key("home_page_Pythra"),
-                                                            style=TextStyle(
-                                                                color=app_black,
-                                                                fontSize=20,
-                                                            ),
-                                                        ),
-                                                        SizedBox(
-                                                            width=4,
-                                                            key=Key("sixe_2_box"),
-                                                        ),
-                                                        Text(
-                                                            "GUI TOOLKIT v0.1.0",
-                                                            key=Key(
-                                                                "home_page_Pythra_ver"
-                                                            ),
-                                                            style=TextStyle(
-                                                                color=Colors.grey,
-                                                                fontSize=10,
-                                                            ),
-                                                        ),
-                                                    ],
-                                                ),
-                                                SizedBox(
-                                                    height=24,
-                                                    key=Key("sixe_box_head"),
-                                                ),
-                                                Row(
-                                                    crossAxisAlignment=CrossAxisAlignment.END,
-                                                    key=Key(
-                                                        "home_page_Pythra_counter_txtRow"
-                                                    ),
-                                                    children=[
-                                                        Text(
-                                                            f"Count:",
-                                                            key=Key(
-                                                                "home_page_Pythra_counter_txt"
-                                                            ),
-                                                            style=TextStyle(
-                                                                color=app_black,
-                                                                fontSize=14,
-                                                            ),
-                                                        ),
-                                                        SizedBox(
-                                                            width=12,
-                                                            key=Key("sixe_box"),
-                                                        ),
-                                                        Text(
-                                                            f"{self.count}",
-                                                            key=Key(
-                                                                "home_page_Pythra_counter_txt_count"
-                                                            ),
-                                                            style=TextStyle(
-                                                                color=app_black,
-                                                                fontSize=20,
-                                                                fontWeight="bold",
-                                                            ),
-                                                        ),
-                                                    ],
-                                                ),
-                                            ],
-                                        ),
-                                    ),
-                                ),
-                            ),
+                        Text(
+                            "Simple Counter App",
+                            key=Key("title_text"),
+                            style=TextStyle(fontSize=24, fontWeight="bold"),
                         ),
-                        Positioned(
-                            height="30vh",
-                            width="30vh",
-                            top="24.4vh",
-                            key=Key("home_page_Pythra_decrement_btn_Positioned"),
-                            child=Container(
-                                key=Key(
-                                    "home_page_Pythra_decrement_btn_Positioned_Container"
-                                ),
-                                child=Row(
-                                    mainAxisAlignment=MainAxisAlignment.CENTER,
-                                    key=Key(
-                                        "home_page_Pythra_decrement_btn_Positioned_Container_Row"
+                        SizedBox(height=20, key=Key("spacer_1")),  # Spacer
+                        Text(
+                            f"Count: {self.count}",
+                            key=Key("count_text"),
+                            style=TextStyle(fontSize=20, fontFamily="monospace"),
+                        ),
+                        SizedBox(height=20, key=Key("spacer_2")),  # Spacer
+                        Row(
+                            key=Key("counter_row"),
+                            mainAxisAlignment=MainAxisAlignment.CENTER,
+                            children=[
+                                # Decrease button
+                                IconButton(
+                                    key=Key("decrease_button"),
+                                    icon=Icon(Icons.stat_minus_1_rounded),
+                                    onPressed=self.decrement,
+                                    style=ButtonStyle(
+                                        backgroundColor=Colors.primary,
+                                        foregroundColor=Colors.onPrimary,
+                                        hoverColor=Colors.primaryContainer,
+                                        padding=EdgeInsets.symmetric(
+                                            horizontal=15, vertical=10
+                                        ),
+                                        shape=BorderRadius.circular(5),
                                     ),
-                                    children=[
-                                        IconButton(
-                                            key=Key("home_page_Pythra_decrement_btn"),
-                                            icon=Icon(
-                                                Icons.stat_minus_1_rounded,
-                                                key=Key("home_page_Pythra_dec_btn_txt"),
-                                            ),
-                                            onPressed=self.decrementCounter,
-                                        ),
-                                        SizedBox(
-                                            width=24,
-                                            key=Key("sixe_box_dec"),
-                                        ),
-                                        IconButton(
-                                            key=Key("home_page_Pythra_increment_btn"),
-                                            icon=Icon(
-                                                Icons.stat_1_rounded,
-                                                key=Key("home_page_Pythra_btn_txt"),
-                                            ),
-                                            onPressed=self.incrementCounter,
-                                        ),
-                                    ],
                                 ),
-                            ),
+                                SizedBox(
+                                    width=20, key=Key("spacer_3")
+                                ),  # Spacer between buttons
+                                # Increase button
+                                IconButton(
+                                    key=Key("increase_button"),
+                                    icon=Icon(Icons.stat_1_rounded),
+                                    onPressed=self.increment,
+                                    style=ButtonStyle(
+                                        backgroundColor=Colors.primary,
+                                        foregroundColor=Colors.onPrimary,
+                                        hoverColor=Colors.primaryContainer,
+                                        padding=EdgeInsets.symmetric(
+                                            horizontal=15, vertical=10
+                                        ),
+                                        shape=BorderRadius.circular(5),
+                                    ),
+                                ),
+                            ],
                         ),
                     ],
                 ),
@@ -240,27 +115,18 @@ class HomePageState(State):
         )
 
 
-class HomePage(StatefulWidget):
-    def createState(self) -> HomePageState:
-        return HomePageState()
+# -----------------------------
+# Widget wrapper
+# -----------------------------
+class CounterApp(StatefulWidget):
+    def createState(self):
+        return CounterState()
 
 
-class MainState(State):
-    def __init__(self):
-        self.home_page = HomePage(key=Key("home_page"))
-
-    def build(self):
-        return self.home_page
-
-
-class Main(StatefulWidget):
-    def createState(self) -> MainState:
-        return MainState()
-
-
+# -----------------------------
+# Entry point
+# -----------------------------
 if __name__ == "__main__":
-    # This allows running the app directly with `python lib/main.py`
-    # as well as with the CLI's `pythra run` command.
     app = Framework.instance()
-    app.set_root(Main(key=Key("home_page_wrapper")))
-    app.run(title="My New Pythra App")
+    app.set_root(CounterApp())
+    app.run(title="Pythra Counter App")

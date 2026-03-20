@@ -832,7 +832,7 @@ class Framework:
                 print(f"Error: Could not find previous state for widget {widget_key}. A full rebuild may be required.")
                 continue
 
-            print(f"🔧 PyThra Framework | Updating: {widget_to_rebuild.__class__.__name__} (ID: {widget_key.__str_key__()[:8]}...)")
+            print(f"🔧 PyThra Framework | Updating: {widget_to_rebuild.__class__.__name__} (ID: {widget_key[:8]}...)")
 
             new_subtree = self._build_widget_tree(
                 widget_to_rebuild, context_map=main_context_map
