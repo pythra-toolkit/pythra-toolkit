@@ -14,8 +14,7 @@ import os
 import shutil
 import subprocess
 import sys
-from pathlib import Path
-from typing import List, Any, Optional
+import atexit
 import yaml
 import json
 import zlib
@@ -24,7 +23,116 @@ import stat
 import time
 import uuid
 import platform
+from pathlib import Path
+from typing import List, Any, Optional
 
+# Optional readline support for interactive history (arrow keys)
+try:
+    import readline  # type: ignore
+except ImportError:
+    try:
+        import pyreadline3 as readline # type: ignore
+    except ImportError:
+        try:
+            import pyreadline as readline # type: ignore
+        except ImportError:
+            readline = None
+
+def _init_cli_history(app_name: str = "pythra") -> None:
+    """Initializes command-line history for interactive sessions."""
+    if not readline:
+        return
+    try:
+        # Determine platform sub-directory for Pythra platform-aware projects
+        system = platform.system().lower()
+        if 'win' in system:
+            platform_sub = "windows"
+        elif 'darwin' in system:
+            platform_sub = "macos"
+        else:
+            platform_sub = "linux"
+
+        # Attempt to locate a project config.yaml in cwd or parent dirs
+        project_dir = None
+        cfg_path = None
+        p = Path.cwd()
+        while True:
+            candidate = p / "config.yaml"
+            if candidate.exists():
+                project_dir = p
+                cfg_path = candidate
+                break
+            if p.parent == p:
+                break
+            p = p.parent
+
+        # Prefer app_name from config.yaml when available
+        chosen_name = app_name
+        if cfg_path:
+            try:
+                cfg = yaml.safe_load(cfg_path.read_text(encoding='utf-8'))
+                if isinstance(cfg, dict) and cfg.get('app_name'):
+                    chosen_name = str(cfg.get('app_name'))
+                    print(f"[CLI] Using app name from config.yaml: {chosen_name}")  
+            except Exception:
+                pass
+
+        # Fallback to project folder name when present
+        elif project_dir and (not chosen_name or chosen_name.strip() == ""):
+            chosen_name = project_dir.name
+
+        # Sanitize filename
+        sanitized = ''.join(c if (c.isalnum() or c in ('-', '_')) else '_' for c in chosen_name).strip().lower()
+        if not sanitized:
+            sanitized = 'pythra'
+
+        print(f"[CLI] Using sanitized name: {sanitized}")
+
+        # Determine history file path: platform-specific dir > project root > home dir
+        if project_dir:
+            # Check if the requested platform-aware directory exists (e.g., linux/, windows/)
+            platform_dir = project_dir / platform_sub
+            if platform_dir.exists() and platform_dir.is_dir():
+                histfile = str((platform_dir / f".{sanitized}_history").resolve())
+            else:
+                histfile = str((project_dir / f".{sanitized}_history").resolve())
+        else:
+            histfile = os.path.expanduser(f"~/.{sanitized}_history")
+
+        try:
+            # Ensure parent directory exists
+            parent = os.path.dirname(histfile)
+            if parent and not os.path.exists(parent):
+                try:
+                    os.makedirs(parent, exist_ok=True)
+                except Exception:
+                    pass
+            
+            # Touch history file if it doesn't exist
+            if not os.path.exists(histfile):
+                open(histfile, "a").close()
+                
+            try:
+                readline.read_history_file(histfile)
+            except Exception:
+                pass
+                
+            readline.set_history_length(1000)
+            
+            # Register save on exit
+            def _save_history():
+                try:
+                    if readline:
+                        readline.write_history_file(histfile)
+                except Exception:
+                    pass
+            
+            atexit.register(_save_history)
+        except Exception:
+            pass
+    except Exception:
+        # Don't let history initialization break the CLI
+        return
 # --- Typer App Initialization ---
 app = typer.Typer(
     name="pythra",
@@ -296,7 +404,7 @@ StartupWMClass={app_id}
     print(f"  ✅ linux/hicolor icons + {app_id}.desktop")
 
 
-def _update_config_yaml(config_path: Path, app_name: str, app_id: str):
+def _update_config_yaml(config_path: Path, app_name: str, app_id: str, overwrite: bool = False):
     """
     Update config.yaml: set app_name/app_id if defaults, add missing keys.
     """
@@ -308,9 +416,13 @@ def _update_config_yaml(config_path: Path, app_name: str, app_id: str):
         current = {}
     
     # Set app_name and app_id if they're still defaults or missing
-    if current.get('app_name', 'My Pythra App') == 'My Pythra App':
+    # We check for a few common defaults including empty strings
+    defaults_names = ['My Pythra App', 'my_pythra_app', 'my-pythra-app', '']
+    defaults_ids = ['com.pythra.my-pythra-app', 'com.pythra.my_pythra_app', '']
+    
+    if overwrite or current.get('app_name', 'My Pythra App') in defaults_names:
         current['app_name'] = app_name
-    if 'app_id' not in current or current.get('app_id') == 'com.pythra.my-pythra-app':
+    if overwrite or 'app_id' not in current or current.get('app_id') in defaults_ids:
         current['app_id'] = app_id
     
     # Add any missing default keys
@@ -364,11 +476,10 @@ def create_project(project_name: str = typer.Argument(..., help="The name for th
         print("\n🖼️  Generating platform icons...")
         _generate_platform_dirs(project_path, app_name, app_id)
         
-        # Customize config.yaml with real project name and app_id
+        # Always ensure config.yaml is created/updated with real project name and app_id
         config_path = project_path / "config.yaml"
-        if config_path.exists():
-            _update_config_yaml(config_path, app_name, app_id)
-            print(f"  ✅ config.yaml (app_name: {app_name}, app_id: {app_id})")
+        _update_config_yaml(config_path, app_name, app_id, overwrite=True)
+        print(f"  ✅ config.yaml (app_name: {app_name}, app_id: {app_id})")
         
         print("\n🎉 Project created successfully!")
         print("To get started:")
@@ -693,7 +804,7 @@ StartupWMClass={app_id}
         app_name, app_id = _derive_app_identity(project_name)
         
         if not dry_run:
-            _update_config_yaml(config_path, app_name, app_id)
+            _update_config_yaml(config_path, app_name, app_id, overwrite=False)
         
         # Show what changed
         try:
@@ -860,6 +971,11 @@ def run(script: str = typer.Option("lib/main.py", "--script", "-s", help="Script
             print(f"\n🚀 Launching: python {script}")
             process = subprocess.Popen([sys.executable, "-u", str(script_path)])
             cmd = input("🔥 Clean Restart active. Press [r] + Enter to restart, [q] + Enter to quit: ").strip().lower()
+            if cmd and readline:
+                try:
+                    readline.add_history(cmd)
+                except Exception:
+                    pass
             if process.poll() is None:
                 process.terminate()
                 try: process.wait(timeout=2)
@@ -1124,6 +1240,9 @@ def build(
         if not keep_embedded:
             embedded_module_path.unlink(missing_ok=True)
             print(f"[+] Removed temporary embedded module.")
+
+# Always initialize history when the CLI module is loaded
+_init_cli_history()
 
 if __name__ == "__main__":
     app()
