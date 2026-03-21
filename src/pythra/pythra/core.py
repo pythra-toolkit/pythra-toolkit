@@ -797,7 +797,11 @@ class Framework:
         widgets whose state has changed.
         """
         profiler = cProfile.Profile()
-        profiler.enable()
+        try:
+            profiler.enable()
+        except (ValueError, RuntimeError):
+            # Profiling might already be active or unsupported in some environments
+            profiler = None
 
         self._reconciliation_requested = False
         if not self.window:
@@ -816,7 +820,11 @@ class Framework:
         all_required_engines_this_cycle = set()
         all_js_initializers = []
 
-        for state_instance in self._pending_state_updates:
+        # Fix A: Copy and clear to allow setState calls during iteration
+        updates = list(self._pending_state_updates)
+        self._pending_state_updates.clear()
+
+        for state_instance in updates:
             widget_to_rebuild = state_instance.get_widget()
             if not widget_to_rebuild:
                 print(f"Warning: Widget for state {state_instance} lost. Skipping update.")
@@ -914,7 +922,7 @@ class Framework:
         else:
             print("✨ PyThra Framework | UI is up-to-date - No changes needed")
 
-        self._pending_state_updates.clear()
+        # Fix A: Already cleared at the start to catch concurrent setState calls
 
         end_time = time.time()
         cycle_duration = end_time - start_time
@@ -922,13 +930,14 @@ class Framework:
 
         print(f"🎉 PyThra Framework | UI Update Complete! at (⏱️ {cycle_duration:.4f}s) ({(cycle_duration * 1000):.2f}ms) ({fps:.2f} FPS)")
 
-        profiler.disable()
-        s = io.StringIO()
-        ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
-        ps.print_stats(20)
-        print("\n--- cProfile Report ---")
-        print(s.getvalue())
-        print("--- End of Report ---\n")
+        if profiler:
+            profiler.disable()
+            s = io.StringIO()
+            ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
+            ps.print_stats(20)
+            print("\n--- cProfile Report ---")
+            print(s.getvalue())
+            print("--- End of Report ---\n")
 
     # --- Widget Tree Building ---
     def build_subtree_async(self, widget: Optional[Widget]):
