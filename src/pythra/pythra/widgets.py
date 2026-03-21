@@ -6544,7 +6544,7 @@ class _RawInput(Widget):
             type="{input_type}" 
             value="{value}"
             placeholder="{placeholder}"
-            oninput="clearTimeout(this.to); this.to=setTimeout(()=>{{{on_input_handler}}}, 300);"
+            oninput="clearTimeout(this.to); this.to=setTimeout(()=>{{{on_input_handler}; console.log(`${{this.value}}`)}}, 300);"
             {disabled_str}
         >
         """
@@ -6791,6 +6791,14 @@ class TextField(Widget):
         """Return properties needed by the Reconciler to generate HTML and JS."""
         return {
             "css_class": self.current_css_class,
+            "value": self.controller.text,
+            "onChangedName": self.onChangedName,
+            "onChanged": self.onChanged,
+            "enabled": self.enabled,
+            "obscureText": self.obscureText,
+            "leading": self.leading,
+            "trailing": self.trailing,
+            "decoration": self.decoration,
         }
 
     # OVERRIDE THE NEW METHODS
@@ -7105,7 +7113,7 @@ class TextField(Widget):
         }}
 
         /* --- DISABLED STATE (Scoped) --- */
-        .textfield-root-container.{css_class}.disabled .textfield-input {{
+        .textfield-root-container.{css_class}.disabled .textfield-container {{
             background-color: {Colors.rgba(0,0,0,0.06)};
             color: {Colors.rgba(0,0,0,0.38)};
         }}

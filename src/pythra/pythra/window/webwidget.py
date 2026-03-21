@@ -624,15 +624,17 @@ class Api(QObject):
         Finds the registered callback by its name and executes it with the new value.
         """
         callback = self.callbacks.get(callback_name)
+        print("callback: ", callback)
+        debug_print("callback: ", callback)
         if callback:
             try:
                 # The callback will be the state method (e.g., self.on_username_changed)
                 callback(value)
             except Exception as e:
-                #print(f"Error executing input callback '{callback_name}': {e}")
+                print(f"Error executing input callback '{callback_name}': {e}")
                 debug_print(f"Error executing input callback '{callback_name}': {e}")
         else:
-            #print(f"Warning: Input callback '{callback_name}' not found.")
+            print(f"Warning: Input callback '{callback_name}' not found.")
             debug_print(f"Warning: Input callback '{callback_name}' not found.")
 
      # --- ADD THIS NEW SLOT FOR THE SLIDER ---
