@@ -1467,7 +1467,7 @@ class Framework:
             # --- THE FIX ---
             # Use the widget's key for a stable instance name.
             if widget_instance and widget_instance.key:
-                widget_key_val = widget_instance.key.value
+                widget_key_val = widget_instance.key.__str_key__() if hasattr(widget_instance.key, '__str_key__') else str(widget_instance.key)
             else:
                 # Fallback, though widgets with controllers should always have keys.
                 widget_key_val = html_id
