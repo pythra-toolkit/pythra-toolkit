@@ -38,7 +38,7 @@ class FutureBuilder(StatefulWidget):
     with snapshot updates on the main thread.
 
     Parameters:
-    - future: zero-arg callable or concurrent.futures.Future-like object
+    - future: zero-arg callable or concurrent.futures.Future-like object, (most have atleast 3 sec delay, (working on fixing that))
     - builder: callable(context, snapshot) -> Widget
     - initialData: optional initial value
     - key: optional widget key
@@ -71,6 +71,7 @@ class _FutureBuilderState(State):
         self._disposed = False
 
     def initState(self):
+        self._snapshot = Snapshot(connectionState=ConnectionState.WAITING, data=self.widget.initialData)
         # Kick off the work when the UI is ready. Prefer waiting for the
         # framework window's document to be ready so early completes don't
         # race with initial render. Fallback to next-tick start.
@@ -94,16 +95,16 @@ class _FutureBuilderState(State):
                         window.document_ready.connect(_on_ready)
                     except Exception:
                         # If connect fails, fallback to next-tick
-                        QTimer.singleShot(3000, lambda: self._start_if_needed(self.widget.future))
+                        QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
             else:
                 # No window available yet; start on next Qt tick to avoid races
-                QTimer.singleShot(3000, lambda: self._start_if_needed(self.widget.future))
+                QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
         except Exception:
-            QTimer.singleShot(3000, lambda: self._start_if_needed(self.widget.future))
+            QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
 
     def didUpdateWidget(self, oldWidget, new_widget):
         # If the future identity changed, restart
-        if oldWidget.future is not new_widget.future:
+        if oldWidget.future != new_widget.future:
             self._cancel_active()
             self._start_if_needed(new_widget.future)
 

@@ -356,8 +356,9 @@ class Reconciler:
             self._collect_details(new_widget, new_props, result)
 
             # Insert the new node and its children into the map first.
+            # We suppress the self-patch because the REPLACE action will handle the root swap.
             self._insert_node_recursive(
-                new_widget, parent_html_id, parent_key, result, previous_map
+                new_widget, parent_html_id, parent_key, result, previous_map, suppress_self_patch=True
             )
 
             # Then, create a REPLACE patch. The `html_id` is the old one to replace.
@@ -438,6 +439,7 @@ class Reconciler:
         result,
         previous_map,
         before_id=None,
+        suppress_self_patch=False,
     ):
         """Recursively handles the insertion of a new widget and its children."""
         if new_widget is None:
@@ -597,7 +599,7 @@ class Reconciler:
 
         # ONLY generate a patch for renderable widgets.
         # StatefulWidget and StatelessWidget are hosts, not renderable elements.
-        if widget_type_name not in ["StatefulWidget", "StatelessWidget"]:
+        if widget_type_name not in ["StatefulWidget", "StatelessWidget"] and not suppress_self_patch:
             stub_html = self._generate_html_stub(new_widget, html_id, new_props)
             # Remove `{children}` placeholders from stubs used in incremental
             # INSERT patches — initial full-page generation handles children

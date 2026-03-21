@@ -661,7 +661,7 @@ class Api(QObject):
     @Slot(str, int)
     def send_message(self, message, *args):
         #print(f"Frontend message: {message}, ", *args)
-        debug_print(f"Frontend message: {message}, ", *args)
+        print(f"Frontend message: {message}, ", *args)
         return "Message received!"
 
     @Slot(str)

@@ -2019,6 +2019,7 @@ body {
                     console.error(error);
                 }}
             }});
+            function sendMessage(message) {{ if(window.pywebview) window.pywebview.send_message(message, ()=>{{}}); }}
             function handleClick(name) {{ if(window.pywebview) window.pywebview.on_pressed_str(name, ()=>{{}}); }}
             function handleClickWithArgs(callback_name, ...args) {{
                 if (window.pywebview) {{

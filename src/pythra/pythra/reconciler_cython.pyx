@@ -103,7 +103,7 @@ def cython_diff_node_recursive(
         # This is complex replacement logic; delegate to Python implementation
         new_props = new_widget.render_props()
         reconciler._collect_details(new_widget, new_props, result)
-        reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map)
+        reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map, suppress_self_patch=True)
         new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)
         # Ensure cython path also strips any `{children}` placeholder so
         # the REPLACE patch doesn't contain the literal token.
