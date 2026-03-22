@@ -91,3 +91,34 @@ def dispatch_to_main(cb: Callable[[], None]) -> None:
         print("Dispatched to main thread via QTimer.singleShot.")
     except Exception as e:
         print(f"Error dispatching to main thread: {e}")
+
+import functools
+
+def background_task(func):
+    """
+    Decorator to execute a function asynchronously in the PyThra background thread pool.
+    Returns the Future object so callers can optionally await or add callbacks.
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        fut = submit_task(lambda: func(*args, **kwargs))
+        def _check_err(f):
+            try:
+                f.result()
+            except Exception as e:
+                print(f"⚠️ Exception in @background_task {func.__name__}: {e}")
+                import traceback
+                traceback.print_exc()
+        fut.add_done_callback(_check_err)
+        return fut
+    return wrapper
+
+def ui_thread(func):
+    """
+    Decorator to guarantee a function executes safely on the main Qt UI thread.
+    Useful for callback methods that need to update PyThra State or UI elements.
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        dispatch_to_main(lambda: func(*args, **kwargs))
+    return wrapper

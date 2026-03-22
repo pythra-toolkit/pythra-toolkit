@@ -176,6 +176,9 @@ from .widgets import (
 # FutureBuilder (async helper widget)
 from .future_builder import FutureBuilder, ConnectionState, Snapshot
 
+# Async Threading Decorators
+from .async_utils import background_task, ui_thread, submit_task, dispatch_to_main
+
 # --- Define __all__ for explicit export control ---
 # This list controls what `from framework import *` imports,
 # and also serves as documentation for the public API.
@@ -325,6 +328,10 @@ __all__ = [
     "FutureBuilder",
     "ConnectionState",
     "Snapshot",
+    "background_task",
+    "ui_thread",
+    "submit_task",
+    "dispatch_to_main",
 ]
 
 # --- Auto-inject project root to sys.path ---

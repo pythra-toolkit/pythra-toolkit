@@ -25,7 +25,8 @@ dependencies = [
     "requests>=2.31.0",
     "Cython>=0.29.30",
     "Pillow>=10.0.0",
-    "dbus-python; sys_platform == 'linux'"
+    "dbus-python; sys_platform == 'linux'",
+    "qasync>=0.27.0"
 ]
 classifiers = [
   "Programming Language :: Python :: 3",

@@ -26,7 +26,8 @@ remember things and change over time (like counters, form inputs, shopping carts
 import weakref
 import time
 from PySide6.QtCore import QTimer
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Callable, Any
+from .async_utils import submit_task, dispatch_to_main
 
 # Import base classes needed at runtime
 from .base import Widget, Key
@@ -283,6 +284,36 @@ class State:
             self.framework.request_reconciliation(self)
         else:
             print(f"❌ PyThra State | setState failed for {self.__class__.__name__}: Framework not available")
+
+    def runAsync(
+        self, 
+        task: Callable[[], Any], 
+        on_done: Optional[Callable[[Any], None]] = None, 
+        on_error: Optional[Callable[[Exception], None]] = None
+    ):
+        """
+        Runs a blocking task in a background thread using the PyThra thread pool 
+        and safely returns the result to the main UI thread via the on_done callback.
+        
+        Args:
+            task: A parameterless callable that performs the heavy blocking work.
+            on_done: A callback that receives the returned result of the task. 
+                     Excuted safely on the main Qt thread.
+            on_error: An optional callback that receives any Exception raised by the task.
+                      Executed safely on the main Qt thread.
+        """
+        def background_wrapper():
+            try:
+                result = task()
+                if on_done:
+                    dispatch_to_main(lambda: on_done(result))
+            except Exception as e:
+                if on_error:
+                    dispatch_to_main(lambda: on_error(e))
+                else:
+                    print(f"Exception in background task for {self.__class__.__name__}: {e}")
+
+        submit_task(background_wrapper)
 
     # --- Drawer/Snackbar/etc. Methods ---
     # These remain largely the same, relying on self.framework being set

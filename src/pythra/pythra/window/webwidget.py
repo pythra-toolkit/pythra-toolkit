@@ -595,14 +595,24 @@ class Api(QObject):
         debug_print("API: Clearing all callbacks.")
         self.callbacks.clear()
 
+    def _execute_callback(self, cb, *args):
+        import inspect
+        if inspect.iscoroutinefunction(cb):
+            import asyncio
+            try:
+                asyncio.create_task(cb(*args))
+            except RuntimeError as e:
+                from ..debug_utils import debug_print
+                debug_print(f"Cannot run async callback - no running event loop (did you install qasync?): {e}")
+        else:
+            cb(*args)
+
     @Slot(str, int, result=str)
     @Slot(str, str, result=str)
     @Slot(str, list, result=str)
     def on_pressed(self, callback_name, *args):
         if callback_name in self.callbacks:
-            for x in args[0]: f"webwiget arg: {x}"
-            self.callbacks[callback_name](*args)
-
+            self._execute_callback(self.callbacks[callback_name], *args)
             return f"Callback '{callback_name}' executed successfully."
         else:
             return f"Callback '{callback_name}' not found."
@@ -610,9 +620,7 @@ class Api(QObject):
     @Slot(str, result=str)
     def on_pressed_str(self, callback_name):
         if callback_name in self.callbacks:
-            # #print("callbacks: ", self.callbacks)
-            self.callbacks[callback_name]()
-
+            self._execute_callback(self.callbacks[callback_name])
             return f"Callback '{callback_name}' executed successfully."
         else:
             return f"Callback '{callback_name}' not found."
@@ -629,7 +637,7 @@ class Api(QObject):
         if callback:
             try:
                 # The callback will be the state method (e.g., self.on_username_changed)
-                callback(value)
+                self._execute_callback(callback, value)
             except Exception as e:
                 print(f"Error executing input callback '{callback_name}': {e}")
                 debug_print(f"Error executing input callback '{callback_name}': {e}")
@@ -649,7 +657,7 @@ class Api(QObject):
         debug_print("callback drag_ended: ", drag_ended)
         if callback:
             try:
-                callback(value, drag_ended)
+                self._execute_callback(callback, value, drag_ended)
             except Exception as e:
                 #print(f"Error executing slider callback '{callback_name}': {e}")
                 debug_print(f"Error executing slider callback '{callback_name}': {e}")
@@ -706,12 +714,12 @@ class Api(QObject):
                 # Based on the callback name, we can construct the correct data class.
                 if "pupdate" in callback_name:
                     # For PanUpdate, details is a dict {'dx': float, 'dy': float}
-                    callback(PanUpdateDetails(dx=details.get('dx', 0), dy=details.get('dy', 0)))
+                    self._execute_callback(callback, PanUpdateDetails(dx=details.get('dx', 0), dy=details.get('dy', 0)))
                 elif "tap" in callback_name and "dbtap" not in callback_name:
-                    callback(TapDetails())
+                    self._execute_callback(callback, TapDetails())
                 else:
                     # For DoubleTap, LongPress, PanStart, PanEnd, no details are needed.
-                    callback()
+                    self._execute_callback(callback)
             except Exception as e:
                 #print(f"Error executing gesture callback '{callback_name}': {e}")
                 debug_print(f"Error executing gesture callback '{callback_name}': {e}")
@@ -1309,7 +1317,20 @@ def start(window, debug):
 
     setup_platform_watchers(window, sleep_manager)
 
-    sys.exit(app.exec())
+    try:
+        import qasync
+        import asyncio
+        loop = qasync.QEventLoop(app)
+        asyncio.set_event_loop(loop)
+        debug_print("⚡ PyThra Framework | Started Native qasync Event Loop!")
+        with loop:
+            sys.exit(loop.run_forever())
+    except ImportError:
+        debug_print("⚠️ PyThra Framework | qasync not found, running standard Qt Event Loop.")
+        sys.exit(app.exec())
+    except Exception as e:
+        debug_print(f"⚠️ PyThra Framework | Failed to start qasync event loop: {e}")
+        sys.exit(app.exec())
 
 
 """
