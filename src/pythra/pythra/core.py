@@ -814,7 +814,7 @@ class Framework:
                 profiler.enable()
             except (ValueError, RuntimeError, ImportError):
                 # Profiling might already be active or unsupported in some environments
-                pass
+                profiler = None
 
         self._reconciliation_requested = False
         if not self.window:
