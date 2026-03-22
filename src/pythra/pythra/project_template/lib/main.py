@@ -1,17 +1,15 @@
 # main.py
 import os
 import sys
-
+from typing import Union
 from pythra.base import Key
 from pythra.styles import BorderRadius, ButtonStyle, CrossAxisAlignment, EdgeInsets, TextStyle
 from pythra.widgets import SizedBox
 
-# Add the project root directory to Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from pythra import (
     Framework,
     StatefulWidget,
+    StatelessWidget,
     State,
     Column,
     Colors,
@@ -26,25 +24,61 @@ from pythra import (
 )
 
 
-# -----------------------------
-# State (logic + data)
-# -----------------------------
+# ---------------------------------------------------------------------------
+# App Initialization Wrapper
+# ---------------------------------------------------------------------------
+def runApp(rootWidget: Union[StatefulWidget, StatelessWidget]):
+    """
+    A convenient class decorator that automatically initializes the PyThra
+    framework, sets the decorated widget as the root of your application tree,
+    and runs the application loop.
+    
+    Usage:
+        @runApp
+        class MyApp(StatefulWidget):
+            ...
+    """
+    app = Framework.instance()
+    app.set_root(rootWidget())  # Instantiates your root widget
+    app.run()
+    return rootWidget
+
+
+# ---------------------------------------------------------------------------
+# State (Your Logic and Variables)
+# ---------------------------------------------------------------------------
 class CounterState(State):
+    """
+    The State class holds mutable data for a StatefulWidget. It persists across
+    UI rebuilds. When data here changes, calling self.setState() tells PyThra
+    that the UI needs to be re-rendered to reflect the new state.
+    """
     def __init__(self):
-        self.count = 0  # app state
+        super().__init__()
+        self.count = 0  # This variable controls what displays on the counter
 
     def increment(self):
         self.count += 1
-        self.setState()  # triggers UI update
+        self.setState()  # Signals PyThra to call build() and update the DOM
 
     def decrement(self):
         self.count -= 1
-        self.setState()
+        self.setState()  # Signals PyThra to call build() and update the DOM
 
-    # -----------------------------
-    # UI (what gets rendered)
-    # -----------------------------
+    # -----------------------------------------------------------------------
+    # UI Layout (Your Declarative UI Tree)
+    # -----------------------------------------------------------------------
     def build(self):
+        """
+        The build method returns the widget tree for this state.
+        
+        It is called automatically during initialization and every time 
+        self.setState() is invoked. Only the parts of the tree that have 
+        changed will be updated on the screen, thanks to PyThra's Virtual DOM.
+        
+        Important: Always assign a unique 'key' to widgets to ensure optimal
+        re-rendering and state preservation.
+        """
         return Container(
             key=Key("root_container"),
             height="100vh",
@@ -58,18 +92,23 @@ class CounterState(State):
                     mainAxisAlignment=MainAxisAlignment.SPACE_BETWEEN,
                     crossAxisAlignment=CrossAxisAlignment.CENTER,
                     children=[
+                        # --- App Title ---
                         Text(
                             "Simple Counter App",
                             key=Key("title_text"),
                             style=TextStyle(fontSize=24, fontWeight="bold"),
                         ),
-                        SizedBox(height=20, key=Key("spacer_1")),  # Spacer
+                        SizedBox(height=20, key=Key("spacer_1")),
+                        
+                        # --- State Display ---
                         Text(
                             f"Count: {self.count}",
                             key=Key("count_text"),
                             style=TextStyle(fontSize=20, fontFamily="monospace"),
                         ),
-                        SizedBox(height=20, key=Key("spacer_2")),  # Spacer
+                        SizedBox(height=20, key=Key("spacer_2")),
+                        
+                        # --- Interactive Buttons ---
                         Row(
                             key=Key("counter_row"),
                             mainAxisAlignment=MainAxisAlignment.CENTER,
@@ -89,9 +128,8 @@ class CounterState(State):
                                         shape=BorderRadius.circular(5),
                                     ),
                                 ),
-                                SizedBox(
-                                    width=20, key=Key("spacer_3")
-                                ),  # Spacer between buttons
+                                SizedBox(width=20, key=Key("spacer_3")),
+                                
                                 # Increase button
                                 IconButton(
                                     key=Key("increase_button"),
@@ -115,18 +153,19 @@ class CounterState(State):
         )
 
 
-# -----------------------------
-# Widget wrapper
-# -----------------------------
+# ---------------------------------------------------------------------------
+# Root Widget Wrapper
+# ---------------------------------------------------------------------------
+@runApp
 class CounterApp(StatefulWidget):
+    """
+    The root widget of the application. 
+    StatefulWidgets delegate their rendering and logic to a paired State class.
+    The @runApp decorator mounts this widget to the DOM automatically.
+    """
+    def __init__(self, key=Key("counter_app_root_widget")):
+        super().__init__(key=key)
+    
     def createState(self):
+        """Creates the mutable state for this widget at a given location in the tree."""
         return CounterState()
-
-
-# -----------------------------
-# Entry point
-# -----------------------------
-if __name__ == "__main__":
-    app = Framework.instance()
-    app.set_root(CounterApp())
-    app.run(title="Pythra Counter App")

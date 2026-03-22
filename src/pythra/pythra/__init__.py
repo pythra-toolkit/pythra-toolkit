@@ -327,6 +327,20 @@ __all__ = [
     "Snapshot",
 ]
 
+# --- Auto-inject project root to sys.path ---
+# This eliminates the need for sys.path.append() in the user's lib/main.py
+import sys
+import os
+
+try:
+    _main_file = sys.modules['__main__'].__file__
+    _project_root = os.path.dirname(os.path.dirname(os.path.abspath(_main_file)))
+    if os.path.exists(os.path.join(_project_root, "config.yaml")) or os.path.isdir(os.path.join(_project_root, "lib")):
+        if _project_root not in sys.path:
+            sys.path.insert(0, _project_root)
+except Exception:
+    pass
+
 
 __version__ = "0.1.22"  # Example version
 

@@ -969,7 +969,16 @@ def run(script: str = typer.Option("lib/main.py", "--script", "-s", help="Script
     try:
         while True:
             print(f"\n🚀 Launching: python {script}")
-            process = subprocess.Popen([sys.executable, "-u", str(script_path)])
+            
+            # Inject project_root into PYTHONPATH so local imports work seamlessly
+            env = os.environ.copy()
+            current_pythonpath = env.get("PYTHONPATH", "")
+            if current_pythonpath:
+                env["PYTHONPATH"] = f"{project_root}{os.pathsep}{current_pythonpath}"
+            else:
+                env["PYTHONPATH"] = str(project_root)
+                
+            process = subprocess.Popen([sys.executable, "-u", str(script_path)], env=env)
             cmd = input("🔥 Clean Restart active. Press [r] + Enter to restart, [q] + Enter to quit: ").strip().lower()
             if cmd and readline:
                 try:

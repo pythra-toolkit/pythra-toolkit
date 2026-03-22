@@ -257,6 +257,16 @@ class Framework:
 
     # Package management methods are now handled by PackageManager
     # Legacy methods kept for backward compatibility if needed
+        import atexit
+        atexit.register(self._maybe_auto_run)
+
+    def _maybe_auto_run(self):
+        """Automatically calls run() if a root widget is set but the app hasn't started yet."""
+        if not self.called and self.root_widget:
+            # We check if we are in the main script to avoid accidental runs during imports
+            # But usually, if root_widget is set, the user intended to run the app.
+            debug_print("✨ PyThra Framework | triggering implicit app.run()...")
+            self.run()
 
     def get_loaded_packages(self) -> Dict[str, Any]:
         """Get information about loaded packages"""

@@ -89,17 +89,21 @@ class _FutureBuilderState(State):
                                 window.document_ready.disconnect(_on_ready)
                             except Exception:
                                 pass
+                            print("FutureBuilder: document_ready signal received, starting future")
                             self._start_if_needed(self.widget.future)
 
                     try:
                         window.document_ready.connect(_on_ready)
                     except Exception:
+                        print("FutureBuilder: document_ready.connect failed, falling back to next-tick")
                         # If connect fails, fallback to next-tick
                         QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
             else:
+                print("FutureBuilder: No window available yet; start on next Qt tick to avoid races")
                 # No window available yet; start on next Qt tick to avoid races
                 QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
         except Exception:
+            print("FutureBuilder: Exception in initState, falling back to next-tick")
             QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
 
     def didUpdateWidget(self, oldWidget, new_widget):
