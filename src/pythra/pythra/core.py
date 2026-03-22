@@ -806,12 +806,15 @@ class Framework:
         Performs a targeted, high-performance reconciliation cycle for only the
         widgets whose state has changed.
         """
-        profiler = cProfile.Profile()
-        try:
-            profiler.enable()
-        except (ValueError, RuntimeError):
-            # Profiling might already be active or unsupported in some environments
-            profiler = None
+        is_debug = getattr(self, 'config', None) and self.config.get('Debug', False)
+        profiler = None
+        if is_debug:
+            try:
+                profiler = cProfile.Profile()
+                profiler.enable()
+            except (ValueError, RuntimeError, ImportError):
+                # Profiling might already be active or unsupported in some environments
+                pass
 
         self._reconciliation_requested = False
         if not self.window:
@@ -948,7 +951,7 @@ class Framework:
 
         print(f"🎉 PyThra Framework | UI Update Complete! at (⏱️ {cycle_duration:.4f}s) ({(cycle_duration * 1000):.2f}ms) ({fps:.2f} FPS)")
 
-        if profiler:
+        if profiler and is_debug:
             profiler.disable()
             s = io.StringIO()
             ps = pstats.Stats(profiler, stream=s).sort_stats('cumulative')
