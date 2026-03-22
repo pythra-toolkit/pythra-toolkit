@@ -787,13 +787,11 @@ class MyTextFieldState(State):
 
     # --- Callback method for the username field ---
     def on_username_changed(self, new_value):
-        print(f"Username changed to: {new_value}")
         self.username = new_value
         self.setState()  # Trigger a UI rebuild
 
     def on_login(self):
         self.logged = f"Logged in as {self.username}"
-        print(f"Login attempt: {self.username} / {self.password}")
         self.setState()
 
     # --- Callback method for the password field ---
@@ -812,10 +810,6 @@ class MyTextFieldState(State):
     def attempt_login(self, args):
         username = self.username_controller.text
         password = self.password_controller.text
-        print(args[0], "From attempt_login")
-        print(args[1], "From attempt_login")
-
-        print(f"Login attempt: {username} / {password}")
         if len(username) <= 3:
             self.login_error = "Username must be longer than 3 characters."
             self.setState()

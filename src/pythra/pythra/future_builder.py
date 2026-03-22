@@ -71,40 +71,9 @@ class _FutureBuilderState(State):
         self._disposed = False
 
     def initState(self):
-        self._snapshot = Snapshot(connectionState=ConnectionState.WAITING, data=self.widget.initialData)
-        # Kick off the work when the UI is ready. Prefer waiting for the
-        # framework window's document to be ready so early completes don't
-        # race with initial render. Fallback to next-tick start.
-        try:
-            framework = self.framework or Framework.instance()
-            window = getattr(framework, 'window', None)
-            if window is not None and hasattr(window, 'is_document_ready'):
-                if window.is_document_ready():
-                    self._start_if_needed(self.widget.future)
-                else:
-                    # Start when the document becomes ready
-                    def _on_ready(ok):
-                        if ok:
-                            try:
-                                window.document_ready.disconnect(_on_ready)
-                            except Exception:
-                                pass
-                            print("FutureBuilder: document_ready signal received, starting future")
-                            self._start_if_needed(self.widget.future)
-
-                    try:
-                        window.document_ready.connect(_on_ready)
-                    except Exception:
-                        print("FutureBuilder: document_ready.connect failed, falling back to next-tick")
-                        # If connect fails, fallback to next-tick
-                        QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
-            else:
-                print("FutureBuilder: No window available yet; start on next Qt tick to avoid races")
-                # No window available yet; start on next Qt tick to avoid races
-                QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
-        except Exception:
-            print("FutureBuilder: Exception in initState, falling back to next-tick")
-            QTimer.singleShot(0, lambda: self._start_if_needed(self.widget.future))
+        # The core framework now safely defers reconciliation until the 
+        # QtWebEngineView document is completely ready, so we can start immediately!
+        self._start_if_needed(self.widget.future)
 
     def didUpdateWidget(self, oldWidget, new_widget):
         # If the future identity changed, restart

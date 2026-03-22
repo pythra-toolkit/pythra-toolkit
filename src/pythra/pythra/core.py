@@ -818,6 +818,14 @@ class Framework:
             print("Error: Window not available for reconciliation.")
             return
 
+        if hasattr(self.window, "is_document_ready") and not self.window.is_document_ready():
+            from PySide6.QtCore import QTimer
+            # document is not ready yet, defer reconciliation so patches are not lost into the void
+            # debug_print("⏳ PyThra Framework | Document not ready, deferring UI update cycle...")
+            self._reconciliation_requested = True
+            QTimer.singleShot(50, self._process_reconciliation)
+            return
+
         print("\n🔄 PyThra Framework | Processing Smart UI Update Cycle...")
         start_time = time.time()
 
