@@ -806,16 +806,6 @@ class Framework:
         Performs a targeted, high-performance reconciliation cycle for only the
         widgets whose state has changed.
         """
-        is_debug = getattr(self, 'config', None) and self.config.get('Debug', False)
-        profiler = None
-        if is_debug:
-            try:
-                profiler = cProfile.Profile()
-                profiler.enable()
-            except (ValueError, RuntimeError, ImportError):
-                # Profiling might already be active or unsupported in some environments
-                profiler = None
-
         self._reconciliation_requested = False
         if not self.window:
             print("Error: Window not available for reconciliation.")
@@ -828,6 +818,17 @@ class Framework:
             self._reconciliation_requested = True
             QTimer.singleShot(50, self._process_reconciliation)
             return
+
+        is_debug = getattr(self, 'config', None) and self.config.get('Debug', False)
+        profiler = None
+        if is_debug:
+            try:
+                import cProfile
+                profiler = cProfile.Profile()
+                profiler.enable()
+            except (ValueError, RuntimeError, ImportError):
+                # Profiling might already be active or unsupported in some environments
+                profiler = None
 
         print("\n🔄 PyThra Framework | Processing Smart UI Update Cycle...")
         start_time = time.time()
