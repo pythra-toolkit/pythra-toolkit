@@ -349,6 +349,6 @@ except Exception:
     pass
 
 
-__version__ = "0.1.22"  # Example version
+__version__ = "0.1.23"  # Example version
 
 print("PyThra Toolkit Initialized")  # Optional: Confirmation message

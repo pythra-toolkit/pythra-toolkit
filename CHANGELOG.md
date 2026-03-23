@@ -6,6 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.23] - 2026-03-23
+
+Native async/await support, interactive style framework for decorators, and major component architectural refinements.
+
+### ✨ New Features
+
+* **Native Async/Await Support:**
+  * **Bridge Integration:** The Python/JS bridge now supports coroutines. If a registered callback is an `async` function, the framework automatically schedules it using `asyncio.create_task`.
+  * **`FutureBuilder` Widget:** Added a new declarative widget for managing asynchronous operations. It provides a standard `Snapshot` pattern (WAITING, DONE, ACTIVE) to build reactive UIs based on async results.
+  * **`State.runAsync()`:** A convenient high-level method on the `State` class to execute blocking tasks in the PyThra thread pool and safely return results to the UI thread via `on_done`/`on_error` callbacks.
+  * **Async Decorators:** Introduced `@background_task` and `@ui_thread` in `async_utils.py` to simplify threading and main-thread dispatching across the codebase.
+
+* **Interactive Style Framework:**
+  * **Style Decorators:** Standardized support for `hoverStyle`, `focusStyle`, and `activeStyle` (using `BoxDecoration`) across most core widgets.
+  * **Auto-Focus Logic:** `GestureDetector` and other interactive containers now support `tabindex` and focus-visible rings when a `focusStyle` is provided.
+  * **Animated Transitions:** Integrated global CSS transition support for interactive style swaps (default 0.2s duration) for a premium, smooth feel.
+
+* **Component Enhancements:**
+  * **`VirtualDropdown`:** Unified styling with `InputDecoration` to support Material 3 outlined and filled variants. Added `itemHoverStyle` support for the dropdown menu.
+  * **`GestureDetector`:** Now supports interactive decorators while maintaining `display: contents` for layout neutrality.
+  * **`Slider`:** Added full keyboard navigation and Material 3 "Halo" focus effects.
+
+### 🎨 Widget Improvements
+
+* **`Icon` & `Image`**: Now support standard interactive decorators.
+* **`Text`**: Native `hoverStyle` support for creating clickable links or interactive labels without complex wrappers.
+* **`ListTile`**: Improved layout consistency with better support for interactive states and custom `selectedTileColor`.
+
+### 🐛 Bug Fixes
+
+* **`DerivedDropdown` now `VirtualDropdown`**: Resolved `AttributeError` in the build method during subsequent reconciliation cycles.
+- **`Checkbox`, `Switch`, `Radio`**: Fixed keyboard interaction bugs where toggles wouldn't respond to Space or Enter.
+- **`AssetServer`**: Fixed a hot-reload synchronization bug that occasionally caused "stale" CSS to persist after file changes.
+- **`BoxDecoration`**: Removed duplicate class definitions in `styles.py` that caused `NameError` in complex builds.
+
+### 🚀 Performance & Architecture
+
+* **`parse_dec` Implementation**: Introduced a specialized parser to reconstruct `BoxDecoration` objects from `style_key` tuples during CSS generation, significantly improving the reliability of shared styles.
+* **CI Build Pipeline**: Upgraded `cibuildwheel` to `v3.4.0` to resolve platform-specific build timeouts and rate limit errors.
+
+---
 ## [0.1.22] - 2026-03-10
 
 Cross-platform icon system, CLI project management commands, widget enhancements, TextField styling overhaul, and Cython Key extension.
