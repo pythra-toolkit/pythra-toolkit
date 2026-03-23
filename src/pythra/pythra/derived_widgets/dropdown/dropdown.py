@@ -37,6 +37,12 @@ class VirtualDropdown(StatefulWidget):
         theme: Optional[VirtualDropdownTheme] = None,
         margin: Optional[EdgeInsets] = None,
         dropDirection: Optional[str] = None,
+        hoverStyle: Optional[BoxDecoration] = None,
+        focusStyle: Optional[BoxDecoration] = None,
+        activeStyle: Optional[BoxDecoration] = None,
+        itemHoverStyle: Optional[BoxDecoration] = None,
+        itemFocusStyle: Optional[BoxDecoration] = None,
+        itemActiveStyle: Optional[BoxDecoration] = None,
     ):
 
         # Store configuration on the widget instance.
@@ -44,7 +50,14 @@ class VirtualDropdown(StatefulWidget):
         self.controller = controller
         self.onChanged = onChanged
         self.initialItemCount = initialItemCount
-        self.theme = theme if theme else VirtualDropdownTheme()
+        self.theme = theme if theme else VirtualDropdownTheme(
+            hoverStyle=hoverStyle,
+            focusStyle=focusStyle,
+            activeStyle=activeStyle,
+            itemHoverStyle=itemHoverStyle,
+            itemFocusStyle=itemFocusStyle,
+            itemActiveStyle=itemActiveStyle
+        )
         self.margin = margin
         # Direction for dropdown placement: VerticalDirection.UP/DOWN or HorizontalDirection.LEFT/RIGHT
         self.dropDirection = (
@@ -156,6 +169,9 @@ class _VirtualDropdownState(State):
                 selected=self.controller.items[item] == self.selected_value,
                 selectedTileColor=self.theme.selectedItemColor,
                 contentPadding=EdgeInsets.symmetric(horizontal=12, vertical=8),
+                hoverStyle=self.theme.itemHoverStyle,
+                focusStyle=self.theme.itemFocusStyle,
+                activeStyle=self.theme.itemActiveStyle,
             ),
         )
 
@@ -436,6 +452,9 @@ class _VirtualDropdownState(State):
                             style=ButtonStyle(
                                 padding=EdgeInsets.all(0),
                                 shape=_btn_shape,
+                                hoverStyle=self.theme.hoverStyle,
+                                focusStyle=self.theme.focusStyle,
+                                activeStyle=self.theme.activeStyle,
                             ),
                             child=trigger_child,
                         ),

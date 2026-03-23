@@ -41,6 +41,16 @@ class ThemeData:
     outline: str = '#79747E'
     outlineVariant: str = '#CAC4D0' 
     
+    # New M3 surface tones
+    surfaceTint: str = '#6750A4'
+    surfaceBright: str = '#FFFBFE'
+    surfaceDim: str = '#DED8E1'
+    surfaceContainerLowest: str = '#FFFFFF'
+    surfaceContainerLow: str = '#F7F2FA'
+    surfaceContainer: str = '#F3EDF7'
+    surfaceContainerHigh: str = '#ECE6F0'
+    surfaceContainerHighest: str = '#E6E0E9'
+    
     shadow: str = '#000000'
     scrim: str = '#000000' 
     
@@ -113,6 +123,14 @@ class ThemeData:
             onSurfaceVariant = '#CAC4D0',
             outline = '#938F99',
             outlineVariant = '#49454F',
+            surfaceTint = '#D0BCFF',
+            surfaceBright = '#38353A',
+            surfaceDim = '#141218',
+            surfaceContainerLowest = '#0F0D13',
+            surfaceContainerLow = '#1D1B20',
+            surfaceContainer = '#211F26',
+            surfaceContainerHigh = '#2B2930',
+            surfaceContainerHighest = '#36343B',
             inverseSurface = '#E6E1E5',
             inverseOnSurface = '#313033',
             inversePrimary = '#6750A4',

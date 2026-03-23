@@ -2813,7 +2813,10 @@ class ListTile(Widget):
                  selectedColor: Optional[str] = None,
                  selectedTileColor: Optional[str] = None,
                  contentPadding: Optional[EdgeInsets] = None,
-                 tooltip: Optional[str] = None
+                 tooltip: Optional[str] = None,
+                 hoverStyle: Optional[BoxDecoration] = None,
+                 focusStyle: Optional[BoxDecoration] = None,
+                 activeStyle: Optional[BoxDecoration] = None,
                  ):
 
         # --- THIS IS THE KEY CHANGE ---
@@ -2836,11 +2839,20 @@ class ListTile(Widget):
         self.selectedTileColor = selectedTileColor
         self.contentPadding = contentPadding
         self.tooltip = tooltip
+        self.hoverStyle = hoverStyle
+        self.focusStyle = focusStyle
+        self.activeStyle = activeStyle
 
         # --- CORRECTED STYLE KEY ---
         # Only include properties that define the base, shared style.
         # States like selected/enabled are handled by adding classes dynamically.
-        self.style_key = (self.dense, make_hashable(self.contentPadding))
+        self.style_key = (
+            self.dense, 
+            make_hashable(self.contentPadding),
+            self.hoverStyle.to_css() if hasattr(self.hoverStyle, 'to_css') else self.hoverStyle,
+            self.focusStyle.to_css() if hasattr(self.focusStyle, 'to_css') else self.focusStyle,
+            self.activeStyle.to_css() if hasattr(self.activeStyle, 'to_css') else self.activeStyle,
+        )
 
         if self.style_key not in ListTile.shared_styles:
             self.css_class = f"shared-listtile-{len(ListTile.shared_styles)}"
@@ -2880,7 +2892,7 @@ class ListTile(Widget):
     def generate_css_rule(style_key: Tuple, css_class: str) -> str:
         """Static method to generate CSS for ListTile structure."""
         try:
-            dense, padding_tuple = style_key
+            dense, padding_tuple, hover_style, focus_style, active_style = style_key
             # ... (the rest of your generate_css_rule logic is excellent) ...
             # The only change needed is to use structural selectors for children.
 
@@ -2899,15 +2911,16 @@ class ListTile(Widget):
             # Here it is again, confirmed to work with the new key.
             min_height = 48 if dense else 56
             padding_css = f"padding: {EdgeInsets(*padding_tuple).to_css_value()};" if padding_tuple else "padding: 8px 16px;"
+            transition_str = "transition: all 0.2s ease-in-out;" if (hover_style or focus_style or active_style) else "transition: background-color .15s linear;"
 
-            return f"""
+            main_rule = f"""
                 .{css_class} {{
                     display: grid;
                     grid-template-areas: "leading title trailing" "leading subtitle trailing";
                     grid-template-columns: auto 1fr auto;
                     align-items: center; width: 100%; min-height: {min_height}px;
                     gap: 0 16px; {padding_css} box-sizing: border-box;
-                    transition: background-color .15s linear;
+                    {transition_str}
                     cursor: pointer;
                 }}
                 .{css_class} > :nth-child(1) {{ grid-area: leading; }}
@@ -2921,6 +2934,16 @@ class ListTile(Widget):
                 .{css_class}.disabled {{ opacity: 0.38; pointer-events: none; }}
                 .{css_class}.selected {{ background-color: {Colors.primaryContainer}; color: {Colors.onPrimaryContainer}; }}
             """
+            
+            extra_rules = []
+            if hover_style:
+                extra_rules.append(f".{css_class}:hover {{ {hover_style} }}")
+            if focus_style:
+                extra_rules.append(f".{css_class}:focus-visible {{ {focus_style} }}")
+            if active_style:
+                extra_rules.append(f".{css_class}:active {{ {active_style} }}")
+                
+            return main_rule + "\n" + "\n".join(extra_rules)
 
         except Exception as e:
             # ... error handling ...
@@ -4446,6 +4469,9 @@ class GestureDetector(Widget):
                  onPanStart: Optional[Callable[[], None]] = None,
                  onPanUpdate: Optional[Callable[[PanUpdateDetails], None]] = None,
                  onPanEnd: Optional[Callable[[], None]] = None,
+                 hoverStyle: Optional[BoxDecoration] = None,
+                 focusStyle: Optional[BoxDecoration] = None,
+                 activeStyle: Optional[BoxDecoration] = None,
                  ):
 
         super().__init__(key=key, children=[child])
@@ -4457,6 +4483,9 @@ class GestureDetector(Widget):
         self.onPanStart = onPanStart
         self.onPanUpdate = onPanUpdate
         self.onPanEnd = onPanEnd
+        self.hoverStyle = hoverStyle
+        self.focusStyle = focusStyle
+        self.activeStyle = activeStyle
         
         # --- Unique callback names for this instance ---
         instance_id = self.key.value
@@ -4471,7 +4500,13 @@ class GestureDetector(Widget):
         # The style key depends on which gestures are active, to apply CSS like `cursor`.
         has_tap = bool(onTap or onDoubleTap)
         has_pan = bool(onPanStart or onPanUpdate or onPanEnd)
-        self.style_key = (has_tap, has_pan)
+        self.style_key = (
+            has_tap, 
+            has_pan,
+            self.hoverStyle.to_tuple() if self.hoverStyle else None,
+            self.focusStyle.to_tuple() if self.focusStyle else None,
+            self.activeStyle.to_tuple() if self.activeStyle else None,
+        )
 
         if self.style_key not in GestureDetector.shared_styles:
             self.css_class = f"shared-gesture-{len(GestureDetector.shared_styles)}"
@@ -4505,6 +4540,7 @@ class GestureDetector(Widget):
             "onPanStartName": self.onPanStartName,
             "onPanUpdateName": self.onPanUpdateName,
             "onPanEndName": self.onPanEndName,
+            "has_focus": bool(self.focusStyle),
         }
 
     def get_required_css_classes(self) -> Set[str]:
@@ -4513,13 +4549,14 @@ class GestureDetector(Widget):
     @staticmethod
     def _generate_html_stub(widget_instance: 'GestureDetector', html_id: str, props: Dict) -> str:
         """A GestureDetector is just a div that wraps its child."""
-        # The child's HTML will be generated and placed inside this div by the framework.
-        return f'<div id="{html_id}" class="{props.get("css_class", "")}"></div>'
+        # We add tabindex="0" if focusStyle is present to make it focusable
+        has_focus = props.get("has_focus", False)
+        tab_attr = ' tabindex="0"' if has_focus else ''
+        return f'<div id="{html_id}" class="{props.get("css_class", "")}"{tab_attr}></div>'
 
-    @staticmethod
     def generate_css_rule(style_key: Tuple, css_class: str) -> str:
         """Generates CSS to make the gesture detector functional."""
-        has_tap, has_pan = style_key
+        has_tap, has_pan, hover_tuple, focus_tuple, active_tuple = style_key
         
         styles = [
             # CRITICAL: This makes the wrapper invisible for layout purposes.
@@ -4535,12 +4572,37 @@ class GestureDetector(Widget):
             # CRITICAL: These prevent unwanted browser behavior like text selection or page scrolling during a drag.
             child_styles.append("touch-action: none;")
             child_styles.append("user-select: none;")
-            child_styles.append("-webkit-user-select: none;") # For Safari
 
-        container_rule = f".{css_class} {{ {' '.join(styles)} }}"
-        child_rule = f".{css_class} > * {{ {' '.join(child_styles)} }}"
+        # Base rule
+        rules = [f".{css_class} > * {{ {' '.join(child_styles)} }}"]
+        rules.append(f".{css_class} {{ {' '.join(styles)} }}")
+
+        # Interactive styling reconstruction
+        def parse_dec(val):
+            if not val: return None
+            if isinstance(val, tuple):
+                try: from .styles import BoxDecoration; return BoxDecoration(*val)
+                except: return None
+            return val if hasattr(val, 'to_css') else None
+
+        hover_dec = parse_dec(hover_tuple)
+        if hover_dec:
+            rules.append(f".{css_class}:hover > * {{ {hover_dec.to_css()} }}")
         
-        return f"{container_rule}\n{child_rule}"
+        focus_dec = parse_dec(focus_tuple)
+        if focus_dec:
+            rules.append(f".{css_class}:focus-visible > * {{ {focus_dec.to_css()} }}")
+            # If focusStyle is present, we might want to make the parent focusable (done in _generate_html_stub)
+
+        active_dec = parse_dec(active_tuple)
+        if active_dec:
+            rules.append(f".{css_class}:active > * {{ {active_dec.to_css()} }}")
+
+        # Add transitions if interactive styles are present
+        if hover_dec or focus_dec or active_dec:
+            rules.append(f".{css_class} > * {{ transition: all 0.2s ease-in-out; }}")
+
+        return "\n".join(rules)
 
 
 # =============================================================================

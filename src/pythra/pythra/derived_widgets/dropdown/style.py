@@ -35,6 +35,13 @@ class VirtualDropdownTheme:
         dropdownMargin=EdgeInsets.only(top=12),
         dropdownHeight=200,
         itemPadding=EdgeInsets.symmetric(horizontal=12, vertical=8),
+        # ── Interactive Styling ──────────────────────────────────────────────
+        hoverStyle: Optional[BoxDecoration] = None,
+        focusStyle: Optional[BoxDecoration] = None,
+        activeStyle: Optional[BoxDecoration] = None,
+        itemHoverStyle: Optional[BoxDecoration] = None,
+        itemFocusStyle: Optional[BoxDecoration] = None,
+        itemActiveStyle: Optional[BoxDecoration] = None,
     ):
         # ── InputDecoration (primary trigger styling) ──────────────────────
         self.inputDecoration = inputDecoration  # may be None
@@ -57,3 +64,11 @@ class VirtualDropdownTheme:
         self.dropdownMargin = dropdownMargin
         self.dropdownHeight = dropdownHeight
         self.itemPadding = itemPadding
+
+        # ── Interactive Styling ──────────────────────────────────────────────
+        self.hoverStyle = hoverStyle
+        self.focusStyle = focusStyle
+        self.activeStyle = activeStyle
+        self.itemHoverStyle = itemHoverStyle
+        self.itemFocusStyle = itemFocusStyle
+        self.itemActiveStyle = itemActiveStyle

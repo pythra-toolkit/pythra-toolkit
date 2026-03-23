@@ -526,6 +526,52 @@ class BoxConstraints:
         return (self.minWidth, self.maxWidth, self.minHeight, self.maxHeight)
 
 
+class ColorSwatch(str):
+    """
+    Acts as a string (so it represents the base CSS color) while allowing array 
+    indexing to generate proportional shades dynamically (e.g. Colors.grey[300]).
+    """
+    def __new__(cls, base_hex: str):
+        return super().__new__(cls, base_hex)
+
+    def __init__(self, base_hex: str):
+        # normalize to exactly 6 hex characters
+        h = base_hex.strip().lstrip('#')
+        if len(h) == 3:
+            h = "".join([c*2 for c in h])
+        elif len(h) > 6:
+            h = h[:6]
+        self.base_hex = h
+            
+    def __getitem__(self, shade: int) -> str:
+        try:
+            r = int(self.base_hex[0:2], 16)
+            g = int(self.base_hex[2:4], 16)
+            b = int(self.base_hex[4:6], 16)
+        except ValueError:
+            return f"#{self.base_hex}"
+            
+        if shade == 500:
+            return f"#{self.base_hex}"
+            
+        # Lighten colors below 500 by mixing with white
+        if shade < 500:
+            weight = (500 - shade) / 500.0
+            r = int(r + (255 - r) * weight)
+            g = int(g + (255 - g) * weight)
+            b = int(b + (255 - b) * weight)
+        # Darken colors above 500 by mixing with black
+        else:
+            weight = (shade - 500) / 400.0 # From 500 to 900
+            weight = max(0.0, min(1.0, weight))
+            r = int(r * (1 - weight))
+            g = int(g * (1 - weight))
+            b = int(b * (1 - weight))
+            
+        return f"#{r:02x}{g:02x}{b:02x}"
+
+
+
 class Color:
     """
     Provides utility methods for defining CSS colors (hex, rgba)
@@ -584,14 +630,15 @@ class Color:
 
     # --- Common CSS Named Colors ---
     # Can be added if needed, but M3 roles are preferred
-    red = "red"
-    blue = "blue"
-    green = "green"
-    white = "white"
-    black = "black"
-    grey = "grey"  # Or gray
-    lightgrey = "lightgrey"  # Or lightgray
-    darkgrey = "darkgrey"  # Or darkgray
+    red = ColorSwatch("#F44336")
+    blue = ColorSwatch("#2196F3")
+    green = ColorSwatch("#4CAF50")
+    white = ColorSwatch("#FFFFFF")
+    black = ColorSwatch("#000000")
+    grey = ColorSwatch("#9E9E9E")
+    gray = grey  # Expose both spellings
+    lightgrey = ColorSwatch("#D3D3D3")
+    darkgrey = ColorSwatch("#A9A9A9")
     transparent = "transparent"
 
     def __getattr__(self, name):
@@ -1483,319 +1530,6 @@ from typing import Optional, Union, Tuple, Dict, Any
 # from .styles import Colors, EdgeInsets, BorderSide, BorderRadius, TextStyle, Alignment, BoxShadow, Offset
 
 
-class ButtonStyle:
-    """
-    Defines the visual properties of buttons (TextButton, ElevatedButton, etc.).
-    Compatible with reconciliation. Aggregates other style objects.
-
-    Args:
-            backgroundColor: Background color.
-            foregroundColor: Text and icon color.
-            disabledBackgroundColor: Background when disabled.
-            disabledForegroundColor: Text/icon color when disabled.
-            shadowColor: Color used for the elevation shadow.
-            elevation: Elevation level (used for box-shadow).
-            padding: Internal padding.
-            minimumSize: Minimum width/height tuple (pixels).
-            maximumSize: Maximum width/height tuple (pixels).
-            side: Border definition (BorderSide object).
-            shape: Corner radius (number for all corners or BorderRadius object).
-            textStyle: TextStyle object for button label.
-            alignment: Alignment object if button uses flex/grid for content.
-    """
-
-    def __init__(
-        self,
-        # --- Colors ---
-        backgroundColor: Optional[str] = None,  # Button background
-        foregroundColor: Optional[str] = None,  # Text/Icon color
-        disabledBackgroundColor: Optional[str] = None,  # Background when disabled
-        disabledForegroundColor: Optional[str] = None,  # Text/Icon when disabled
-        shadowColor: Optional[str] = None,  # Color of elevation shadow
-        hoverColor: Optional[str] = None,
-        activeColor: Optional[str] = None,
-        # overlayColor: Optional[str] = None, # TODO: Handle hover/focus/pressed overlay (CSS :hover/:active or JS)
-        # --- Shape & Border ---
-        elevation: Optional[float] = None,  # Shadow depth (used to generate BoxShadow)
-        padding: Optional[EdgeInsets] = None,  # Padding inside the button
-        margin: Optional[EdgeInsets] = None,  # margin outside the button
-        minimumSize: Optional[
-            Tuple[Optional[float], Optional[float]]
-        ] = None,  # (minWidth, minHeight) in px
-        maximumSize: Optional[
-            Tuple[Optional[float], Optional[float]]
-        ] = None,  # (maxWidth, maxHeight) in px
-        side: Optional[BorderSide] = None,  # Border properties
-        shape: Optional[
-            Union[float, BorderRadius]
-        ] = None,  # Corner radius (number or BorderRadius object)
-        # --- Content Style ---
-        textStyle: Optional[TextStyle] = None,  # Style for text content
-        alignment: Optional[
-            Alignment
-        ] = None,  # How content (icon+label) is aligned if button is flex container
-        # iconColor: Optional[str] = None, # Specific icon color override? (or use foregroundColor)
-        # iconSize: Optional[float] = None, # Icon size? (Usually handled by Icon widget itself)
-    ):
-        """
-        Initializes the ButtonStyle.
-
-        Args:
-            backgroundColor: Background color.
-            foregroundColor: Text and icon color.
-            disabledBackgroundColor: Background when disabled.
-            disabledForegroundColor: Text/icon color when disabled.
-            shadowColor: Color used for the elevation shadow.
-            elevation: Elevation level (used for box-shadow).
-            padding: Internal padding.
-            minimumSize: Minimum width/height tuple (pixels).
-            maximumSize: Maximum width/height tuple (pixels).
-            side: Border definition (BorderSide object).
-            shape: Corner radius (number for all corners or BorderRadius object).
-            textStyle: TextStyle object for button label.
-            alignment: Alignment object if button uses flex/grid for content.
-        """
-        self.backgroundColor = backgroundColor
-        self.foregroundColor = foregroundColor
-        self.disabledBackgroundColor = disabledBackgroundColor
-        self.disabledForegroundColor = disabledForegroundColor
-        self.shadowColor = shadowColor
-        self.hoverColor = hoverColor
-        self.activeColor = activeColor
-        self.elevation = elevation
-        self.padding = padding
-        self.margin = margin
-        self.minimumSize = minimumSize
-        self.maximumSize = maximumSize
-        self.side = side
-        self.shape = shape
-        self.textStyle = textStyle
-        self.alignment = alignment
-        # Removed icon - Icon should be passed as child widget
-
-    # --- Compatibility Methods ---
-
-    def to_css_dict(self) -> Dict[str, str]:
-        """Converts button style properties to a dictionary of CSS styles."""
-        styles = {}
-        if self.backgroundColor:
-            styles["background-color"] = self.backgroundColor
-        if self.foregroundColor:
-            styles["color"] = self.foregroundColor  # Applies to text/icon color usually
-        if self.hoverColor:
-            styles["hover-color"] = self.hoverColor
-        if self.activeColor:
-            styles["active-color"] = self.activeColor
-        # Disabled colors handled by specific .disabled class rules, not here directly
-
-        # --- Shadow ---
-        # Generate box-shadow based on elevation
-        if self.elevation is not None and self.elevation > 0:
-            # Basic elevation mapping (improve as needed)
-            offset_y = min(max(1, self.elevation * 0.8), 6)
-            blur = max(4, self.elevation * 1.5)
-            spread = max(0, self.elevation * 0.2 - 1)
-            color = self.shadowColor or Colors.rgba(0, 0, 0, 0.2)
-            styles["box-shadow"] = f"0px {offset_y}px {blur}px {spread}px {color}"
-
-        if self.padding and isinstance(self.padding, EdgeInsets):
-            styles["padding"] = self.padding.to_css()  # Use EdgeInsets method
-        if self.margin and isinstance(self.margin, EdgeInsets):
-            styles["margin"] = self.margin.to_css()  # Use EdgeInsets method
-        if self.minimumSize:
-            min_w, min_h = self.minimumSize
-            if min_w is not None:
-                styles["min-width"] = f"{min_w}px"
-            if min_h is not None:
-                styles["min-height"] = f"{min_h}px"
-        if self.maximumSize:
-            max_w, max_h = self.maximumSize
-            if max_w is not None:
-                styles["max-width"] = f"{max_w}px"
-            if max_h is not None:
-                styles["max-height"] = f"{max_h}px"
-
-        # --- Border & Shape ---
-        if self.side and isinstance(self.side, BorderSide):
-            # Use shorthand if available and not NONE
-            shorthand = self.side.to_css_shorthand_value()
-            if shorthand != "none":
-                styles["border"] = shorthand
-            else:
-                styles["border"] = "none"  # Explicitly set to none
-        else:
-            # Default: buttons often have no border unless specified
-            styles["border"] = "none"
-
-        if self.shape:
-            print("Shape value in btnStyle: ", self.shape.to_css_value())
-            if isinstance(self.shape, BorderRadius):
-                styles["border-radius"] = self.shape.to_css_value()
-            elif isinstance(self.shape, (int, float)):
-                styles["border-radius"] = f"{max(0.0, self.shape)}px"
-
-        # --- Text Style ---
-        # Note: Text styles apply to text *within* the button.
-        # Best applied via CSS descendant selector (e.g., .button-class > .text-class)
-        # or if the button directly renders text. Including here might override wrongly.
-        # if self.textStyle and isinstance(self.textStyle, TextStyle):
-        #     styles.update(self.textStyle.to_css_dict()) # Merge text styles
-
-        # --- Alignment ---
-        # Applies if the button itself uses flex/grid to lay out an icon and label
-        if self.alignment and isinstance(self.alignment, Alignment):
-            # Usually buttons use flex to align icon+label
-            styles["display"] = "inline-flex"  # Use inline-flex for button
-            styles["justify-content"] = self.alignment.justify_content
-            styles["align-items"] = self.alignment.align_items
-            styles["gap"] = "8px"  # Default gap between icon/label?
-
-        return styles
-
-    def to_css(self) -> str:
-        """Converts button style properties to a CSS string snippet."""
-        style_dict = self.to_css_dict()
-        return " ".join(f"{prop}: {value};" for prop, value in style_dict.items())
-
-    # --- Hashability & Equality ---
-    def __eq__(self, other):
-        if not isinstance(other, ButtonStyle):
-            return NotImplemented
-        # Compare all relevant attributes
-        # Ensure nested objects are comparable (__eq__ implemented)
-        return (
-            self.backgroundColor == other.backgroundColor
-            and self.foregroundColor == other.foregroundColor
-            and self.disabledBackgroundColor == other.disabledBackgroundColor
-            and self.disabledForegroundColor == other.disabledForegroundColor
-            and self.shadowColor == other.shadowColor
-            and self.hoverColor == other.hoverColor
-            and self.activeColor == other.activeColor
-            and self.elevation == other.elevation
-            and self.padding == other.padding
-            and self.margin == other.margin
-            and self.minimumSize == other.minimumSize
-            and self.maximumSize == other.maximumSize
-            and self.side == other.side
-            and self.shape == other.shape
-            and self.textStyle == other.textStyle
-            and self.alignment == other.alignment
-        )
-
-    def __hash__(self):
-        # Hash a tuple of hashable representations of attributes
-        # Ensure nested objects (EdgeInsets, BorderSide, BorderRadius, TextStyle, Alignment) are hashable
-        return hash(
-            (
-                self.backgroundColor,
-                self.foregroundColor,
-                self.disabledBackgroundColor,
-                self.disabledForegroundColor,
-                self.shadowColor,
-                self.hoverColor,
-                self.activeColor,
-                self.elevation,
-                self.padding,
-                self.margin,
-                self.minimumSize,
-                self.maximumSize,  # Tuples are hashable
-                self.side,
-                self.shape,
-                self.textStyle,
-                self.alignment,
-            )
-        )
-
-    # --- Representation ---
-    def __repr__(self):
-        props = []
-        # Add checks to show only non-default/non-None values
-        attrs = [
-            "backgroundColor",
-            "foregroundColor",
-            "disabledBackgroundColor",
-            "disabledForegroundColor",
-            "shadowColor",
-            "hoverColor",
-            "activeColor",
-            "elevation",
-            "padding",
-            "margin",
-            "minimumSize",
-            "maximumSize",
-            "side",
-            "shape",
-            "textStyle",
-            "alignment",
-        ]
-        for attr in attrs:
-            value = getattr(self, attr)
-            if value is not None:  # Simple check for None
-                # Add more sophisticated default checks if needed
-                props.append(f"{attr}={value!r}")
-        return f"ButtonStyle({', '.join(props)})"
-
-    # --- Reconciler Prop Representation ---
-    def to_dict(self):
-        """Returns a simple dictionary representation."""
-        # Convert nested objects to dicts too
-        return {
-            attr: (
-                getattr(self, attr).to_dict()
-                if hasattr(getattr(self, attr), "to_dict")
-                else getattr(self, attr)
-            )
-            for attr in [
-                "backgroundColor",
-                "foregroundColor",
-                "disabledBackgroundColor",
-                "disabledForegroundColor",
-                "shadowColor",
-                "hoverColor",
-                "activeColor",
-                "elevation",
-                "padding",
-                "margin",
-                "minimumSize",
-                "maximumSize",
-                "side",
-                "shape",
-                "textStyle",
-                "alignment",
-            ]
-            if getattr(self, attr) is not None
-        }
-
-    def to_tuple(self):
-        """Returns a hashable tuple representation."""
-        # Convert nested objects to tuples too
-        return tuple(
-            (
-                getattr(self, attr).to_tuple()
-                if hasattr(getattr(self, attr), "to_tuple")
-                else getattr(self, attr)
-            )
-            for attr in [
-                "backgroundColor",
-                "foregroundColor",
-                "disabledBackgroundColor",
-                "disabledForegroundColor",
-                "shadowColor",
-                "hoverColor",
-                "activeColor",
-                "elevation",
-                "padding",
-                "margin",
-                "minimumSize",
-                "maximumSize",
-                "side",
-                "shape",
-                "textStyle",
-                "alignment",
-            ]
-        )
-
-
 class ScrollPhysics:
     """
     Specifies the scrolling behavior of a widget.
@@ -1914,189 +1648,6 @@ class BoxFit:
     NONE = "none"
 
 
-# --- BoxDecoration Refactored ---
-class BoxDecoration:
-    """
-    Describes how to paint a box (background, border, shadow, shape).
-    Compatible with reconciliation.
-    """
-
-    def __init__(
-        self,
-        color: Optional[str] = None,
-        # image: Optional[DecorationImage] = None, # TODO: If image backgrounds needed
-        border: Optional[
-            Union[str, BorderSide]
-        ] = None,  # Allow BorderSide object or CSS string? Prefer object.
-        borderRadius: Optional[
-            Union[int, float, BorderRadius]
-        ] = None,  # Allow number or BorderRadius obj
-        boxShadow: Optional[
-            Union[BoxShadow, List[BoxShadow]]
-        ] = None,  # Allow single or list
-        # gradient: Optional[Gradient] = None, # TODO: If gradients needed
-        # shape: BoxShape = BoxShape.rectangle, # TODO: If specific shapes like circle needed
-        # For simplicity, sticking to properties easily mappable to CSS:
-        transform: Optional[str] = None,  # Raw CSS transform string
-        # Padding is usually handled by Padding widget, not BoxDecoration
-        # padding: Optional[EdgeInsets] = None,
-        visible: bool = True,
-    ):
-        """
-        Initializes the BoxDecoration.
-
-        Args:
-            color: Background color.
-            border: Border definition (BorderSide object preferred).
-            borderRadius: Corner radius (number for all corners or BorderRadius object).
-            boxShadow: BoxShadow object or list of BoxShadow objects.
-            transform: CSS transform string (e.g., 'rotate(45deg)').
-        """
-        self.color = color
-        self.border = border
-        self.borderRadius = borderRadius
-        self.visible = visible
-        # Ensure boxShadow is always a list for consistent handling
-        if isinstance(boxShadow, BoxShadow):
-            self.boxShadow = [boxShadow]
-        elif isinstance(boxShadow, list):
-            self.boxShadow = boxShadow
-        else:
-            self.boxShadow = None
-        self.transform = transform
-        # self.padding = padding # Removed padding, use Padding widget
-
-    # --- Compatibility Methods ---
-
-    def to_css_dict(self) -> Dict[str, str]:
-        """Converts decoration properties to a dictionary of CSS styles."""
-        styles = {}
-        if self.color:
-            styles["background"] = self.color
-        if self.border:
-            if isinstance(self.border, BorderSide):
-                # Assumes BorderSide has a way to generate full border property
-                if hasattr(self.border, "border_to_css_shorthand"):
-                    styles["border"] = (
-                        self.border.border_to_css_shorthand()
-                    )  # Example method name
-                else:  # Fallback using individual properties if needed
-                    border_dict = (
-                        self.border.to_css_dict()
-                    )  # Assume BorderSide returns dict
-                    styles.update(border_dict)
-            elif isinstance(self.border, str):  # Allow raw CSS string (less safe)
-                styles["border"] = self.border
-        if self.borderRadius:
-            if isinstance(self.borderRadius, BorderRadius):
-                # Assumes BorderRadius has a way to generate border-radius property
-                styles["border-radius"] = (
-                    self.borderRadius.to_css_value()
-                )  # Example method name
-            elif isinstance(self.borderRadius, (int, float)):
-                styles["border-radius"] = f"{self.borderRadius}px"
-            # Else handle string? For now, require object or number
-        if self.boxShadow:
-            # Combine multiple shadows with comma
-            shadow_strings = [
-                shadow.to_css()
-                for shadow in self.boxShadow
-                if isinstance(shadow, BoxShadow)
-            ]
-            if shadow_strings:
-                styles["box-shadow"] = ", ".join(shadow_strings)
-        if self.transform:
-            styles["transform"] = self.transform
-        # if self.padding and isinstance(self.padding, EdgeInsets): # Padding removed
-        #     styles['padding'] = self.padding.to_css()
-        return styles
-
-    def to_css(self) -> str:
-        """Converts decoration properties to a CSS string snippet."""
-        style_dict = self.to_css_dict()
-        return " ".join(f"{prop}: {value};" for prop, value in style_dict.items())
-
-    # --- Hashability & Equality ---
-    def __eq__(self, other):
-        if not isinstance(other, BoxDecoration):
-            return NotImplemented
-        # Compare all relevant attributes
-        # Note: Comparing lists requires order to be the same for equality
-        return (
-            self.color == other.color
-            and self.border == other.border
-            and self.borderRadius == other.borderRadius
-            and self.boxShadow
-            == other.boxShadow  # Relies on BoxShadow __eq__ and list order
-            and self.transform == other.transform
-        )
-
-    def __hash__(self):
-        # Hash a tuple of hashable representations of attributes
-        # Ensure nested objects (BorderSide, BorderRadius, BoxShadow) are hashable
-        # Convert list of shadows to tuple for hashing
-        shadow_tuple = tuple(self.boxShadow) if self.boxShadow else None
-        return hash(
-            (
-                self.color,
-                self.border,  # Relies on BorderSide/str hash
-                self.borderRadius,  # Relies on BorderRadius/number hash
-                shadow_tuple,  # Relies on BoxShadow hash
-                self.transform,
-            )
-        )
-
-    # --- Representation ---
-    def __repr__(self):
-        props = []
-        if self.color:
-            props.append(f"color='{self.color}'")
-        if self.border:
-            props.append(f"border={self.border!r}")
-        if self.borderRadius:
-            props.append(f"borderRadius={self.borderRadius!r}")
-        if self.boxShadow:
-            props.append(f"boxShadow={self.boxShadow!r}")
-        if self.transform:
-            props.append(f"transform='{self.transform}'")
-        return f"BoxDecoration({', '.join(props)})"
-
-    # --- Reconciler Prop Representation ---
-    def to_dict(self):
-        # Convert nested objects to dicts too if needed for serialization
-        border_repr = (
-            self.border.to_dict() if hasattr(self.border, "to_dict") else self.border
-        )
-        radius_repr = (
-            self.borderRadius.to_dict()
-            if hasattr(self.borderRadius, "to_dict")
-            else self.borderRadius
-        )
-        shadow_repr = (
-            [s.to_dict() for s in self.boxShadow if hasattr(s, "to_dict")]
-            if self.boxShadow
-            else None
-        )
-
-        return {
-            "color": self.color,
-            "border": border_repr,
-            "borderRadius": radius_repr,
-            "boxShadow": shadow_repr,
-            "transform": self.transform,
-        }
-
-    def to_tuple(self):
-        """Returns a hashable tuple representation."""
-        shadow_tuple = tuple(self.boxShadow) if self.boxShadow else None
-        return (
-            self.color,
-            self.border,
-            self.borderRadius,
-            shadow_tuple,
-            self.transform,
-        )
-
 
 # --- BoxDecoration Refactored ---
 class BoxDecoration:
@@ -2121,7 +1672,7 @@ class BoxDecoration:
         # gradient: Optional[Gradient] = None, # TODO: If gradients needed
         # shape: BoxShape = BoxShape.rectangle, # TODO: If specific shapes like circle needed
         # For simplicity, sticking to properties easily mappable to CSS:
-        transform: Optional[str] = None,  # Raw CSS transform string
+        transform: Optional[Union[str, Any]] = None,  # Raw CSS transform string or Matrix4 object
         # Padding is usually handled by Padding widget, not BoxDecoration
         # padding: Optional[EdgeInsets] = None,
     ):
@@ -2188,7 +1739,7 @@ class BoxDecoration:
             if shadow_strings:
                 styles["box-shadow"] = ", ".join(shadow_strings)
         if self.transform:
-            styles["transform"] = self.transform
+            styles["transform"] = self.transform.to_css() if hasattr(self.transform, "to_css") else self.transform
         # if self.padding and isinstance(self.padding, EdgeInsets): # Padding removed
         #     styles['padding'] = self.padding.to_css()
         return styles
@@ -2279,6 +1830,340 @@ class BoxDecoration:
             self.transform,
         )
 
+
+
+class ButtonStyle:
+    """
+    Defines the visual properties of buttons (TextButton, ElevatedButton, etc.).
+    Compatible with reconciliation. Aggregates other style objects.
+
+    Args:
+            backgroundColor: Background color.
+            foregroundColor: Text and icon color.
+            disabledBackgroundColor: Background when disabled.
+            disabledForegroundColor: Text/icon color when disabled.
+            shadowColor: Color used for the elevation shadow.
+            elevation: Elevation level (used for box-shadow).
+            padding: Internal padding.
+            minimumSize: Minimum width/height tuple (pixels).
+            maximumSize: Maximum width/height tuple (pixels).
+            side: Border definition (BorderSide object).
+            shape: Corner radius (number for all corners or BorderRadius object).
+            textStyle: TextStyle object for button label.
+            alignment: Alignment object if button uses flex/grid for content.
+    """
+
+    def __init__(
+        self,
+        # --- Colors ---
+        backgroundColor: Optional[str] = None,  # Button background
+        foregroundColor: Optional[str] = None,  # Text/Icon color
+        disabledBackgroundColor: Optional[str] = None,  # Background when disabled
+        disabledForegroundColor: Optional[str] = None,  # Text/Icon when disabled
+        shadowColor: Optional[str] = None,  # Color of elevation shadow
+        hoverColor: Optional[str] = None,
+        activeColor: Optional[str] = None,
+        # overlayColor: Optional[str] = None, # TODO: Handle hover/focus/pressed overlay (CSS :hover/:active or JS)
+        # --- Shape & Border ---
+        elevation: Optional[float] = None,  # Shadow depth (used to generate BoxShadow)
+        padding: Optional[EdgeInsets] = None,  # Padding inside the button
+        margin: Optional[EdgeInsets] = None,  # margin outside the button
+        minimumSize: Optional[
+            Tuple[Optional[float], Optional[float]]
+        ] = None,  # (minWidth, minHeight) in px
+        maximumSize: Optional[
+            Tuple[Optional[float], Optional[float]]
+        ] = None,  # (maxWidth, maxHeight) in px
+        side: Optional[BorderSide] = None,  # Border properties
+        shape: Optional[
+            Union[float, BorderRadius]
+        ] = None,  # Corner radius (number or BorderRadius object)
+        # --- Content Style ---
+        textStyle: Optional[TextStyle] = None,  # Style for text content
+        alignment: Optional[
+            Alignment
+        ] = None,  # How content (icon+label) is aligned if button is flex container
+        hoverStyle: Optional[BoxDecoration] = None,
+        focusStyle: Optional[BoxDecoration] = None,
+        activeStyle: Optional[BoxDecoration] = None,
+        # iconColor: Optional[str] = None, # Specific icon color override? (or use foregroundColor)
+        # iconSize: Optional[float] = None, # Icon size? (Usually handled by Icon widget itself)
+    ):
+        """
+        Initializes the ButtonStyle.
+
+        Args:
+            backgroundColor: Background color.
+            foregroundColor: Text and icon color.
+            disabledBackgroundColor: Background when disabled.
+            disabledForegroundColor: Text/icon color when disabled.
+            shadowColor: Color used for the elevation shadow.
+            elevation: Elevation level (used for box-shadow).
+            padding: Internal padding.
+            minimumSize: Minimum width/height tuple (pixels).
+            maximumSize: Maximum width/height tuple (pixels).
+            side: Border definition (BorderSide object).
+            shape: Corner radius (number for all corners or BorderRadius object).
+            textStyle: TextStyle object for button label.
+            alignment: Alignment object if button uses flex/grid for content.
+        """
+        self.backgroundColor = backgroundColor
+        self.foregroundColor = foregroundColor
+        self.disabledBackgroundColor = disabledBackgroundColor
+        self.disabledForegroundColor = disabledForegroundColor
+        self.shadowColor = shadowColor
+        self.hoverColor = hoverColor
+        self.activeColor = activeColor
+        self.elevation = elevation
+        self.padding = padding
+        self.margin = margin
+        self.minimumSize = minimumSize
+        self.maximumSize = maximumSize
+        self.side = side
+        self.shape = shape
+        self.textStyle = textStyle
+        self.alignment = alignment
+        self.hoverStyle = hoverStyle
+        self.focusStyle = focusStyle
+        self.activeStyle = activeStyle
+        # Removed icon - Icon should be passed as child widget
+
+    # --- Compatibility Methods ---
+
+    def to_css_dict(self) -> Dict[str, str]:
+        """Converts button style properties to a dictionary of CSS styles."""
+        styles = {}
+        if self.backgroundColor:
+            styles["background-color"] = self.backgroundColor
+        if self.foregroundColor:
+            styles["color"] = self.foregroundColor  # Applies to text/icon color usually
+        if self.hoverColor:
+            styles["hover-color"] = self.hoverColor
+        if self.activeColor:
+            styles["active-color"] = self.activeColor
+        # Disabled colors handled by specific .disabled class rules, not here directly
+
+        # --- Shadow ---
+        # Generate box-shadow based on elevation
+        if self.elevation is not None and self.elevation > 0:
+            # Basic elevation mapping (improve as needed)
+            offset_y = min(max(1, self.elevation * 0.8), 6)
+            blur = max(4, self.elevation * 1.5)
+            spread = max(0, self.elevation * 0.2 - 1)
+            color = self.shadowColor or Colors.rgba(0, 0, 0, 0.2)
+            styles["box-shadow"] = f"0px {offset_y}px {blur}px {spread}px {color}"
+
+        if self.padding and isinstance(self.padding, EdgeInsets):
+            styles["padding"] = self.padding.to_css()  # Use EdgeInsets method
+        if self.margin and isinstance(self.margin, EdgeInsets):
+            styles["margin"] = self.margin.to_css()  # Use EdgeInsets method
+        if self.minimumSize:
+            min_w, min_h = self.minimumSize
+            if min_w is not None:
+                styles["min-width"] = f"{min_w}px"
+            if min_h is not None:
+                styles["min-height"] = f"{min_h}px"
+        if self.maximumSize:
+            max_w, max_h = self.maximumSize
+            if max_w is not None:
+                styles["max-width"] = f"{max_w}px"
+            if max_h is not None:
+                styles["max-height"] = f"{max_h}px"
+
+        # --- Border & Shape ---
+        if self.side and isinstance(self.side, BorderSide):
+            # Use shorthand if available and not NONE
+            shorthand = self.side.to_css_shorthand_value()
+            if shorthand != "none":
+                styles["border"] = shorthand
+            else:
+                styles["border"] = "none"  # Explicitly set to none
+        else:
+            # Default: buttons often have no border unless specified
+            styles["border"] = "none"
+
+        if self.shape:
+            print("Shape value in btnStyle: ", self.shape.to_css_value())
+            if isinstance(self.shape, BorderRadius):
+                styles["border-radius"] = self.shape.to_css_value()
+            elif isinstance(self.shape, (int, float)):
+                styles["border-radius"] = f"{max(0.0, self.shape)}px"
+
+        # --- Text Style ---
+        # Note: Text styles apply to text *within* the button.
+        # Best applied via CSS descendant selector (e.g., .button-class > .text-class)
+        # or if the button directly renders text. Including here might override wrongly.
+        # if self.textStyle and isinstance(self.textStyle, TextStyle):
+        #     styles.update(self.textStyle.to_css_dict()) # Merge text styles
+
+        # --- Alignment ---
+        # Applies if the button itself uses flex/grid to lay out an icon and label
+        if self.alignment and isinstance(self.alignment, Alignment):
+            # Usually buttons use flex to align icon+label
+            styles["display"] = "inline-flex"  # Use inline-flex for button
+            styles["justify-content"] = self.alignment.justify_content
+            styles["align-items"] = self.alignment.align_items
+            styles["gap"] = "8px"  # Default gap between icon/label?
+
+        return styles
+
+    def to_css(self) -> str:
+        """Converts button style properties to a CSS string snippet."""
+        style_dict = self.to_css_dict()
+        return " ".join(f"{prop}: {value};" for prop, value in style_dict.items())
+
+    # --- Hashability & Equality ---
+    def __eq__(self, other):
+        if not isinstance(other, ButtonStyle):
+            return NotImplemented
+        # Compare all relevant attributes
+        # Ensure nested objects are comparable (__eq__ implemented)
+        return (
+            self.backgroundColor == other.backgroundColor
+            and self.foregroundColor == other.foregroundColor
+            and self.disabledBackgroundColor == other.disabledBackgroundColor
+            and self.disabledForegroundColor == other.disabledForegroundColor
+            and self.shadowColor == other.shadowColor
+            and self.hoverColor == other.hoverColor
+            and self.activeColor == other.activeColor
+            and self.elevation == other.elevation
+            and self.padding == other.padding
+            and self.margin == other.margin
+            and self.minimumSize == other.minimumSize
+            and self.maximumSize == other.maximumSize
+            and self.side == other.side
+            and self.shape == other.shape
+            and self.textStyle == other.textStyle
+            and self.alignment == other.alignment
+            and self.hoverStyle == other.hoverStyle
+            and self.focusStyle == other.focusStyle
+            and self.activeStyle == other.activeStyle
+        )
+
+    def __hash__(self):
+        # Hash a tuple of hashable representations of attributes
+        # Ensure nested objects (EdgeInsets, BorderSide, BorderRadius, TextStyle, Alignment) are hashable
+        return hash(
+            (
+                self.backgroundColor,
+                self.foregroundColor,
+                self.disabledBackgroundColor,
+                self.disabledForegroundColor,
+                self.shadowColor,
+                self.hoverColor,
+                self.activeColor,
+                self.elevation,
+                self.padding,
+                self.margin,
+                self.minimumSize,
+                self.maximumSize,  # Tuples are hashable
+                self.side,
+                self.shape,
+                self.textStyle,
+                self.alignment,
+                self.hoverStyle,
+                self.focusStyle,
+                self.activeStyle,
+            )
+        )
+
+    # --- Representation ---
+    def __repr__(self):
+        props = []
+        # Add checks to show only non-default/non-None values
+        attrs = [
+            "backgroundColor",
+            "foregroundColor",
+            "disabledBackgroundColor",
+            "disabledForegroundColor",
+            "shadowColor",
+            "hoverColor",
+            "activeColor",
+            "elevation",
+            "padding",
+            "margin",
+            "minimumSize",
+            "maximumSize",
+            "side",
+            "shape",
+            "textStyle",
+            "alignment",
+            "hoverStyle",
+            "focusStyle",
+            "activeStyle",
+        ]
+        for attr in attrs:
+            value = getattr(self, attr)
+            if value is not None:  # Simple check for None
+                # Add more sophisticated default checks if needed
+                props.append(f"{attr}={value!r}")
+        return f"ButtonStyle({', '.join(props)})"
+
+    # --- Reconciler Prop Representation ---
+    def to_dict(self):
+        """Returns a simple dictionary representation."""
+        # Convert nested objects to dicts too
+        return {
+            attr: (
+                getattr(self, attr).to_dict()
+                if hasattr(getattr(self, attr), "to_dict")
+                else getattr(self, attr)
+            )
+            for attr in [
+                "backgroundColor",
+                "foregroundColor",
+                "disabledBackgroundColor",
+                "disabledForegroundColor",
+                "shadowColor",
+                "hoverColor",
+                "activeColor",
+                "elevation",
+                "padding",
+                "margin",
+                "minimumSize",
+                "maximumSize",
+                "side",
+                "shape",
+                "textStyle",
+                "alignment",
+                "hoverStyle",
+                "focusStyle",
+                "activeStyle",
+            ]
+            if getattr(self, attr) is not None
+        }
+
+    def to_tuple(self):
+        """Returns a hashable tuple representation."""
+        # Convert nested objects to tuples too
+        return tuple(
+            (
+                getattr(self, attr).to_tuple()
+                if hasattr(getattr(self, attr), "to_tuple")
+                else getattr(self, attr)
+            )
+            for attr in [
+                "backgroundColor",
+                "foregroundColor",
+                "disabledBackgroundColor",
+                "disabledForegroundColor",
+                "shadowColor",
+                "hoverColor",
+                "activeColor",
+                "elevation",
+                "padding",
+                "margin",
+                "minimumSize",
+                "maximumSize",
+                "side",
+                "shape",
+                "textStyle",
+                "alignment",
+                "hoverStyle",
+                "focusStyle",
+                "activeStyle",
+            ]
+        )
 
 
 

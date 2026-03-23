@@ -161,6 +161,9 @@ class Container(Widget):
         js_init={},
         pointerEvents: Optional[str] = None,  # New property for 'auto', 'none', etc.
         role: Optional[str] = None,
+        hoverStyle: Optional[BoxDecoration] = None,
+        focusStyle: Optional[BoxDecoration] = None,
+        activeStyle: Optional[BoxDecoration] = None,
     ):
 
         super().__init__(key=key, children=[child] if child else [])
@@ -183,6 +186,9 @@ class Container(Widget):
         self.js_init = js_init
         self.pointerEvents = pointerEvents
         self.role = role
+        self.hoverStyle = hoverStyle
+        self.focusStyle = focusStyle
+        self.activeStyle = activeStyle
 
         # Handle cssClass parameter - convert to list if string
         self.cssClass = (
@@ -210,6 +216,9 @@ class Container(Widget):
                 tuple(sorted(self.cssClass)),
                 tuple(sorted(self.style.items())) if self.style else None,
                 self.pointerEvents,  # Add to style key
+                self.hoverStyle.to_css() if self.hoverStyle else None,
+                self.focusStyle.to_css() if self.focusStyle else None,
+                self.activeStyle.to_css() if self.activeStyle else None,
                 self.key.value if self.key else None,
             )
         )
@@ -270,6 +279,9 @@ class Container(Widget):
                 css_classes_tuple,
                 style_dict_tuple,
                 pointerEvents,
+                hover_style_css,
+                focus_style_css,
+                active_style_css,
                 key_value,
             ) = style_key
 
@@ -407,8 +419,20 @@ class Container(Widget):
                 for k, v in style_dict_tuple:
                     styles.append(f"{k}: {v};")
 
+            # Add smooth transition if interactive styles are present
+            if hover_style_css or focus_style_css or active_style_css:
+                styles.append("transition: all 0.2s ease-in-out;")
+
             # Assemble and return the final CSS rules.
             main_rule = f".{css_class} {{ {' '.join(filter(None, styles))} }}"
+
+            # Append interactive pseudo-class rules
+            if hover_style_css:
+                extra_rules.append(f".{css_class}:hover {{ {hover_style_css} }}")
+            if focus_style_css:
+                extra_rules.append(f".{css_class}:focus-visible {{ {focus_style_css} }}")
+            if active_style_css:
+                extra_rules.append(f".{css_class}:active {{ {active_style_css} }}")
 
             # Prepend any extra rules (like @keyframes) to the main rule
             return "\n".join(extra_rules) + "\n" + main_rule
@@ -707,20 +731,29 @@ class Text(Widget):
         style=None,
         textAlign=None,
         overflow=None,
+        hoverStyle=None,
+        focusStyle=None,
+        activeStyle=None,
     ):
         super().__init__(key=key)
         self.data = data
         self.style = style  # Assume TextStyle object or similar
         self.textAlign = textAlign
         self.overflow = overflow
+        self.hoverStyle = hoverStyle
+        self.focusStyle = focusStyle
+        self.activeStyle = activeStyle
 
         # --- CSS Class Management ---
         self.style_key = tuple(
             make_hashable(prop)
             for prop in (
-                self.style.to_css() if self.style else self.style,
+                self.style.to_css() if hasattr(self.style, 'to_css') else self.style,
                 self.textAlign,
                 self.overflow,
+                self.hoverStyle.to_css() if hasattr(self.hoverStyle, 'to_css') else self.hoverStyle,
+                self.focusStyle.to_css() if hasattr(self.focusStyle, 'to_css') else self.focusStyle,
+                self.activeStyle.to_css() if hasattr(self.activeStyle, 'to_css') else self.activeStyle,
             )
         )
 
@@ -749,7 +782,7 @@ class Text(Widget):
     def generate_css_rule(style_key: Tuple, css_class: str) -> str:
         """Static method for Reconciler to generate CSS rule string."""
         try:
-            (style, textAlign, overflow) = style_key
+            (style, textAlign, overflow, hover_style, focus_style, active_style) = style_key
 
             # Assume style.to_css() returns combined font/color etc. rules
             style_str = style if style else ""
@@ -769,15 +802,27 @@ class Text(Widget):
                 overflow_str = "white-space: pre-wrap;"
 
             # Basic styling for <p> tag often used for Text
-            return f"""
+            transition_str = "transition: all 0.2s ease-in-out;" if (hover_style or focus_style or active_style) else ""
+            main_rule = f"""
             .{css_class} {{
                 margin: 0; /* Reset default paragraph margin */
                 padding: 0;
                 {style_str}
                 {text_align_str}
                 {overflow_str}
+                {transition_str}
             }}
             """
+            
+            extra_rules = []
+            if hover_style:
+                extra_rules.append(f".{css_class}:hover {{ {hover_style} }}")
+            if focus_style:
+                extra_rules.append(f".{css_class}:focus-visible {{ {focus_style} }}")
+            if active_style:
+                extra_rules.append(f".{css_class}:active {{ {active_style} }}")
+                
+            return main_rule + "\n" + "\n".join(extra_rules)
         except Exception as e:
             print(f"Error generating CSS for {css_class} with key {style_key}: {e}")
             return f"/* Error generating rule for .{css_class} */"
@@ -882,7 +927,7 @@ class TextButton(Widget):
         # --- CSS Class Management ---
         # Use make_hashable or ensure ButtonStyle itself is hashable
         # For TextButton, often only a subset of ButtonStyle matters, but let's hash the whole object for now
-        self.style_key = (make_hashable(self.style.to_css()),)
+        self.style_key = (make_hashable(self.style),)
 
         if self.style_key not in TextButton.shared_styles:
             self.css_class = f"shared-textbutton-{len(TextButton.shared_styles)}"
@@ -1062,10 +1107,28 @@ class TextButton(Widget):
             ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
             ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
 
+            # Interactive extra rules from ButtonStyle if provided
+            def parse_dec(val):
+                if not val: return None
+                if isinstance(val, tuple):
+                    try: return BoxDecoration(*val)
+                    except: return None
+                return val if hasattr(val, 'to_css') else None
+
+            extra_rules = []
+            hover_dec = parse_dec(getattr(style_obj, 'hoverStyle', None))
+            if hover_dec:
+                extra_rules.append(f".{css_class}:hover {{ {hover_dec.to_css()} }}")
+            focus_dec = parse_dec(getattr(style_obj, 'focusStyle', None))
+            if focus_dec:
+                extra_rules.append(f".{css_class}:focus-visible {{ {focus_dec.to_css()} }}")
+            active_dec = parse_dec(getattr(style_obj, 'activeStyle', None))
+            if active_dec:
+                extra_rules.append(f".{css_class}:active {{ {active_dec.to_css()} }}")
+
             # print("\n".join([main_rule, text_style_rule, hover_rule, active_rule, disabled_rule]))
-            return "\n".join(
-                [main_rule, text_style_rule, hover_rule, active_rule, disabled_rule, ripple_keyframes, ripple_base, ripple_active_anim]
-            )
+            rules_to_join = [main_rule, text_style_rule, hover_rule, active_rule, disabled_rule, ripple_keyframes, ripple_base, ripple_active_anim] + extra_rules
+            return "\n".join(rules_to_join)
 
         except Exception as e:
             import traceback
@@ -1249,6 +1312,7 @@ class ElevatedButton(Widget):
                     shape_repr,
                     textStyle_tuple,
                     alignment_tuple,
+                    *interactive_styles,
                 ) = style_key
             except (ValueError, TypeError) as unpack_error:
                 # Handle cases where the key doesn't match the expected structure
@@ -1459,8 +1523,32 @@ class ElevatedButton(Widget):
             ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: {repr(fgColor)} if {repr(fgColor)} else 'currentColor'; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
             ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
 
+            def parse_dec(val):
+                if not val: return None
+                if isinstance(val, tuple):
+                    try: return BoxDecoration(*val)
+                    except: return None
+                return val if hasattr(val, 'to_css') else None
+            
+            # Interactive styling parsing
+            try:
+                style_obj = ButtonStyle(*style_key)
+            except Exception:
+                style_obj = ButtonStyle()
+
+            extra_rules = []
+            hover_dec = parse_dec(getattr(style_obj, 'hoverStyle', None))
+            if hover_dec:
+                extra_rules.append(f".{css_class}:hover {{ {hover_dec.to_css()} }}")
+            focus_dec = parse_dec(getattr(style_obj, 'focusStyle', None))
+            if focus_dec:
+                extra_rules.append(f".{css_class}:focus-visible {{ {focus_dec.to_css()} }}")
+            active_dec = parse_dec(getattr(style_obj, 'activeStyle', None))
+            if active_dec:
+                extra_rules.append(f".{css_class}:active {{ {active_dec.to_css()} }}")
+
             return "\n".join(
-                [main_rule, hover_rule, active_rule, disabled_rule, text_style_rule, ripple_keyframes, ripple_base, ripple_active_anim]
+                [main_rule, hover_rule, active_rule, disabled_rule, text_style_rule, ripple_keyframes, ripple_base, ripple_active_anim] + extra_rules
             )
 
         except Exception as e:
@@ -1765,6 +1853,24 @@ class IconButton(Widget):
             ripple_base = f".{css_class.rstrip()}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
             ripple_active_anim = f".{css_class.rstrip()}:active::after {{ animation: ripple_{css_class.rstrip()} 0.6s ease-out; }}"
 
+            def parse_dec(val):
+                if not val: return None
+                if isinstance(val, tuple):
+                    try: return BoxDecoration(*val)
+                    except: return None
+                return val if hasattr(val, 'to_css') else None
+
+            extra_rules = []
+            hover_dec = parse_dec(getattr(style_obj, 'hoverStyle', None))
+            if hover_dec:
+                extra_rules.append(f".{css_class.rstrip()}:hover {{ {hover_dec.to_css()} }}")
+            focus_dec = parse_dec(getattr(style_obj, 'focusStyle', None))
+            if focus_dec:
+                extra_rules.append(f".{css_class.rstrip()}:focus-visible {{ {focus_dec.to_css()} }}")
+            active_dec = parse_dec(getattr(style_obj, 'activeStyle', None))
+            if active_dec:
+                extra_rules.append(f".{css_class.rstrip()}:active {{ {active_dec.to_css()} }}")
+
             return "\n".join(
                 [
                     main_rule,
@@ -1776,7 +1882,7 @@ class IconButton(Widget):
                     ripple_keyframes,
                     ripple_base,
                     ripple_active_anim,
-                ]
+                ] + extra_rules
             )
 
         except Exception as e:
@@ -1963,14 +2069,17 @@ class FloatingActionButton(Widget):
                     disFgColor,
                     shadowColor,
                     hoverColor,
+                    activeColor,
                     elevation,
                     padding_tuple,
+                    margin_tuple,
                     minSize_tuple,
                     maxSize_tuple,
                     side_tuple,
                     shape_repr,
                     textStyle_tuple,
                     alignment_tuple,
+                    *interactive_styles,
                 ) = style_key
                 style_reconstructed = True
             except (ValueError, TypeError) as unpack_error:
@@ -2125,8 +2234,32 @@ class FloatingActionButton(Widget):
             ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
             ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
 
+            # Interactive styling parsing
+            try:
+                style_obj = ButtonStyle(*style_key)
+            except Exception:
+                style_obj = ButtonStyle()
+            
+            def parse_dec(val):
+                if not val: return None
+                if isinstance(val, tuple):
+                    try: return BoxDecoration(*val)
+                    except: return None
+                return val if hasattr(val, 'to_css') else None
+
+            extra_rules = []
+            hover_dec = parse_dec(getattr(style_obj, 'hoverStyle', None))
+            if hover_dec:
+                extra_rules.append(f".{css_class}:hover {{ {hover_dec.to_css()} }}")
+            focus_dec = parse_dec(getattr(style_obj, 'focusStyle', None))
+            if focus_dec:
+                extra_rules.append(f".{css_class}:focus-visible {{ {focus_dec.to_css()} }}")
+            active_dec = parse_dec(getattr(style_obj, 'activeStyle', None))
+            if active_dec:
+                extra_rules.append(f".{css_class}:active {{ {active_dec.to_css()} }}")
+
             return "\n".join(
-                [main_rule, icon_rule, hover_rule, active_rule, disabled_rule, ripple_keyframes, ripple_base, ripple_active_anim]
+                [main_rule, icon_rule, hover_rule, active_rule, disabled_rule, ripple_keyframes, ripple_base, ripple_active_anim] + extra_rules
             )
 
         except Exception as e:
@@ -3459,6 +3592,9 @@ class Image(Widget):
         fit: str = ImageFit.CONTAIN,  # Use constants from styles.ImageFit
         alignment: str = "center",
         borderRadius: Optional[BorderRadius] = None,
+        hoverStyle: Optional[BoxDecoration] = None,
+        focusStyle: Optional[BoxDecoration] = None,
+        activeStyle: Optional[BoxDecoration] = None,
     ):  # Alignment within its box if size differs
 
         # Image widget doesn't typically have children in Flutter sense
@@ -3477,6 +3613,9 @@ class Image(Widget):
             alignment  # Note: CSS object-position might be needed for alignment
         )
         self.borderRadius = borderRadius
+        self.hoverStyle = hoverStyle
+        self.focusStyle = focusStyle
+        self.activeStyle = activeStyle
 
         # --- CSS Class Management ---
         # Key includes properties affecting CSS style
@@ -3487,6 +3626,9 @@ class Image(Widget):
             self.height,
             self.alignment,
             self.borderRadius,
+            self.hoverStyle.to_css() if hasattr(self.hoverStyle, 'to_css') else self.hoverStyle,
+            self.focusStyle.to_css() if hasattr(self.focusStyle, 'to_css') else self.focusStyle,
+            self.activeStyle.to_css() if hasattr(self.activeStyle, 'to_css') else self.activeStyle,
         )
 
         if self.style_key not in Image.shared_styles:
@@ -3517,7 +3659,7 @@ class Image(Widget):
         """Static method callable by the Reconciler to generate the CSS rule."""
         try:
             # Unpack the style key
-            fit, width, height, alignment, border_radius = style_key
+            fit, width, height, alignment, border_radius, hover_style, focus_style, active_style = style_key
 
             # Translate properties to CSS
             fit_style = f"object-fit: {fit};" if fit else ""
@@ -3551,17 +3693,29 @@ class Image(Widget):
                 alignment_style = f"object-position: {alignment};"  # Assumes alignment is CSS compatible ('center', 'top left', '50% 50%', etc.)
 
             # Combine styles
+            transition_str = "transition: all 0.2s ease-in-out;" if (hover_style or focus_style or active_style) else ""
             styles = (
                 f"{fit_style} "
                 f"{width_style} "
                 f"{height_style} "
                 f"{alignment_style}"
                 f"{border_radius_style}"
+                f"{transition_str}"
             )
 
             # Return the complete CSS rule
             # Note: display:block often helpful for sizing images correctly
-            return f".{css_class} {{ display: block; {styles}}}"
+            main_rule = f".{css_class} {{ display: block; {styles}}}"
+            
+            extra_rules = []
+            if hover_style:
+                extra_rules.append(f".{css_class}:hover {{ {hover_style} }}")
+            if focus_style:
+                extra_rules.append(f".{css_class}:focus-visible {{ {focus_style} }}")
+            if active_style:
+                extra_rules.append(f".{css_class}:active {{ {active_style} }}")
+                
+            return main_rule + "\n" + "\n".join(extra_rules)
 
         except Exception as e:
             print(
@@ -3681,6 +3835,9 @@ class Icon(Widget):
         grade: Optional[int] = 0,  # Range -50-200
         optical_size: Optional[int] = 24,
         cssClass: Optional[str] = "",
+        hoverStyle = None,
+        focusStyle = None,
+        activeStyle = None,
     ):
 
         super().__init__(key=key, children=[])
@@ -3698,6 +3855,9 @@ class Icon(Widget):
         self.grade = grade
         self.optical_size = optical_size
         self.cssClass = cssClass
+        self.hoverStyle = hoverStyle
+        self.focusStyle = focusStyle
+        self.activeStyle = activeStyle
 
         is_color_static = not bool(self.cssClass)
 
@@ -3710,6 +3870,9 @@ class Icon(Widget):
             self.grade,
             self.optical_size,
             self.color if is_color_static else None,  # Include color only if static
+            self.hoverStyle.to_css() if hasattr(self.hoverStyle, 'to_css') else self.hoverStyle,
+            self.focusStyle.to_css() if hasattr(self.focusStyle, 'to_css') else self.focusStyle,
+            self.activeStyle.to_css() if hasattr(self.activeStyle, 'to_css') else self.activeStyle,
         )
 
         if self.style_key not in Icon.shared_styles:
@@ -3745,7 +3908,7 @@ class Icon(Widget):
     def generate_css_rule(style_key: Tuple, css_class: str) -> str:
         """Generates the CSS including the powerful font-variation-settings."""
         try:
-            (fontFamily, size, fill, weight, grade, optical_size, static_color) = (
+            (fontFamily, size, fill, weight, grade, optical_size, static_color, hover_style, focus_style, active_style) = (
                 style_key
             )
 
@@ -3759,8 +3922,10 @@ class Icon(Widget):
                 if static_color is not None
                 else ""
             )
+            
+            transition_str = "transition: all 0.2s ease-in-out;" if (hover_style or focus_style or active_style) else ""
 
-            return f"""
+            main_rule = f"""
                 .{css_class} {{
                     position: relative;
                     font-family: '{fontFamily}';
@@ -3781,8 +3946,19 @@ class Icon(Widget):
                     -moz-osx-font-smoothing: grayscale;
                     font-feature-settings: 'liga';
                     font-variation-settings: {font_variation_settings};
+                    {transition_str}
                 }}
             """
+            
+            extra_rules = []
+            if hover_style:
+                extra_rules.append(f".{css_class}:hover {{ {hover_style} }}")
+            if focus_style:
+                extra_rules.append(f".{css_class}:focus-visible {{ {focus_style} }}")
+            if active_style:
+                extra_rules.append(f".{css_class}:active {{ {active_style} }}")
+                
+            return main_rule + "\n" + "\n".join(extra_rules)
         except Exception as e:
             # ... error handling ...
             return f"/* Error generating rule for Icon .{css_class} */"
