@@ -1,0 +1,32 @@
+{
+    "name": "pythra-markdown-render",
+    "version": "1.0.0",
+    "description": "A high-performance Markdown renderer plugin for Pythra using marked.js",
+    "package_type": "plugin",
+    "dependencies": {
+        "pythra": ">=0.1.0"
+    },
+    "author": {
+        "name": "itsredx",
+        "email": "ambashir02@gmail.com.com",
+        "url": "https://github.com/itsredx"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itsredx/pythra-toolkit",
+        "directory": "plugins/markdown_render"
+    },
+    "min_python_version": "0.1.0",
+    "supported_platforms": ["windows", "linux", "macos"],
+    "python_modules": ["__init__", "widget", "controller", "renderer_state", "style"],
+    "asset_dir": "render",
+    "js_modules": {
+        "marked": "js/vendor/marked.umd.js",
+        "DOMPurify": "js/vendor/purify.min.js",
+        "hljs": "js/vendor/highlight.min.js",
+        "PythraMarkdownRender": "js/marked_engine.js"
+    },
+    "css_files": ["css/vendor/github-dark.min.css", "css/styles.css"],
+    "tags": ["renderer", "markdown", "marked"]
+}

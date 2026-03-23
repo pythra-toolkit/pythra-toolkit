@@ -1,0 +1,85 @@
+/* styles.css for markdown-render */
+
+.markdown-render-inner-container {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+.markdown-render-inner-container h1,
+.markdown-render-inner-container h2,
+.markdown-render-inner-container h3,
+.markdown-render-inner-container h4,
+.markdown-render-inner-container h5,
+.markdown-render-inner-container h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+}
+
+.markdown-render-inner-container p {
+    margin-bottom: 1em;
+}
+
+.markdown-render-inner-container a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+.markdown-render-inner-container a:hover {
+    text-decoration: underline;
+}
+
+.markdown-render-inner-container pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #0d1117; /* GitHub dark background */
+    border-radius: 6px;
+    margin-bottom: 1em;
+}
+
+.markdown-render-inner-container code {
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 85%;
+    white-space: pre-wrap;
+    background-color: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+}
+
+.markdown-render-inner-container pre code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    white-space: pre;
+    background-color: transparent;
+    border: 0;
+}
+
+.markdown-render-inner-container blockquote {
+    padding: 0 1em;
+    color: #8b949e;
+    border-left: 0.25em solid #30363d;
+    margin: 0 0 1em 0;
+}
+
+.markdown-render-inner-container table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-bottom: 1em;
+    width: 100%;
+}
+
+.markdown-render-inner-container table th,
+.markdown-render-inner-container table td {
+    padding: 6px 13px;
+    border: 1px solid #30363d;
+}
+
+.markdown-render-inner-container table tr:nth-child(2n) {
+    background-color: rgba(255,255,255,0.05);
+}

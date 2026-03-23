@@ -1,3 +1,5 @@
-- my switch widget only toggles once and then after the first toggle if i toggle it again it disapares it seems like a remove patch is being triggered check the newly implemented patch logic in reconclier.py and reconciler_cython.pyx and give a report on what needs to be done to fix it 
+# PyThra Development TODO
 
-# do not fix it yet just give a report on what needs to be done to fix it 
+- [ ] **Markdown Renderer Widget**: Implement a native-like Markdown preview/renderer widget with support for standard MD syntax and code highlighting.
+- [ ] **Video Player Widget**: Add a comprehensive video player widget with support for various container formats and codecs.
+- [ ] **Audio Player Widget**: Implement an audio player widget with support for major audio formats and basic playback controls.

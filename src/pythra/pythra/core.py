@@ -177,16 +177,20 @@ class Framework:
             for warning in warnings:
                 print(f"⚠️  PyThra Framework | Package Warning: {warning}")
 
-            # Populate the old-style plugins dictionary for JS module lookup
+            # Populate the old-style plugins dictionary for CSS and JS module lookup
             for pkg_name, pkg_info in loaded_packages.items():
-                if hasattr(pkg_info, 'package_json'):
-                    manifest = pkg_info.package_json
-                    js_modules = manifest.get('js_modules', {})
-                    if js_modules:
-                        self.plugins[pkg_name] = {
-                            'js_modules': js_modules
-                        }
-                        print(f"📦 PyThra Framework | Found JS modules in {pkg_name}: {js_modules}")
+                if hasattr(pkg_info, 'manifest'):
+                    manifest = pkg_info.manifest
+                    
+                    self.plugins[pkg_name] = {}
+                    
+                    if manifest.js_modules:
+                        self.plugins[pkg_name]['js_modules'] = manifest.js_modules
+                        print(f"📦 PyThra Framework | Found JS modules in {pkg_name}: {manifest.js_modules}")
+                        
+                    if manifest.css_files:
+                        self.plugins[pkg_name]['css_files'] = manifest.css_files
+                        print(f"🎨 PyThra Framework | Found CSS files in {pkg_name}: {manifest.css_files}")
 
             print(f"🎉 PyThra Framework | Successfully loaded {len(loaded_packages)} packages: {', '.join(loaded_packages.keys())}")
 
@@ -1863,9 +1867,9 @@ class Framework:
         for name, info in self.plugins.items():
             if 'css_files' in info:
                 for css_file in info['css_files']:
-                    # URL will be like /plugins/pythra_markdown_editor/vendor/tui-editor.min.css
                     # The asset server will handle this.
-                    url_path = f"plugins/{name}/{css_file}"
+                    port = self.config.get('assets_server_port', 8000)
+                    url_path = f"http://localhost:{port}/packages/{name}/{css_file}"
                     plugin_css_links.append(f'<link rel="stylesheet" href="{url_path}">')
 
         plugin_css_str = "\n    ".join(plugin_css_links)
