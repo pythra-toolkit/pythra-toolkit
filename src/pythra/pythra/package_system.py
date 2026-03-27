@@ -72,7 +72,7 @@ class PackageDependency:
             if self.constraint_type == DependencyConstraint.EXACT:
                 return semver.compare(version, self.version_constraint.lstrip("=")) == 0 # pyright: ignore[reportPossiblyUnboundVariable]
             elif self.constraint_type == DependencyConstraint.COMPATIBLE:
-                return semver.satisfies(version, self.version_constraint) # type: ignore
+                return semver.VersionInfo.parse(version).match(self.version_constraint)
             elif self.constraint_type == DependencyConstraint.GREATER:
                 return semver.compare(version, self.version_constraint.lstrip(">=")) >= 0
             elif self.constraint_type == DependencyConstraint.RANGE:
@@ -183,6 +183,11 @@ class PackageManifest:
                         deps[name] = PackageDependency(name=name, **dep_info)
                 data[dep_type] = deps
         
+        # Filter to only known dataclass fields to avoid TypeError on extra JSON keys
+        import dataclasses
+        known_fields = {f.name for f in dataclasses.fields(cls)}
+        data = {k: v for k, v in data.items() if k in known_fields}
+
         return cls(**data)
     
     def to_dict(self) -> Dict[str, Any]:

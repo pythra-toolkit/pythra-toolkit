@@ -8,7 +8,7 @@ using Python, rendering via HTML/CSS/JS in a webview (like PySide6 QtWebEngine).
 """
 
 # --- Core Framework Classes ---
-from .core import Framework
+from .core import Framework, _dumps
 from .config import Config  # Expose configuration access
 from .theme import ThemeData, ThemeManager
 

@@ -971,7 +971,8 @@ class TextButton(Widget):
             try:
                 # Option A: style_key = (hashable_button_style_repr,)
                 style_repr = style_key[0]  # Get the representation
-                print(style_repr)
+                # print(style_repr)
+                # print(style_key)
 
                 # Option B: style_key = (prop1, prop2, ...) - unpack directly
                 # (textColor, textStyle_tuple, padding_tuple, ...) = style_key # Example unpack
@@ -988,7 +989,7 @@ class TextButton(Widget):
             try:
                 if isinstance(style_repr, tuple):  # Check if it's a tuple of props
                     # Attempt reconstruction (requires knowing tuple order)
-                    # style_obj = ButtonStyle(*style_repr) # Example if tuple matches init
+                    style_obj = ButtonStyle(*style_repr) # Example if tuple matches init
                     pass  # Skip reconstruction for now, access values if possible or use defaults
                 elif isinstance(
                     style_repr, ButtonStyle
@@ -1016,7 +1017,10 @@ class TextButton(Widget):
             padding_obj = getattr(
                 style_obj, "padding", EdgeInsets.symmetric(horizontal=12)
             )  # M3 has specific padding
-            # print("Padding: ", style_obj.padding)
+            if isinstance(padding_obj, tuple):  # Check if it's a tuple of props
+                    # Attempt reconstruction (requires knowing tuple order)
+                    padding_obj = EdgeInsets(*padding_obj) # Example if tuple matches init
+            # print("Padding: ", padding_obj)
             text_style_obj = getattr(
                 style_obj, "textStyle", None
             )  # Get text style if provided
@@ -1032,18 +1036,18 @@ class TextButton(Widget):
                 "display": "inline-flex",
                 "align-items": "center",
                 "justify-content": "center",
-                # 'padding': padding_obj.to_css() if padding_obj else '4px 12px', # Use style padding or M3-like default
+                'padding': padding_obj.to_css() if padding_obj else '',#'4px 12px', # Use style padding or M3-like default
                 # 'margin': '4px', # Default margin between adjacent buttons
                 "border": "none",  # Text buttons have no border
-                # 'border-radius': shape_obj.to_css_value() if isinstance(shape_obj, BorderRadius) else f"{shape_obj or 20}px", # Use shape or M3 default
-                # 'background-color': bg_color or 'transparent',
-                # 'color': fg_color, # Use style foreground or M3 primary
+                'border-radius': shape_obj.to_css_value() if isinstance(shape_obj, BorderRadius) else f"{BorderRadius(*shape_obj).to_css_value() if isinstance(shape_obj, tuple) else 20}", # Use shape or M3 default
+                'background-color': bg_color or 'transparent',
+                'color': fg_color, # Use style foreground or M3 primary
                 "cursor": "pointer",
                 "text-align": "center",
                 "text-decoration": "none",
                 "outline": "none",
                 "pointer-events": "auto",  # Ensure clickable even in non-clickable container
-                # 'min-height': f"{min_height}px", # M3 min target size
+                'min-height': f"{min_height}px", # M3 min target size
                 "min-width": "48px",  # Ensure min width for touch target even if padding is small
                 "box-sizing": "border-box",
                 "position": "relative",  # For state layer/ripple
@@ -1078,14 +1082,31 @@ class TextButton(Widget):
             except:
                 pass  # Ignore errors, use fallback
 
-            hover_rule = f".{css_class}:hover {{ background-color: {hover_bg_color};}}"
+            _border_radius__ = f'border-radius: {shape_obj.to_css_value() if isinstance(shape_obj, BorderRadius) else f"{BorderRadius(*shape_obj).to_css_value() if isinstance(shape_obj, tuple) else 20}"};'
+
+            hover_rule = f"""
+            .{css_class}:hover {{ 
+                background-color: {hover_bg_color};
+                {_border_radius__}
+            }}"""
             active_rule = (
-                f".{css_class}:active {{ background-color: {active_bg_color}; }}"
+                f"""
+                .{css_class}:active {{ 
+                    background-color: {active_bg_color}; 
+                    {_border_radius__}
+                }}"""
             )
 
             # Disabled state
             disabled_color = Colors.rgba(0, 0, 0, 0.38)  # M3 Disabled content approx
-            disabled_rule = f".{css_class}.disabled {{ color: {disabled_color}; background-color: transparent; cursor: default; pointer-events: none; }}"
+            disabled_rule = f"""
+            .{css_class}.disabled {{ 
+                color: {disabled_color}; 
+                background-color: transparent; 
+                cursor: default; 
+                pointer-events: none; 
+                {_border_radius__}
+            }}"""
 
             # Apply TextStyle to children (e.g., direct Text widget child)
             text_style_rule = ""

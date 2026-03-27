@@ -1,0 +1,17 @@
+{
+    "name": "pythra_video_player",
+    "version": "1.0.0",
+    "description": "High-performance native browser video player utilizing PythraFFmpegManager.",
+    "package_type": "plugin",
+    "dependencies": {
+        "pythra": ">=0.1.0",
+        "pythra_ffmpeg_core": ">=1.0.0"
+    },
+    "python_modules": ["__init__", "widget", "player_state", "style"],
+    "asset_dir": "render",
+    "js_modules": {
+        "PythraVideoPlayer": "js/video_engine.js"
+    },
+    "css_files": ["css/player.css"],
+    "tags": ["video", "player", "media", "ffmpeg"]
+}

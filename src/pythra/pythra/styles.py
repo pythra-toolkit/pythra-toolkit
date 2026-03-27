@@ -2045,15 +2045,15 @@ class ButtonStyle:
         # Ensure nested objects (EdgeInsets, BorderSide, BorderRadius, TextStyle, Alignment) are hashable
         return hash(
             (
-                self.backgroundColor,
-                self.foregroundColor,
-                self.disabledBackgroundColor,
-                self.disabledForegroundColor,
-                self.shadowColor,
-                self.hoverColor,
-                self.activeColor,
-                self.elevation,
-                self.padding,
+                self.backgroundColor, #1
+                self.foregroundColor, #2
+                self.disabledBackgroundColor, #3
+                self.disabledForegroundColor, #4
+                self.shadowColor, #5
+                self.hoverColor, #6
+                self.activeColor, #7
+                self.elevation, #8
+                self.padding, #9
                 self.margin,
                 self.minimumSize,
                 self.maximumSize,  # Tuples are hashable

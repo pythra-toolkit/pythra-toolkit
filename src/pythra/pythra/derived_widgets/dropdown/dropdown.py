@@ -390,6 +390,9 @@ class _VirtualDropdownState(State):
                     border=_border,
                     borderRadius=BorderRadius.circular(self.theme.borderRadius),
                 ),
+                hoverStyle=self.theme.hoverStyle,
+                focusStyle=self.theme.focusStyle,
+                activeStyle=self.theme.activeStyle,
                 child=Row(
                     key=Key(f"dropdown_button_{parent_key}_row"),
                     mainAxisAlignment=MainAxisAlignment.SPACE_BETWEEN,
@@ -452,9 +455,7 @@ class _VirtualDropdownState(State):
                             style=ButtonStyle(
                                 padding=EdgeInsets.all(0),
                                 shape=_btn_shape,
-                                hoverStyle=self.theme.hoverStyle,
-                                focusStyle=self.theme.focusStyle,
-                                activeStyle=self.theme.activeStyle,
+                                backgroundColor=Colors.transparent,
                             ),
                             child=trigger_child,
                         ),

@@ -134,6 +134,7 @@ class Framework:
         # STEP 2: Load your project configuration
         # This reads settings from your config.yaml file
         self.config = Config(config_path=self.project_root / 'config.yaml')
+        self.config_dict = self.config.as_dict()
 
         # STEP 3: Set up directory paths for your app
         # render/ folder: Contains HTML, CSS, JS files for the UI
@@ -628,8 +629,9 @@ class Framework:
                 if engine in engine_to_file_map:
                     files_to_load.add(engine_to_file_map[engine])
                 else:
-                    pass
-                    print(f"⚠️  Unknown engine requested: {engine}")
+                    # Plugin engines are loaded via plugin_js_modules — only warn for truly unknown engines
+                    if engine not in self.plugin_js_modules:
+                        print(f"⚠️  Unknown engine requested: {engine}")
 
         all_js_code = []
         loaded_files = set()
@@ -1951,6 +1953,9 @@ body {
         # Note: remove the timestamp query param to keep the generated HTML stable
         # so we don't rewrite files every run. Dynamic updates are handled via
         # the <style id="dynamic-styles"> tag and JS patches.
+    #     <link rel=\"stylesheet\" href=\"./js/scroll-bar/simplebar.min.css\" />
+    # <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n
+               
         html_output = (
             f"""<!DOCTYPE html>
 <html lang=\"en\">
@@ -1959,8 +1964,7 @@ body {
     <title>{html.escape(title)}</title>
     <!-- ADD SIMPLEBAR CSS -->
     <link rel=\"stylesheet\" href=\"./js/scroll-bar/simplebar.min.css\" />
-    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n
-                <link id=\"base-stylesheet\" type=\"text/css\" rel=\"stylesheet\" href=\"styles.css\">\n
+     <link id=\"base-stylesheet\" type=\"text/css\" rel=\"stylesheet\" href=\"styles.css\">\n
                 <style id=\"theme-styles\">{ThemeManager.instance().current_theme.to_css_vars()}</style>\n
                 <style id=\"dynamic-styles\">{initial_css_rules}</style>\n
                 {self._get_js_includes()}\n
@@ -2039,6 +2043,7 @@ body {
                     window.pywebview = channel.objects.pywebview;
                     console.log("PyWebChannel connected.");
                 }});
+                window.__PYTHRA_CONFIG__ = {_dumps(self.config_dict)};
                 try {{
                     setFloatingLabelBg(color=getFinalSolidColor());
                 }} catch (error) {{
