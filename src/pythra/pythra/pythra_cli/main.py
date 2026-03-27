@@ -1145,6 +1145,7 @@ def build(
     nuitka_cmd = [
         sys.executable, "-m", "nuitka", str(script_src),
         "--standalone",
+        f"--output-filename={app_name}",
         "--enable-plugin=pyside6",
         f"--output-dir={str(final_build_dir)}",
         f"--file-version={version}",
@@ -1158,6 +1159,11 @@ def build(
 
     if onefile:
         nuitka_cmd.append("--onefile")
+
+    try:
+        system = platform.system().lower()
+    except Exception:
+        system = ''
 
     # --- Platform-aware icon handling ---
     # Auto-detect platform icon if --icon is not specified
@@ -1219,10 +1225,8 @@ def build(
     #   "fatal error C1060: compiler is out of heap space" when building large apps.
     # - For non-Windows platforms there is no direct CL equivalent; set a
     #   conservative CFLAGS fallback so build tools have some optimization flags.
-    try:
-        system = platform.system().lower()
-    except Exception:
-        system = ''
+       
+    
 
     if 'windows' in system:
         # Only override CL if not already set (allow users to predefine it)
