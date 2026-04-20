@@ -1760,7 +1760,9 @@ class IconButton(Widget):
 
             # --- Define Defaults and Extract Properties from Style Object ---
             default_padding = EdgeInsets.all(8)
-            padding_obj = getattr(style_obj, "padding", default_padding)
+            padding_tuple = getattr(style_obj, "padding", default_padding)
+            padding_obj = EdgeInsets(*padding_tuple) if isinstance(padding_tuple, tuple) else padding_tuple
+            # print(f'padding ogj: {padding_tuple}')
             bg_color = getattr(style_obj, "backgroundColor", "transparent")
             fg_color = getattr(
                 style_obj, "foregroundColor", "inherit"
@@ -2383,6 +2385,7 @@ class SingleChildScrollView(Widget):
         scrollDirection: str = Axis.VERTICAL,
         reverse: bool = False,
         padding: Optional[EdgeInsets] = None,
+        shape: Optional[BorderRadius] = None,
         # physics property is less relevant here as it's not a list,
         # but we can map it to CSS overflow behavior.
         physics: Optional[str] = None,  # e.g., ScrollPhysics.NEVER_SCROLLABLE
@@ -2396,6 +2399,7 @@ class SingleChildScrollView(Widget):
         self.reverse = reverse
         self.padding = padding
         self.physics = physics
+        self.shape = shape
 
         # --- CSS Class Management ---
         # The style key includes all properties that affect the CSS output.
@@ -2403,6 +2407,7 @@ class SingleChildScrollView(Widget):
             self.scrollDirection,
             self.reverse,
             make_hashable(self.padding),
+            make_hashable(self.shape),
             self.physics,
         )
 
@@ -2433,7 +2438,7 @@ class SingleChildScrollView(Widget):
         """
         try:
             # 1. Unpack the style_key tuple in the correct order.
-            (scrollDirection, reverse, padding_tuple, physics) = style_key
+            (scrollDirection, reverse, padding_tuple, shape_tuple, physics) = style_key
 
             # 2. Translate properties into CSS.
             styles = [
@@ -2471,6 +2476,10 @@ class SingleChildScrollView(Widget):
                 padding_obj = EdgeInsets(*padding_tuple)
                 styles.append(f"padding: {padding_obj.to_css_value()};")
 
+            if shape_tuple and isinstance(shape_tuple, tuple):
+                shape_obj = BorderRadius(*shape_tuple)
+                styles.append(f'border-radius: {shape_obj.to_css_value()}')
+            else: print("Shape Error")
             # 3. Assemble and return the final CSS rule.
             # We also need to style the child to ensure it takes up the
             # necessary space to trigger scrolling.
@@ -5340,6 +5349,8 @@ class Positioned(Widget):
 
         if not child:
             raise ValueError("Positioned widget requires a child.")
+        # if not key:
+        #     raise ValueError("Positioned widget requires a key.")
         # Positioned itself doesn't render, it modifies its child's wrapper
         # The child is the only element in its children list
         super().__init__(key=key, children=[child])
@@ -5366,6 +5377,7 @@ class Positioned(Widget):
             "left": self.left,
             "width": self.width,
             "height": self.height,
+            "data-key": self.key.value if self.key else None,
             # No css_class needed as styling is direct/instance-specific
         }
         # Pass non-None values

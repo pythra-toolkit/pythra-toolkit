@@ -193,6 +193,15 @@ class Framework:
                         self.plugins[pkg_name]['css_files'] = manifest.css_files
                         print(f"🎨 PyThra Framework | Found CSS files in {pkg_name}: {manifest.css_files}")
 
+                elif hasattr(pkg_info, 'package_json'):
+                    manifest = pkg_info.package_json
+                    js_modules = manifest.get('js_modules', {})
+                    if js_modules:
+                        self.plugins[pkg_name] = {
+                            'js_modules': js_modules
+                        }
+                        print(f"📦 PyThra Framework | Found JS modules in {pkg_name}: {js_modules}")
+
             print(f"🎉 PyThra Framework | Successfully loaded {len(loaded_packages)} packages: {', '.join(loaded_packages.keys())}")
 
         # STEP 5: Start the Asset Server
@@ -462,6 +471,7 @@ class Framework:
         frameless: bool = config.get("frameless"),
         maximized: bool = config.get("maximixed"),
         fixed_size: bool = config.get("fixed_size"),
+        video_overlay: bool = False,
         # --- THIS IS THE CRUCIAL ADDITION ---
         block: bool = True
     ):
@@ -481,6 +491,11 @@ class Framework:
             frameless: If True, removes window decorations (no title bar, borders)
             maximized: If True, starts the window maximized
             fixed_size: If True, prevents user from resizing the window
+            video_overlay: If True, creates a video_frame widget underneath and
+                          promotes the webview to a floating transparent overlay
+                          (mirrors VLCPlayer stacking). Access the native window
+                          ID via Framework.video_frame_window_id.
+                          Automatically set to True when the VideoPlayer plugin is used.
             block: If True, keeps the program running (you almost always want this)
         
         Example:
@@ -499,6 +514,11 @@ class Framework:
         # Now `run` just calls the new helper method
         self._perform_initial_render(self.root_widget, title)
 
+        # Allow plugins (e.g., pythra-video-player) to request video_overlay mode.
+        # The plugin sets _video_overlay_requested = True during widget initState().
+        if getattr(self, '_video_overlay_requested', False):
+            video_overlay = True
+
         self.window = webwidget.create_window(
             title,
             self.id,
@@ -509,8 +529,10 @@ class Framework:
             min_width=min_width,
             min_height=min_height,
             frameless=frameless,
-            maximized = maximized,
-            fixed_size = fixed_size,
+            maximized=maximized,
+            fixed_size=fixed_size,
+            video_overlay=video_overlay,
+            debug=bool(self.config.get("Debug", False)),
         )
 
         # If any plugins or states queued injections while the window was not
@@ -539,6 +561,19 @@ class Framework:
 
     def minimize(self):
         self.window.minimize() if self.window else debug_print("unable to close window: window is None")
+
+    @property
+    def video_frame_window_id(self) -> Optional[int]:
+        """
+        Returns the native platform window ID of the video_frame widget,
+        suitable for passing to VLC's set_xwindow() / set_hwnd() / set_nsobject().
+
+        Only available when the app was started with video_overlay=True.
+        Returns None otherwise.
+        """
+        if self.window and hasattr(self.window, 'video_frame'):
+            return int(self.window.video_frame.winId())
+        return None
 
     @property
     def theme(self):
@@ -630,6 +665,7 @@ class Framework:
                     files_to_load.add(engine_to_file_map[engine])
                 else:
                     # Plugin engines are loaded via plugin_js_modules — only warn for truly unknown engines
+                    print(f"Plugin js modules: {self.plugin_js_modules}")
                     if engine not in self.plugin_js_modules:
                         print(f"⚠️  Unknown engine requested: {engine}")
 
@@ -1901,52 +1937,54 @@ class Framework:
         #  }}
         #  """
         # --- END OF DEPRECATED FONT CSS ---
-        base_css = """
-body { 
+        # Use transparent background if video overlay is requested
+        bg_color = "transparent" if getattr(self, '_video_overlay_requested', False) else "#f0f0f0"
+
+        base_css = f"""
+body {{ 
     margin: 0; 
     font-family: sans-serif; 
-    background-color: #f0f0f0; 
+    background-color: {bg_color}; 
     overflow: hidden;
     user-select: none;
-}
-* { 
+}}
+* {{ 
     box-sizing: border-box; 
-}
-#root-container, #overlay-container { 
+}}
+#root-container, #overlay-container {{ 
     height: 100vh; 
     width: 100vw; 
     overflow: hidden; 
     position: relative;
-}
-#overlay-container { 
+}}
+#overlay-container {{ 
     position: absolute; 
     top: 0; 
     left: 0; 
     pointer-events: none; 
-}
-#overlay-container > * { 
+}}
+#overlay-container > * {{ 
     pointer-events: auto; 
-}
-.custom-scrollbar::-webkit-scrollbar {
+}}
+.custom-scrollbar::-webkit-scrollbar {{
     display: none; /* for Chrome, Safari, and Opera */
-}
-.custom-scrollbar {
+}}
+.custom-scrollbar {{
     -ms-overflow-style: none;  /* for IE and Edge */
     scrollbar-width: none;  /* for Firefox */
-}
+}}
 
 /* Fix deprecated inset-area warnings by suppressing and using position-area */
-* {
+* {{
     inset-area: unset !important;  /* Remove deprecated inset-area */
-}
+}}
 
 /* If any elements need positioning, use position-area instead */
-[style*="inset-area"] {
+[style*="inset-area"] {{
     inset-area: unset !important;
     /* Add position-area equivalent if needed */
-}
-
-         """
+}}
+"""
         # Prepare the strings we may write
         css_output = base_css + font_face_rules
 

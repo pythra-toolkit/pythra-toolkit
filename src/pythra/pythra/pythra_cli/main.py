@@ -392,6 +392,7 @@ Comment=A PyThra desktop application
 Exec={app_id}
 Icon={app_id}
 Terminal=false
+Path={project_root / 'lib'}
 Categories=Utility;
 StartupWMClass={app_id}
 """
@@ -602,6 +603,7 @@ Comment=A PyThra desktop application
 Exec={app_id_val}
 Icon=appIcon
 Terminal=false
+Path={project_root / 'lib'}
 Categories=Utility;
 StartupWMClass={app_id_val}
 """
@@ -749,6 +751,7 @@ Comment=A PyThra desktop application
 Exec={app_id}
 Icon={app_id}
 Terminal=false
+Path={project_root / 'lib'}
 Categories=Utility;
 StartupWMClass={app_id}
 """
@@ -905,6 +908,7 @@ def install_linux(
     lines = desktop_content.strip().split('\n')
     new_lines = []
     for line in lines:
+        # print(line)
         if line.startswith('Exec='):
             if str(exec_path).endswith('.py'):
                 new_lines.append(f'Exec=python3 {exec_path}')
@@ -913,6 +917,7 @@ def install_linux(
         else:
             new_lines.append(line)
     
+    # print(new_lines)
     installed_desktop = apps_dir / f"{app_id}.desktop"
     installed_desktop.write_text('\n'.join(new_lines) + '\n')
     print(f"  ✅ {installed_desktop}")

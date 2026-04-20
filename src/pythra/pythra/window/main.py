@@ -10,7 +10,7 @@ def change_color():
 window = create_window(
                 "Test Window",
                 window_id="main_window",
-                html_file="C:\\Users\\SMILETECH COMPUTERS\\Documents\\pythra-toolkit\\src\\pythra\\pythra\\window\\ind.html",
+                html_file="/home/red-x/Documents/pythra-toolkit/src/pythra/pythra/window/vid.html",
                 js_api=api,
                 frameless=False, maximized=True, fixed_size=False)
 # Create API instance and register callbacks
@@ -28,4 +28,4 @@ window1 = create_window(
 
 if __name__ == "__main__":
     start(window=window, debug=False)
-    start(window=window1, debug=False)
+    #start(window=window1, debug=False)

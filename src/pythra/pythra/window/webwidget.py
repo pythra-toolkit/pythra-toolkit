@@ -31,6 +31,7 @@ Last Modified: 2025
 """
 
 import os
+import platform
 
 # =============================================================================
 # BROWSER ENGINE CONFIGURATION
@@ -53,11 +54,21 @@ os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = (
     "--disable-dev-shm-usage"             # Prevents /dev/shm usage issues on some systems
 )
 
+# This is needed for some systems
+if platform.system() == "Linux":
+    os.environ["QT_QPA_PLATFORM"] = "xcb"
+# windows equivalent will be
+if platform.system() == "Windows":
+    os.environ["QT_QPA_PLATFORM"] = "windows"
+# mac equivalent will be
+if platform.system() == "Darwin":
+    os.environ["QT_QPA_PLATFORM"] = "cocoa"
+
 
 # 📝 ALTERNATIVE CONFIGURATIONS (Currently commented out)
 # These are other Chromium flags you might use for different purposes:
 # - GPU acceleration control
-# - Software rendering fallbacks  
+# - Software rendering fallbacks
 # - Sandbox security settings
 # - OpenGL driver selection
 # Uncomment and modify these if you encounter graphics or performance issues
@@ -93,7 +104,7 @@ from contextlib import redirect_stdout, redirect_stderr  # Context managers for 
 
 import threading
 
-import platform
+
 
 from .window_manager import SystemSleepManager 
 
@@ -298,7 +309,7 @@ if app is None:
 # This catches messages at the framework level before they reach any output streams
 qInstallMessageHandler(custom_message_handler)
 
-# 🎯 LAYER 2: Python Output Stream Filtering  
+# 🎯 LAYER 2: Python Output Stream Filtering
 # Replace the standard output streams with our filtered versions
 # This catches any messages that bypass Qt's logging system
 
@@ -485,9 +496,8 @@ StartupWMClass={app_id}
         pass
 
 
-# Run the platform icon setup 
+# Run the platform icon setup
 _setup_platform_icon()
-
 
 
 def watch_for_power_events(sleep_manager, on_resume_callback):
@@ -548,7 +558,6 @@ def setup_platform_watchers(window, sleep_manager):
     elif platform.system() == "Linux":
         # On Linux, the manager handles its own listener
         sleep_manager.setup_event_listener()
-
 
 
 class WindowManager:
@@ -727,6 +736,38 @@ class Api(QObject):
             #print(f"Warning: Gesture callback '{callback_name}' not found.")
             debug_print(f"Warning: Gesture callback '{callback_name}' not found.")
 
+    # --- Video Player rect update Slot ---
+    @Slot(str, str, result=None)
+    def on_video_rect(self, callback_name, rect_data):
+        """
+        Slot to receive vid-box bounding rect updates from the
+        PythraVideoPlayer JS engine via QWebChannel.
+        """
+        callback = self.callbacks.get(callback_name)
+        if callback:
+            try:
+                self._execute_callback(callback, rect_data)
+            except Exception as e:
+                debug_print(f"Error executing video rect callback '{callback_name}': {e}")
+        else:
+            debug_print(f"Warning: Video rect callback '{callback_name}' not found.")
+
+    # --- Video Player command Slot ---
+    @Slot(str, str, str, result=None)
+    def on_video_command(self, callback_name, cmd_type, value):
+        """
+        Slot to receive video commands (volume, seek) from the JS engine.
+        """
+        debug_print(f"DEBUG: on_video_command received: cb={callback_name}, type={cmd_type}, val={value}")
+        callback = self.callbacks.get(callback_name)
+        if callback:
+            try:
+                self._execute_callback(callback, cmd_type, value)
+            except Exception as e:
+                debug_print(f"Error executing video command callback '{callback_name}': {e}")
+        else:
+            debug_print(f"Warning: Video command callback '{callback_name}' not found.")
+
 
 # Create a global instance of the WindowManager
 window_manager = WindowManager()
@@ -735,9 +776,15 @@ window_manager = WindowManager()
 class DebugWindow(QWebEngineView):
     """A separate window for inspecting HTML elements."""
 
-    def __init__(self):
+    def __init__(self, overlay: bool = None):
         super().__init__()
         self.setWindowTitle("Debug Window")
+        if overlay: 
+            print(f"overlay is: {True}") 
+            # Ensure the debug window stays at the bottom of the application for visibility
+            # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnBottomHint)
+        else: print(f"overlay is: {False}")
+        
         self.resize(800, 600)
 
 
@@ -759,7 +806,11 @@ class WebWindow(QWidget):
         on_top=False,
         maximized=False,
         fixed_size=False,
+        video_overlay=False,
+        debug=False,
     ):
+        self.video_overlay = video_overlay
+        self.debug = debug
         super().__init__()
         self.setWindowTitle(title)
         self.fixed_size = fixed_size
@@ -796,12 +847,54 @@ class WebWindow(QWidget):
         profile.setPersistentStoragePath(cache_path)
         # Enable disk cache
         profile.setHttpCacheType(QWebEngineProfile.DiskHttpCache)
-        
+
         # print("📁 Setup WebEngine Config: ", cache_path)
         debug_print("📁 Setup WebEngine Config: ", cache_path)
 
-        # WebView
-        self.webview = QWebEngineView(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+        # --- VIDEO OVERLAY MODE (mirrors VLCPlayer stacking from vid.py) ---
+        # When enabled, a native video_frame widget sits underneath the
+        # webview which is created as a floating transparent Tool window.
+        # CRITICAL: The Tool flags MUST be set immediately at creation time
+        # (before layout/HTML), matching vid.py's order. Setting flags after
+        # the widget has been laid out causes Qt to destroy and recreate the
+        # native window, breaking the parent-child association.
+        if self.video_overlay:
+            # Match vid.py's transparency for overlay stacking
+            # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+            
+            # 1. Create a native video_frame child (VLC attaches to its winId)
+            self.video_frame = QWidget(self)
+            self.video_frame.setAttribute(Qt.WidgetAttribute.WA_NativeWindow, True)
+            self.video_frame.setAttribute(
+                Qt.WidgetAttribute.WA_DontCreateNativeAncestors, True
+            )
+
+            # 2. Create webview as child of self (same as vid.py)
+            self.webview = QWebEngineView(self)
+
+            # 3. Set Tool flags IMMEDIATELY — before any layout or HTML load
+            self.webview.setWindowFlags(
+                Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint
+            )
+            self.webview.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+            self.webview.page().setBackgroundColor(Qt.GlobalColor.transparent)
+
+            # Do NOT add webview to layout — it floats as a Tool window
+        else:
+            # --- DEFAULT MODE (webview inside layout) ---
+            self.webview = QWebEngineView(self)
+
+            # Enable transparency for frameless windows
+            if frameless:
+                self.webview.setAttribute(Qt.WA_TranslucentBackground, True)
+                self.webview.setStyleSheet("background: transparent;")
+                self.webview.page().setBackgroundColor(Qt.transparent)
+
+            self.layout.addWidget(self.webview)
+
+        # --- Common webview settings (both modes) ---
         self.webview.settings().setAttribute(
             QWebEngineSettings.LocalContentCanAccessRemoteUrls, True
         )
@@ -814,31 +907,15 @@ class WebWindow(QWidget):
         self.webview.settings().setAttribute(
             QWebEngineSettings.JavascriptCanOpenWindows, True
         )
-        
-        # Suppress various console warnings and messages
         self.webview.settings().setAttribute(
             QWebEngineSettings.ShowScrollBars, False
         )
 
-        # Enable transparency
-        if frameless:
-            self.webview.setAttribute(Qt.WA_TranslucentBackground, True)
-            self.webview.setStyleSheet("background: transparent;")
-            self.webview.page().setBackgroundColor(Qt.transparent)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(self.webview)
-
         if html_file:
             self.webview.setUrl(QUrl.fromLocalFile(html_file))
-            # #print(js_api.callbacks)
-            #print("⚡ HTML loaded:")
             debug_print("⚡ HTML loaded:")
         else:
-            #print("HTML not loaded: ", html_file)
             debug_print("HTML not loaded: ", html_file)
-
-        self.layout.addWidget(self.webview)  # Webview occupies the entire space
-        #print("⚡ WEBVIEW loaded:")
         debug_print("⚡ WEBVIEW loaded:")
 
         # Setup QWebChannel
@@ -850,12 +927,16 @@ class WebWindow(QWidget):
         # Change window state
         window_manager.set_window_state(window_id, window_state)
 
-        # Developer Tools
-        self.debug_window = DebugWindow()
-        self.webview.page().setDevToolsPage(self.debug_window.page())
-
-        # Add a toggle to show/hide the debug window
-        self.debug_window.hide()
+        # Developer Tools (only when debug=True)
+        if self.debug:
+            self.debug_window = DebugWindow(self.video_overlay)
+            self.webview.page().setDevToolsPage(self.debug_window.page())
+            self.debug_window.hide()
+            # F12 shortcut to toggle DevTools
+            self.shortcut = QShortcut(QKeySequence("F12"), self)
+            self.shortcut.activated.connect(self.toggle_debug_window)
+        else:
+            self.debug_window = None
         # Connect to app state changes so we can detect resume/activate
         app.applicationStateChanged.connect(self._on_application_state_changed)
         # Connect resume signal to slot that runs in the GUI thread
@@ -875,17 +956,24 @@ class WebWindow(QWidget):
         self._dpi_probe_timeout_ms = 5000  # max time to try to probe DPR on startup
 
         QTimer.singleShot(0, self._ensure_initial_dpi)
-       
 
     def toggle_debug_window(self):
+        minimized = False
+        if not self.debug_window:
+            return
         if self.debug_window.isVisible():
             self.debug_window.hide()
         else:
+            # if not minimized:
+            #     self.debug_window.showMinimized()
+            #     minimized = True
+            # else:
+            #     print(minimized)
             self.debug_window.show()
 
     def show_window(self):
         self.show()
-    
+
     def show_max_window(self):
         self.showMaximized()
         size = self.size()
@@ -900,13 +988,15 @@ class WebWindow(QWidget):
     def minimize(self):
         self.showMinimized()
 
-    def restore_normal(slef):
+    def restore_normal(self):
         self.showNormal()
 
     def close_window(self):
         self.close()
-        # self.debug_window.close() if self.debug_window else print("closed")
-        self.debug_window.close() if self.debug_window else debug_print("closed")
+        if self.video_overlay and hasattr(self, "webview"):
+            self.webview.close()
+        if self.debug_window:
+            self.debug_window.close()
 
     def evaluate_js(self, window_id, *scripts):
         # Define a dummy callback function to make the call non-blocking.
@@ -926,10 +1016,10 @@ class WebWindow(QWidget):
                 except Exception as e:
                     debug_print("evaluate_js: failed to run combined script:", e)
             else:
-                #print(f"Window {window_id} does not have a webview.")
+                # print(f"Window {window_id} does not have a webview.")
                 debug_print(f"Window {window_id} does not have a webview.")
         else:
-            #print(f"Window ID {window_id} not found.")
+            # print(f"Window ID {window_id} not found.")
             debug_print(f"Window ID {window_id} not found.")
 
     def toggle_overlay(self):
@@ -939,7 +1029,7 @@ class WebWindow(QWidget):
     def _on_system_resume_slot(self):
         """Runs on the GUI thread when system resumes."""
         try:
-            #print("GUI: handling system resume — syncing webview viewport now.")
+            # print("GUI: handling system resume — syncing webview viewport now.")
             debug_print("GUI: handling system resume — syncing webview viewport now.")
             # call the sync helper which sets viewport and fires JS resize
             self._sync_webview_viewport()
@@ -949,9 +1039,8 @@ class WebWindow(QWidget):
             # optional: force a small delayed re-sync in case DPI changes arrive slightly later
             QTimer.singleShot(200, self._sync_webview_viewport)
         except Exception as e:
-            #print("Error in _on_system_resume_slot:", e)
+            # print("Error in _on_system_resume_slot:", e)
             debug_print("Error in _on_system_resume_slot:", e)
-
 
     def resizeEvent(self, event):
         # Ensure Qt does the normal handling
@@ -959,11 +1048,67 @@ class WebWindow(QWidget):
 
         # Defer the sync very slightly so all layout updates have happened
         QTimer.singleShot(0, self._sync_webview_viewport)
+        # Keep floating overlay in sync when in video_overlay mode
+        if self.video_overlay:
+            self._update_overlay_pos()
+
+    def moveEvent(self, event):
+        super().moveEvent(event)
+        if self.video_overlay:
+            self._update_overlay_pos()
 
     def showEvent(self, event):
         super().showEvent(event)
         # Sync on show as well
         QTimer.singleShot(0, self._sync_webview_viewport)
+        # Show the floating overlay when in video_overlay mode
+        if self.video_overlay and hasattr(self, "webview"):
+            self._update_overlay_pos()
+            self.webview.show()
+
+    def closeEvent(self, event):
+        super().closeEvent(event)
+        if self.video_overlay and hasattr(self, "webview"):
+            self.webview.close()
+        if self.debug_window:
+            self.debug_window.close()
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        # Handle minimize/restore for floating overlay windows (video_overlay mode)
+        if self.video_overlay and event.type() == QEvent.Type.WindowStateChange:
+            if self.isMinimized():
+                # Disconnect DevTools to prevent lifecycle crash
+                if self.debug_window:
+                    try:
+                        self.webview.page().setDevToolsPage(None)
+                    except Exception:
+                        pass
+                if hasattr(self, "webview"):
+                    self.webview.hide()
+                if self.debug_window and self.debug_window.isVisible():
+                    self.debug_window.hide()
+                    self._dev_tools_was_visible = True
+            else:
+                if hasattr(self, "webview"):
+                    self.webview.show()
+                if getattr(self, "_dev_tools_was_visible", False):
+                    # Reconnect DevTools on restore
+                    if self.debug_window and hasattr(self, "webview"):
+                        self.webview.page().setDevToolsPage(self.debug_window.page())
+                        self.debug_window.show()
+                    self._dev_tools_was_visible = False
+
+    def _update_overlay_pos(self):
+        """Sync floating webview overlay to match parent window geometry (video_overlay mode)."""
+        if hasattr(self, "webview") and self.video_overlay:
+            global_pos = self.mapToGlobal(self.rect().topLeft())
+            self.webview.setGeometry(
+                global_pos.x(), global_pos.y(), self.width(), self.height()
+            )
+            self.webview.page().runJavaScript(
+                "if (typeof sendRect !== 'undefined') sendRect();"
+            )
 
     def _on_application_state_changed(self, state):
         # Qt.ApplicationActive means app is now active (user returned / woke PC)
@@ -977,6 +1122,17 @@ class WebWindow(QWidget):
         so web content reflows correctly after sleep/resize/DPI changes.
         """
         try:
+            # In video_overlay mode, the webview is a floating Tool window —
+            # delegate to _update_overlay_pos which handles global positioning.
+            if self.video_overlay:
+                self._update_overlay_pos()
+                # Still dispatch a resize event so JS/CSS reflows
+                self.webview.page().runJavaScript(
+                    'window.dispatchEvent(new Event("resize"));'
+                )
+                self.webview.update()
+                return
+
             # Make sure view has correct widget geometry
             w = self.webview.width()
             h = self.webview.height()
@@ -996,7 +1152,7 @@ class WebWindow(QWidget):
             # force repaint
             self.webview.update()
         except Exception as e:
-            #print("Warning: failed to sync webview viewport:", e)
+            # print("Warning: failed to sync webview viewport:", e)
             debug_print("Warning: failed to sync webview viewport:", e)
 
     def _ensure_initial_dpi(self):
@@ -1105,7 +1261,6 @@ class WebWindow(QWidget):
         # absolute fallback
         finalize(None, None)
 
-
     def _on_dpi_changed(self):
         """
         Called on screen DPI/geometry changes or system resume.
@@ -1152,7 +1307,7 @@ class WebWindow(QWidget):
 
                         # Resize viewport
                         QTimer.singleShot(50, self._sync_webview_viewport)
-                        
+
                         # Also apply to debug window if visible
                         if self.debug_window and self.debug_window.isVisible():
                             try:
@@ -1162,7 +1317,7 @@ class WebWindow(QWidget):
                                 debug_print(f"Applied zoomFactor to debug window: {zoom_factor}")
                             except Exception as e:
                                 debug_print("Failed to apply zoom to debug window:", e)
-                        
+
                         # Signal JS resize for main webview
                         try:
                             self.webview.page().runJavaScript('window.dispatchEvent(new Event("resize"));')
@@ -1202,8 +1357,6 @@ class WebWindow(QWidget):
             QTimer.singleShot(0, self._sync_webview_viewport)
             if self.debug_window and self.debug_window.isVisible():
                 QTimer.singleShot(0, lambda: self.debug_window.update())
-
-
 
     def _apply_zoom_safely(self, target_zoom_candidate, desired_base_dpi, verify_timeout=250):
         """
@@ -1278,8 +1431,10 @@ def create_window(
     min_height: int = 300,
     window_state: str = "normal",
     frameless: bool = True,
-    maximized: bool =False,
-        fixed_size: bool =False,
+    maximized: bool = False,
+    fixed_size: bool = False,
+    video_overlay: bool = False,
+    debug: bool = False,
 ):
     window = WebWindow(
         title,
@@ -1294,12 +1449,14 @@ def create_window(
         fixed_size=fixed_size,
         min_width=min_width,
         min_height=min_height,
+        video_overlay=video_overlay,
+        debug=debug,
     )
     if maximized:
         window.show_max_window()
     else:
         window.show_window()
-        
+
     return window
 
 
@@ -1311,9 +1468,8 @@ def start(window, debug):
 
     sleep_manager = SystemSleepManager(window_manager)
 
-    # Example to toggle debug window (could connect to a button or shortcut)
-    if debug:
-        window.toggle_debug_window()
+    # DevTools toggling is now handled inside WebWindow.__init__ via F12 shortcut
+    # when debug=True — no need to auto-open it here.
 
     setup_platform_watchers(window, sleep_manager)
 
@@ -1344,4 +1500,3 @@ if __name__ == '__main__':
     start(debug=True)
 
 """
-

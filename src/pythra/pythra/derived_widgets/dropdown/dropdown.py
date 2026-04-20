@@ -29,7 +29,7 @@ class VirtualDropdown(StatefulWidget):
 
     def __init__(
         self,
-        key: Key, # pyright: ignore[reportInvalidTypeForm]
+        key: Key,  # pyright: ignore[reportInvalidTypeForm]
         itemBuilder: Optional[Callable[[str], None]] = None,
         controller: VirtualDropdownController = None,
         onChanged: Optional[Callable[[str], None]] = None,
@@ -50,13 +50,17 @@ class VirtualDropdown(StatefulWidget):
         self.controller = controller
         self.onChanged = onChanged
         self.initialItemCount = initialItemCount
-        self.theme = theme if theme else VirtualDropdownTheme(
-            hoverStyle=hoverStyle,
-            focusStyle=focusStyle,
-            activeStyle=activeStyle,
-            itemHoverStyle=itemHoverStyle,
-            itemFocusStyle=itemFocusStyle,
-            itemActiveStyle=itemActiveStyle
+        self.theme = (
+            theme
+            if theme
+            else VirtualDropdownTheme(
+                hoverStyle=hoverStyle,
+                focusStyle=focusStyle,
+                activeStyle=activeStyle,
+                itemHoverStyle=itemHoverStyle,
+                itemFocusStyle=itemFocusStyle,
+                itemActiveStyle=itemActiveStyle,
+            )
         )
         self.margin = margin
         # Direction for dropdown placement: VerticalDirection.UP/DOWN or HorizontalDirection.LEFT/RIGHT
@@ -258,6 +262,9 @@ class _VirtualDropdownState(State):
                     border=_active_border,
                     borderRadius=_border_radius,
                 ),
+                hoverStyle=self.theme.hoverStyle,
+                focusStyle=self.theme.focusStyle,
+                activeStyle=self.theme.activeStyle,
                 child=Stack(
                     key=Key(f"dropdown_button_{parent_key}_decoration_stack"),
                     clipBehavior=ClipBehavior.NONE,
@@ -265,13 +272,14 @@ class _VirtualDropdownState(State):
                         Positioned(
                             key=Key(f"dropdown_button_{parent_key}_floating_label_pos"),
                             left="16px",
-                            top="-10px",
+                            top=f"-{_active_border.width}px",
                             bottom=0,
                             child=Container(
                                 key=Key(
                                     f"dropdown_button_{parent_key}_floating_label_container"
                                 ),
                                 cssPosition="fixed",
+                                height=8,
                                 # role="floating-label-container",
                                 js_init={
                                     "engine": "PythraVirtualizedDropdownInternal",
@@ -279,20 +287,27 @@ class _VirtualDropdownState(State):
                                     "options": {
                                         "floatingLabelContainerKey": f"dropdown_button_{parent_key}_floating_label_container",
                                         "dropdownButtonKey": f"dropdown_button_{parent_key}_m3_container",
+                                        "floatingLabelPositionKey": f"dropdown_button_{parent_key}_floating_label_pos",
                                     },
                                 },
-                                child=Text(
-                                    (
-                                        _label_text
-                                        if _label_text and self.selected_value
-                                        else ""
-                                    ),
+                                child=Transform.translate(
+                                    offset=Offset(0, -10),
                                     key=Key(
-                                        f"dropdown_button_{parent_key}_floating_label"
+                                        f"dropdown_button_{parent_key}_floating_label_translate"
                                     ),
-                                    style=TextStyle(
-                                        color=_label_color,
-                                        fontSize=12,
+                                    child=Text(
+                                        (
+                                            _label_text
+                                            if _label_text and self.selected_value
+                                            else ""
+                                        ),
+                                        key=Key(
+                                            f"dropdown_button_{parent_key}_floating_label"
+                                        ),
+                                        style=TextStyle(
+                                            color=_label_color,
+                                            fontSize=12,
+                                        ),
                                     ),
                                 ),
                             ),
@@ -436,15 +451,11 @@ class _VirtualDropdownState(State):
                 children=[
                     # The main box is the base layer of the stack.
                     Container(
-                        key=Key(
-                            f"dropdown_button_{parent_key}_text_button_root_con"
-                        ),
+                        key=Key(f"dropdown_button_{parent_key}_text_button_root_con"),
                         cssPosition="absolute",
                         zAxisIndex=10000,
                         child=TextButton(
-                            key=Key(
-                                f"dropdown_button_{parent_key}_text_button"
-                            ),
+                            key=Key(f"dropdown_button_{parent_key}_text_button"),
                             onPressed=self.toggle_dropdown,
                             onPressedArgs=[
                                 "dropdown_button_",
@@ -571,7 +582,11 @@ class _VirtualDropdownState(State):
                                         key=Key("my_virtual_list"),
                                         controller=self.list_controller,
                                         itemCount=len(self.controller.items),
-                                        itemBuilder=self.itemBuilder if self.itemBuilder else self.vlist_item_builder,
+                                        itemBuilder=(
+                                            self.itemBuilder
+                                            if self.itemBuilder
+                                            else self.vlist_item_builder
+                                        ),
                                         itemExtent=40,
                                         initialItemCount=self.initialItemCount,
                                         theme=ScrollbarTheme(
