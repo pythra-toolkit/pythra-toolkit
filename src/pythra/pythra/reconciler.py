@@ -820,7 +820,10 @@ class Reconciler:
         return tag_map.get(widget_type_name, "div")
 
     def _generate_html_stub(self, widget: "Widget", html_id: str, props: Dict) -> str:
+        # print(f"Widget from reconciler: {widget}, props: {props}")
         tag, classes, _attrs = self._get_widget_render_tag(widget), props.get("css_class", ""), props.get("data-key", "")
+        if props.get("is_custom") == True:
+            classes = "custom-widget"
 
         widget_type_name = type(widget).__name__
 

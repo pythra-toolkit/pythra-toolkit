@@ -2329,6 +2329,7 @@ class InputDecoration:
         hintText: Optional[str] = None,
         errorText: Optional[str] = None,
         # --- Styling Objects ---
+        height: Optional[int] = None,
         contentPadding: Optional[EdgeInsets] = None,
         labelStyle: Optional[TextStyle] = None,
         inputStyle: Optional[TextStyle] = None,
@@ -2354,6 +2355,7 @@ class InputDecoration:
         self.hintText = hintText
         self.errorText = errorText
 
+        self.height = height
         self.contentPadding = contentPadding
         self.labelStyle = labelStyle
         self.inputStyle = inputStyle
@@ -2422,6 +2424,7 @@ class InputDecoration:
             make_hashable(self.inputStyle),
             make_hashable(self.hintStyle),
             self.filled,
+            self.height,
         )
 
     def __eq__(self, other):

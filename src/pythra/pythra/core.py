@@ -228,6 +228,11 @@ class Framework:
         self._reconciliation_requested: bool = False
         self._pending_state_updates: Set[State] = set()
 
+        # Window Resize Listeners
+        self._resize_listeners: Set[Callable[[int, int], None]] = set()
+        self.window_width: int = 0
+        self.window_height: int = 0
+
         self._loaded_js_engines: Set[str] = set() # Tracks JS engines already sent to the browser
 
         # Small in-memory caches to avoid repeated filesystem hits
@@ -289,6 +294,22 @@ class Framework:
     def list_packages(self, package_type: Optional[PackageType] = None) -> List[Any]:
         """List all discovered packages, optionally filtered by type"""
         return self.package_manager.list_packages(package_type)
+
+    def register_resize_listener(self, listener: Callable[[int, int], None]):
+        """Register a callback for window resize events."""
+        self._resize_listeners.add(listener)
+
+    def unregister_resize_listener(self, listener: Callable[[int, int], None]):
+        """Unregister a window resize callback."""
+        if listener in self._resize_listeners:
+            self._resize_listeners.remove(listener)
+
+    def handle_resize(self, width: int, height: int):
+        """Notify all registered listeners about a window resize."""
+        self.window_width = width
+        self.window_height = height
+        for listener in list(self._resize_listeners):
+            listener(width, height)
 
     def get_html_id_for_key(self, key: Key) -> Optional[str]: # pyright: ignore[reportInvalidTypeForm]
         """
@@ -1966,6 +1987,9 @@ body {{
 #overlay-container > * {{ 
     pointer-events: auto; 
 }}
+.custom-widget {{
+    width: 100%;
+}}
 .custom-scrollbar::-webkit-scrollbar {{
     display: none; /* for Chrome, Safari, and Opera */
 }}
@@ -2080,6 +2104,23 @@ body {{
                 new QWebChannel(qt.webChannelTransport, (channel) => {{
                     window.pywebview = channel.objects.pywebview;
                     console.log("PyWebChannel connected.");
+
+                    // --- Client-side viewport resize detection ---
+                    // ResizeObserver fires only after the DOM is loaded and the
+                    // JS-Python bridge is connected, avoiding premature events.
+                    const root = document.getElementById('root-container');
+                    if (root) {{
+                        const ro = new ResizeObserver(entries => {{
+                            for (const entry of entries) {{
+                                const w = Math.round(entry.contentRect.width);
+                                const h = Math.round(entry.contentRect.height);
+                                if (window.pywebview) {{
+                                    window.pywebview.on_viewport_resize(w, h);
+                                }}
+                            }}
+                        }});
+                        ro.observe(root);
+                    }}
                 }});
                 window.__PYTHRA_CONFIG__ = {_dumps(self.config_dict)};
                 try {{

@@ -171,6 +171,7 @@ from .widgets import (
     Transform,
     VirtualGridView,
     Expandable,
+    ResponsiveBuilder,
 )
 
 # FutureBuilder (async helper widget)
@@ -332,6 +333,7 @@ __all__ = [
     "ui_thread",
     "submit_task",
     "dispatch_to_main",
+    "ResponsiveBuilder",
 ]
 
 # --- Auto-inject project root to sys.path ---

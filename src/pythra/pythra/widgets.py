@@ -66,6 +66,61 @@ port = config.get("assets_server_port")
 
 
 # =============================================================================
+# RESPONSIVE BUILDER - Adaptive UI Layouts
+# =============================================================================
+
+class ResponsiveBuilderState(State):
+    def initState(self):
+        from .core import Framework
+        framework = Framework.instance()
+        self.width = framework.window_width
+        self.height = framework.window_height
+        self._last_resize_time = 0
+        
+        # Register listener
+        framework.register_resize_listener(self._on_resize)
+
+    def dispose(self):
+        from .core import Framework
+        framework = Framework.instance()
+        framework.unregister_resize_listener(self._on_resize)
+
+    def _on_resize(self, width, height):
+        import time
+        from PySide6.QtCore import QTimer
+        
+        self._last_resize_time = time.time()
+        
+        def check_and_trigger():
+            # If 100ms have passed since the last resize event, trigger state update
+            if time.time() - self._last_resize_time >= 0.09:
+                if self.width != width or self.height != height:
+                    self.width = width
+                    self.height = height
+                    self.setState()
+                    
+        QTimer.singleShot(100, check_and_trigger)
+
+    def build(self) -> Widget:
+        # Return the built widget using current dimensions
+        return self.widget.builder(self.width, self.height)
+
+class ResponsiveBuilder(StatefulWidget):
+    """
+    A widget that rebuilds its child based on the current window dimensions.
+    Similar to Flutter's LayoutBuilder or MediaQuery usage, it listens to 
+    global window resize events and triggers a rebuild with the new width and height.
+    Includes a 100ms debounce to prevent performance degradation during rapid resizing.
+    """
+    def __init__(self, builder: Callable[[float, float], Widget], key: Optional[Key] = None):
+        super().__init__(key=key)
+        self.builder = builder
+
+    def createState(self):
+        return ResponsiveBuilderState()
+
+
+# =============================================================================
 # CONTAINER WIDGET - The "Styled Box" That Holds Other Widgets
 # =============================================================================
 
@@ -7051,6 +7106,7 @@ class TextField(Widget):
                 inputStyle=TextStyle(*style_key[13]) if style_key[13] else None,
                 hintStyle=TextStyle(*style_key[14]) if style_key[14] else None,
                 filled=style_key[15],
+                height=style_key[16],
             )
         except (IndexError, TypeError) as e:
             print(
@@ -7174,6 +7230,7 @@ class TextField(Widget):
             if hasattr(decoration, "focusedBorder") and decoration.focusedBorder
             else focus_color
         )
+        field_height = decoration.height if hasattr(decoration, "height") and decoration.height else 56
 
         # Error border
         error_border_width = (
@@ -7245,7 +7302,7 @@ class TextField(Widget):
         }}
         .textfield-root-container.{css_class} .textfield-input {{
             flex-grow: 1;
-            width: 100%; height: 56px; padding: {content_padding_css}; font-size: {input_font_size}px;
+            width: 100%; height: {field_height}px; padding: {content_padding_css}; font-size: {input_font_size}px;
             color: {input_font_color or Colors.onSurface}; {input_font_family} background-color: transparent;
             border: none; outline: none; box-sizing: border-box;
             {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css}
@@ -7334,3 +7391,87 @@ class TextField(Widget):
             background-color: {Colors.rgba(0,0,0,0.12)};
         }}
         """
+
+# =============================================================================
+# RESPONSIVE BUILDER WIDGET
+# =============================================================================
+
+class ResponsiveBuilderState(State):
+    """State for ResponsiveBuilder that listens for browser viewport resize events.
+    
+    Resize events originate from a browser-side ResizeObserver on #root-container,
+    forwarded via QWebChannel → Api.on_viewport_resize → Framework.handle_resize.
+    This guarantees events only fire after the DOM is loaded and the JS-Python
+    bridge is connected, eliminating premature setState during window creation.
+    """
+
+    def initState(self):
+        self.width = self.framework.window_width if self.framework else 0
+        self.height = self.framework.window_height if self.framework else 0
+        self._resize_timer = None
+        self._mounted = True
+        self._pending_width = 0
+        self._pending_height = 0
+        # Safe to register immediately — resize events only arrive from the
+        # browser ResizeObserver AFTER the DOM and QWebChannel are ready.
+        if self.framework:
+            self.framework.register_resize_listener(self._on_resize_raw)
+
+    def dispose(self):
+        self._mounted = False
+        if self.framework:
+            self.framework.unregister_resize_listener(self._on_resize_raw)
+        if self._resize_timer:
+            self._resize_timer.stop()
+            self._resize_timer = None
+
+    def _on_resize_raw(self, width: int, height: int):
+        if not self._mounted:
+            return
+
+        from PySide6.QtCore import QTimer
+
+        if not self._resize_timer:
+            self._resize_timer = QTimer()
+            self._resize_timer.setSingleShot(True)
+            self._resize_timer.timeout.connect(self._apply_resize)
+
+        self._pending_width = width
+        self._pending_height = height
+        self._resize_timer.start(50)
+
+    def _apply_resize(self):
+        if not self._mounted:
+            return
+        if self.width != self._pending_width or self.height != self._pending_height:
+            self.width = self._pending_width
+            self.height = self._pending_height
+            self.setState()
+
+    def build(self):
+        return self.widget.builder(self.width, self.height)
+
+class ResponsiveBuilder(StatefulWidget):
+    """
+    A widget that rebuilds itself whenever the window is resized.
+    
+    This acts similarly to Flutter's MediaQuery or LayoutBuilder by providing
+    the current window dimensions (width, height) to a builder function.
+    
+    Example:
+    ```python
+    def my_builder(width, height):
+        if width < 600:
+            return Text("Mobile Layout")
+        return Text("Desktop Layout")
+        
+    ResponsiveBuilder(builder=my_builder)
+    ```
+    """
+    def __init__(self, builder: Callable[[int, int], Widget], key: Optional[Key] = None):
+        super().__init__(key=key)
+        self.builder = builder
+        
+    def createState(self):
+        return ResponsiveBuilderState()
+

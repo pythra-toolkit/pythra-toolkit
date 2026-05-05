@@ -768,6 +768,18 @@ class Api(QObject):
         else:
             debug_print(f"Warning: Video command callback '{callback_name}' not found.")
 
+    # --- Viewport Resize Slot (called from browser ResizeObserver) ---
+    @Slot(int, int, result=None)
+    def on_viewport_resize(self, width, height):
+        """Slot called from JS ResizeObserver when the browser viewport resizes."""
+        try:
+            from ..core import Framework
+            framework = Framework.instance()
+            if framework:
+                framework.handle_resize(width, height)
+        except Exception as e:
+            debug_print("Failed to handle viewport resize:", e)
+
 
 # Create a global instance of the WindowManager
 window_manager = WindowManager()
@@ -1045,6 +1057,11 @@ class WebWindow(QWidget):
     def resizeEvent(self, event):
         # Ensure Qt does the normal handling
         super().resizeEvent(event)
+
+        # NOTE: Viewport resize is now handled by the browser-side ResizeObserver
+        # which calls Api.on_viewport_resize via QWebChannel. This avoids
+        # premature resize events during window creation/show that would
+        # trigger setState before the DOM is loaded.
 
         # Defer the sync very slightly so all layout updates have happened
         QTimer.singleShot(0, self._sync_webview_viewport)

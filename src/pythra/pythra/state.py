@@ -96,6 +96,9 @@ class StatefulWidget(Widget):
     def get_state(self) -> 'State': # Hint uses forward reference 'State'
         """Returns the associated State object."""
         return self._state
+    
+    def render_props(self):
+        return {'is_custom': True}
 
 
 # =============================================================================
