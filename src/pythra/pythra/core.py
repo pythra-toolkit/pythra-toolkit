@@ -1989,6 +1989,7 @@ body {{
 }}
 .custom-widget {{
     width: 100%;
+    height: 100%;
 }}
 .custom-scrollbar::-webkit-scrollbar {{
     display: none; /* for Chrome, Safari, and Opera */
