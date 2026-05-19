@@ -51,10 +51,13 @@ export class PythraVirtualGrid {
                 }
             }
             if (initialCss.size > 0) {
-                const styleSheet = document.getElementById('dynamic-styles');
-                if (styleSheet) {
-                    styleSheet.textContent += `\n${[...initialCss].join('\n')}`;
+                let styleSheet = document.getElementById('virtual-list-styles');
+                if (!styleSheet) {
+                    styleSheet = document.createElement('style');
+                    styleSheet.id = 'virtual-list-styles';
+                    document.head.appendChild(styleSheet);
                 }
+                styleSheet.textContent += `\n${[...initialCss].join('\n')}`;
             }
         }
 
@@ -214,8 +217,13 @@ export class PythraVirtualGrid {
                                 this.itemCache[item.index] = html;
 
                                 if (css) {
-                                    const styleSheet = document.getElementById('dynamic-styles');
-                                    if (styleSheet && !styleSheet.textContent.includes(css)) {
+                                    let styleSheet = document.getElementById('virtual-list-styles');
+                                    if (!styleSheet) {
+                                        styleSheet = document.createElement('style');
+                                        styleSheet.id = 'virtual-list-styles';
+                                        document.head.appendChild(styleSheet);
+                                    }
+                                    if (!styleSheet.textContent.includes(css)) {
                                         styleSheet.textContent += `\n${css}`;
                                     }
                                 }

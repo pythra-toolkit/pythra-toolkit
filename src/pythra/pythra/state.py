@@ -213,6 +213,7 @@ class State:
         self._widget_ref: Optional[weakref.ref['StatefulWidget']] = None
         self.framework: Optional['Framework'] = None # Initialized in _set_widget
         # self.widget = self.get_widget()
+        self._dirty = True
 
     def _set_widget(self, widget: 'StatefulWidget'): # Hint uses forward reference
         """Internal method to link State to its StatefulWidget and get framework."""
@@ -274,6 +275,7 @@ class State:
 
     def setState(self):
         """Notify the framework that the internal state of this object has changed."""
+        self._dirty = True
         widget = self.get_widget()
         if not widget:
             print(f"⚠️ PyThra State | Cannot setState for {self.__class__.__name__} - widget reference lost")

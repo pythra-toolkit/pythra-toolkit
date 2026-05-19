@@ -1135,9 +1135,25 @@ class Framework:
                 widget._state = state
                 state._set_widget(widget)
                 state.initState()
+                state._dirty = True
 
-            # Build the child widget from the state.
-            built_child = state.build()
+            # Check if we can reuse the previously built child subtree
+            should_rebuild = True
+            if hasattr(state, '_last_built_child') and not getattr(state, '_dirty', False):
+                if context_map:
+                    widget_key = widget.get_unique_id()
+                    old_node = context_map.get(widget_key)
+                    if old_node:
+                        old_widget = old_node.get("widget_instance")
+                        if old_widget and widget.render_props() == old_widget.render_props():
+                            should_rebuild = False
+
+            if should_rebuild:
+                built_child = state.build()
+                state._last_built_child = built_child
+                state._dirty = False
+            else:
+                built_child = state._last_built_child
 
             # Recursively process the built child to build its own subtree.
             processed_child = self._build_widget_tree(built_child, context_map)
@@ -1208,7 +1224,7 @@ class Framework:
             return ""
 
         # A StatefulWidget doesn't render itself, so we render its child.
-        if node_data["widget_type"] == "StatefulWidget":
+        if node_data["widget_type"] in ["StatefulWidget", "StatelessWidget", "VirtualListView", "VirtualGridView"]:
             child_keys = node_data.get("children_keys", [])
             if child_keys:
                 return self._generate_html_from_map(child_keys[0], rendered_map)
@@ -1386,6 +1402,8 @@ class Framework:
                         widget_instance =data['widget_instance']
                         if widget_instance and widget_instance.key:
                             widget_key_val = widget_instance.key.value
+                            if widget_key_val.endswith("_scrollbar"):
+                                widget_key_val = widget_key_val[:-10]
                         else:
                             # Fallback, though widgets with controllers should always have keys.
                             widget_key_val = html_id # pyright: ignore[reportUndefinedVariable]
@@ -1568,6 +1586,8 @@ class Framework:
             # Use the widget's key for a stable instance name.
             if widget_instance and widget_instance.key:
                 widget_key_val = widget_instance.key.__str_key__() if hasattr(widget_instance.key, '__str_key__') else str(widget_instance.key)
+                if widget_key_val.endswith("_scrollbar"):
+                    widget_key_val = widget_key_val[:-10]
             else:
                 # Fallback, though widgets with controllers should always have keys.
                 widget_key_val = html_id

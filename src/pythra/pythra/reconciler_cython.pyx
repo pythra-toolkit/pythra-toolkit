@@ -130,7 +130,7 @@ def cython_diff_node_recursive(
     prop_changes = cython_diff_props(old_props_from_map, new_props)
     
     # For non-renderable widgets, create UPDATE patch if props changed
-    if new_type not in ["StatefulWidget", "StatelessWidget"]:
+    if new_type not in ["StatefulWidget", "StatelessWidget", "VirtualListView", "VirtualGridView"]:
         if prop_changes:
             patch_data = {"props": new_props, "old_props": old_props_from_map}
             if 'css_class' in prop_changes:
@@ -151,7 +151,7 @@ def cython_diff_node_recursive(
     }
     
     # Recurse on children
-    child_parent_html_id = html_id if new_type not in ["StatefulWidget", "StatelessWidget"] else parent_html_id
+    child_parent_html_id = html_id if new_type not in ["StatefulWidget", "StatelessWidget", "VirtualListView", "VirtualGridView"] else parent_html_id
     reconciler._diff_children_recursive(
         old_data.get("children_keys", []),
         new_widget.get_children(),

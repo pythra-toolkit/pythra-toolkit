@@ -2959,13 +2959,14 @@ class Scrollbar(Widget):
             # print(style_key)
 
             height_str = f"{height}px" if isinstance(height, (int, float)) else height
+            width_str = f"{width}px" if isinstance(width, (int, float)) else width
 
             # These selectors precisely target the DOM elements created by SimpleBar.
             return f"""
                 /* Style the scrollbar track (the groove it runs in) */
                 .{css_class} .simplebar-track.simplebar-vertical {{
                     background: {track_color};
-                    width: {width}px;
+                    width: {width_str};
                     border-radius: {track_radius}px;
                     margin: {track_margin};
                 }}
@@ -3004,6 +3005,9 @@ class Scrollbar(Widget):
                 }}
                 .simplebar-scrollbar {{
                     display: none;
+                }}
+                .simplebar-placeholder {{
+                    width: 100% !important;
                 }}
                 .{css_class} .simplebar-content-wrapper {{
                     padding: {content_padding};
@@ -4306,7 +4310,7 @@ class _VirtualListViewState(State):
 
         # The options are now guaranteed to exist because initState ran first.
         return Scrollbar(
-            key=widget.key,
+            key=Key(f"{widget.key.value}_scrollbar"),
             width=widget.width,  # type: ignore
             height=widget.height,  # type: ignore
             theme=widget.theme, # type: ignore
@@ -4556,7 +4560,7 @@ class _VirtualGridViewState(State):
             return Container(width=0, height=0)
 
         return Scrollbar(
-            key=widget.key,  # type: ignore
+            key=Key(f"{widget.key.value}_scrollbar"),  # type: ignore
             width=widget.width,  # type: ignore
             height=widget.height,  # type: ignore
             theme=widget.theme,  # type: ignore
@@ -7453,10 +7457,10 @@ class ResponsiveBuilderState(State):
     def initState(self):
         self.width = self.framework.window_width if self.framework else 0
         self.height = self.framework.window_height if self.framework else 0
-        self._resize_timer = None
         self._mounted = True
         self._pending_width = 0
         self._pending_height = 0
+        self._throttling = False
         # Safe to register immediately — resize events only arrive from the
         # browser ResizeObserver AFTER the DOM and QWebChannel are ready.
         if self.framework:
@@ -7466,32 +7470,30 @@ class ResponsiveBuilderState(State):
         self._mounted = False
         if self.framework:
             self.framework.unregister_resize_listener(self._on_resize_raw)
-        if self._resize_timer:
-            self._resize_timer.stop()
-            self._resize_timer = None
 
     def _on_resize_raw(self, width: int, height: int):
         if not self._mounted:
             return
 
-        from PySide6.QtCore import QTimer
-
-        if not self._resize_timer:
-            self._resize_timer = QTimer()
-            self._resize_timer.setSingleShot(True)
-            self._resize_timer.timeout.connect(self._apply_resize)
-
         self._pending_width = width
         self._pending_height = height
-        self._resize_timer.start(50)
 
-    def _apply_resize(self):
+        if not self._throttling:
+            self._throttling = True
+            from PySide6.QtCore import QTimer
+            QTimer.singleShot(16, self._apply_resize_throttled)
+
+    def _apply_resize_throttled(self):
         if not self._mounted:
             return
+        self._throttling = False
         if self.width != self._pending_width or self.height != self._pending_height:
             self.width = self._pending_width
             self.height = self._pending_height
             self.setState()
+
+    def didUpdateWidget(self, oldWidget, newWidget):
+        self._dirty = True
 
     def build(self):
         return self.widget.builder(self.width, self.height)

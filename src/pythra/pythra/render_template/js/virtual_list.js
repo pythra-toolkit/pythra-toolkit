@@ -37,12 +37,15 @@ export class PythraVirtualList {
                     initialCss.add(itemData.css);
                 }
             }
-            // 3. Inject all collected CSS into the dynamic stylesheet in one go.
+            // 3. Inject all collected CSS into a dedicated virtual list stylesheet.
             if (initialCss.size > 0) {
-                const styleSheet = document.getElementById('dynamic-styles');
-                if (styleSheet) {
-                    styleSheet.textContent += `\n${[...initialCss].join('\n')}`;
+                let styleSheet = document.getElementById('virtual-list-styles');
+                if (!styleSheet) {
+                    styleSheet = document.createElement('style');
+                    styleSheet.id = 'virtual-list-styles';
+                    document.head.appendChild(styleSheet);
                 }
+                styleSheet.textContent += `\n${[...initialCss].join('\n')}`;
             }
         }
 
@@ -139,8 +142,13 @@ export class PythraVirtualList {
                                 this.itemCache[item.index] = html;
 
                                 if (css) {
-                                    const styleSheet = document.getElementById('dynamic-styles');
-                                    if (styleSheet && !styleSheet.textContent.includes(css)) {
+                                    let styleSheet = document.getElementById('virtual-list-styles');
+                                    if (!styleSheet) {
+                                        styleSheet = document.createElement('style');
+                                        styleSheet.id = 'virtual-list-styles';
+                                        document.head.appendChild(styleSheet);
+                                    }
+                                    if (!styleSheet.textContent.includes(css)) {
                                         styleSheet.textContent += `\n${css}`;
                                     }
                                 }

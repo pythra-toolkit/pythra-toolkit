@@ -391,7 +391,7 @@ class Reconciler:
         # Removed duplicate didUpdateWidget call since core.py handles it now.
 
         # ONLY generate an UPDATE patch for renderable widgets.
-        if widget_type_name not in ["StatefulWidget", "StatelessWidget"]:
+        if widget_type_name not in ["StatefulWidget", "StatelessWidget", "VirtualListView", "VirtualGridView"]:
             old_props_from_map = old_data.get("props", {})
             prop_changes = self._diff_props(old_props_from_map, new_props)
             if prop_changes:
@@ -419,7 +419,7 @@ class Reconciler:
         # Recurse on children, passing the current widget's key as their parent_key.
         child_parent_html_id = (
             html_id
-            if widget_type_name not in ["StatefulWidget", "StatelessWidget"]
+            if widget_type_name not in ["StatefulWidget", "StatelessWidget", "VirtualListView", "VirtualGridView"]
             else parent_html_id
         )
         self._diff_children_recursive(
@@ -599,7 +599,7 @@ class Reconciler:
 
         # ONLY generate a patch for renderable widgets.
         # StatefulWidget and StatelessWidget are hosts, not renderable elements.
-        if widget_type_name not in ["StatefulWidget", "StatelessWidget"] and not suppress_self_patch:
+        if widget_type_name not in ["StatefulWidget", "StatelessWidget", "VirtualListView", "VirtualGridView"] and not suppress_self_patch:
             stub_html = self._generate_html_stub(new_widget, html_id, new_props)
             # Remove `{children}` placeholders from stubs used in incremental
             # INSERT patches — initial full-page generation handles children
@@ -627,7 +627,7 @@ class Reconciler:
             # into the same parent DOM element. Otherwise, they are rendered inside the parent's new DOM element.
             child_parent_html_id = (
                 parent_html_id
-                if widget_type_name in ["StatefulWidget", "StatelessWidget"]
+                if widget_type_name in ["StatefulWidget", "StatelessWidget", "VirtualListView", "VirtualGridView"]
                 else html_id
             )
             self._insert_node_recursive(
@@ -894,15 +894,6 @@ class Reconciler:
         # --- END MODIFICATION ---
 
         inner_html = ""
-
-        if widget_type_name == "VirtualListView":
-            return f"""
-            <div id="{html_id}" class="{props.get('css_class','')}" style="height: 100%;">
-            <div class="viewport" id="{html_id}_viewport">
-                <div class="phantom"></div>
-            </div>
-            </div>
-            """
 
         # --- THIS IS THE FIX ---
         # Special handling for Font Awesome icons.
