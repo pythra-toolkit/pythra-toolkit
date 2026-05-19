@@ -897,7 +897,7 @@ class Reconciler:
 
         if widget_type_name == "VirtualListView":
             return f"""
-            <div id="{html_id}" class="{props.get('css_class','')}" style="color: peach;">
+            <div id="{html_id}" class="{props.get('css_class','')}" style="height: 100%;">
             <div class="viewport" id="{html_id}_viewport">
                 <div class="phantom"></div>
             </div>

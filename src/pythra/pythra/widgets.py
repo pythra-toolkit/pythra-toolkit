@@ -446,7 +446,16 @@ class Container(Widget):
                 )
 
             if constraints_tuple:
-                styles.append(BoxConstraints(*constraints_tuple).to_css())
+                # print(constraints_tuple)
+                constraints_obj = BoxConstraints(*constraints_tuple)
+                styles.append(constraints_obj.to_css())
+                if getattr(constraints_obj, "hideUnder", None) is not None:
+                    val = constraints_obj.hideUnder
+                    if isinstance(val, (int, float)):
+                        val = f"{val}px"
+                    extra_rules.append(
+                        f"@media (max-width: {val}) {{ .{css_class} {{ display: none !important; }} }}"
+                    )
 
             if alignment_tuple:
                 # print(alignment_tuple().to_css())
@@ -1113,6 +1122,31 @@ class TextButton(Widget):
                 "appearance": "none",
             }
 
+            minSize_tuple = getattr(style_obj, "minimumSize",(None, None))
+            maxSize_tuple = getattr(style_obj, "maximumSize",(None, None))
+
+            if minSize_tuple:
+                min_w, min_h = minSize_tuple
+                if min_w is not None and isinstance(min_w, float) or isinstance(min_w, int):
+                    base_styles_dict["min-width"] = f"{min_w}px"
+                elif min_w is not None and isinstance(min_w, str):
+                    base_styles_dict["min-width"] = min_w
+                if min_h is not None and isinstance(min_h, float) or isinstance(min_h, int):
+                    base_styles_dict["min-height"] = f"{min_h}px"
+                elif min_h is not None and isinstance(min_h, str):
+                    base_styles_dict["min-height"] = min_h
+            if maxSize_tuple:
+                max_w, max_h = maxSize_tuple
+                print(maxSize_tuple)
+                if max_w is not None and isinstance(max_w, float) or isinstance(max_w, int):
+                    base_styles_dict["max-width"] = f"{max_w}px"
+                elif max_w is not None and isinstance(max_w, str):
+                    base_styles_dict["max-width"] = max_w
+                if max_h is not None and isinstance(max_h, float) or isinstance(max_h, int):
+                    base_styles_dict["max-height"] = f"{max_h}px"
+                elif max_h is not None and isinstance(max_h, str):
+                    base_styles_dict["max-height"] = max_h
+
             # --- Assemble Main Rule ---
             main_rule = f".{css_class} {{ {' '.join(f'{k}: {v};' for k, v in base_styles_dict.items())} {style_repr}}}"
 
@@ -1470,16 +1504,24 @@ class ElevatedButton(Widget):
             # Minimum/Maximum Size
             if minSize_tuple:
                 min_w, min_h = minSize_tuple
-                if min_w is not None:
+                if min_w is not None and isinstance(min_w, float) or isinstance(min_w, int):
                     base_styles_dict["min-width"] = f"{min_w}px"
-                if min_h is not None:
+                elif min_w is not None and isinstance(min_w, str):
+                    base_styles_dict["min-width"] = min_w
+                if min_h is not None and isinstance(min_h, float) or isinstance(min_h, int):
                     base_styles_dict["min-height"] = f"{min_h}px"
+                elif min_h is not None and isinstance(min_h, str):
+                    base_styles_dict["min-height"] = min_h
             if maxSize_tuple:
                 max_w, max_h = maxSize_tuple
-                if max_w is not None:
+                if max_w is not None and isinstance(max_w, float) or isinstance(max_w, int):
                     base_styles_dict["max-width"] = f"{max_w}px"
-                if max_h is not None:
+                elif max_w is not None and isinstance(max_w, str):
+                    base_styles_dict["max-width"] = max_w
+                if max_h is not None and isinstance(max_h, float) or isinstance(max_h, int):
                     base_styles_dict["max-height"] = f"{max_h}px"
+                elif max_h is not None and isinstance(max_h, str):
+                    base_styles_dict["max-height"] = max_h
 
             # Border (Side)
             if side_tuple:
@@ -2883,6 +2925,7 @@ class Scrollbar(Widget):
                 else self.width
             )
         if self.height is not None:
+            print(self.height)
             styles["height"] = (
                 f"{self.height}px"
                 if isinstance(self.height, (int, float))
@@ -2915,6 +2958,8 @@ class Scrollbar(Widget):
             ) = style_key
             # print(style_key)
 
+            height_str = f"{height}px" if isinstance(height, (int, float)) else height
+
             # These selectors precisely target the DOM elements created by SimpleBar.
             return f"""
                 /* Style the scrollbar track (the groove it runs in) */
@@ -2926,7 +2971,7 @@ class Scrollbar(Widget):
                 }}
                 .{css_class} .simplebar-track.simplebar-horizontal {{
                     background: {track_color};
-                    height: {height}px;
+                    height: {height_str};
                     border-radius: {track_radius}px;
                 }}
 
@@ -2952,7 +2997,7 @@ class Scrollbar(Widget):
                     background-color: {thumb_hover_color};
                 }}
                 .{css_class} {{
-                    height: {height}px;
+                    height: {height_str};
                 }}
                 .{css_class}  .simplebar-track.simplebar-horizontal {{
                     display: none;
@@ -7475,3 +7520,179 @@ class ResponsiveBuilder(StatefulWidget):
     def createState(self):
         return ResponsiveBuilderState()
 
+
+
+
+# =============================================================================
+# GRADIENT BORDER CONTAINER - The "Animated Glowing Border" Widget
+# =============================================================================
+class GradientBorderContainer(Widget):
+    """
+    A decorative widget that wraps its child with an animated, glowing gradient
+    border. It intelligently adapts its border radius to match the child's own
+    corner rounding.
+
+    **What is GradientBorderContainer?**
+    This widget is a pure "eye candy" component. It draws a border around its child
+    that is not a solid color, but rather a smooth, multi-color gradient. Furthermore,
+    this gradient is animated, typically shifting its colors along the border's path
+    to create a subtle, shimmering, or glowing effect.
+
+    **Real-world analogy:**
+    It's like framing a picture with a neon sign or a string of color-changing LED
+    lights. The frame itself becomes a dynamic, attention-grabbing element that
+    enhances the content within.
+
+    **When to use GradientBorderContainer:**
+    - To highlight an important or "featured" card in a list.
+    - To create a visually appealing, premium-looking button or container.
+    - As a decorative frame for user avatars or profile pictures.
+    - To draw attention to an element that is currently active or selected.
+
+    **Intelligent Radius Calculation:**
+    A key feature of this widget is its ability to automatically detect the
+    `borderRadius` of its direct `child` (if it's a `Container` with a `BoxDecoration`).
+    It then calculates the correct outer radius for itself to ensure the border
+    perfectly and evenly wraps the child, no matter the corner rounding.
+
+    **Examples:**
+    ```python
+    # A standard Card with an animated gradient border
+    GradientBorderContainer(
+        key=Key("featured_card"),
+        borderWidth=4,
+        # A theme can define the gradient colors, speed, etc.
+        theme=GradientBorderTheme(
+            colors=[Colors.pink, Colors.purple, Colors.cyan],
+            direction="to right"
+        ),
+        child=Card(
+            decoration=BoxDecoration(borderRadius=BorderRadius.all(12)),
+            child=ListTile(title=Text("Featured Item"))
+        )
+    )
+
+    # A circular avatar with a glowing border
+    GradientBorderContainer(
+        key=Key("glowing_avatar"),
+        borderWidth=3,
+        child=CircleAvatar(
+            radius=40,
+            child=Text("A")
+        )
+    )
+    ```
+
+    **Key parameters:**
+    - **key**: A **required** `Key` for the widget.
+    - **child**: The `Widget` to be wrapped with the gradient border. This is required.
+    - **borderWidth**: The thickness of the gradient border in pixels.
+    - **theme**: A `GradientBorderTheme` object that controls the `colors`, `direction`, `speed`, and animation `timing` of the gradient.
+    """
+    shared_styles: Dict[Tuple, str] = {}
+
+    def __init__(self,
+                 key: Key,
+                 child: Widget,
+                 width: Any = '100%',
+                 borderWidth: float = 6.0,
+                 theme: Optional[GradientBorderTheme] = None,
+                 play: bool = True,
+                 ):
+
+        super().__init__(key=key, children=[child]) # Child is passed to base
+
+        if not child:
+            raise ValueError("GradientBorderContainer requires a child widget.")
+        
+        self.width = f"{width}px" if isinstance(width, int) or isinstance(width, float) else width
+        self.borderWidth = borderWidth
+        self.theme = theme or GradientBorderTheme()
+        self.play = play
+
+        self.style_key = self.theme.to_tuple()
+
+        if self.style_key not in GradientBorderContainer.shared_styles:
+            self.css_class = f"shared-gradient-border-{len(GradientBorderContainer.shared_styles)}{'' if self.play else '-disabled'}"
+            GradientBorderContainer.shared_styles[self.style_key] = self.css_class
+        else:
+            self.css_class = GradientBorderContainer.shared_styles[self.style_key]
+
+    def render_props(self) -> Dict[str, Any]:
+        child = self.get_children()[0]
+        child_props = child.render_props()
+
+        # --- Intelligent Radius Calculation ---
+        child_radius_val = 0.0
+        # Check for radius on a Container's decoration
+        if isinstance(child, Container) and child.decoration and child.decoration.borderRadius:
+            radius_prop = child.decoration.borderRadius
+            if isinstance(radius_prop, (int, float)):
+                child_radius_val = radius_prop
+            elif isinstance(radius_prop, BorderRadius):
+                child_radius_val = radius_prop.topLeft # Use one value for simplicity
+
+        wrapper_radius = child_radius_val + self.borderWidth
+
+        # Pass all calculated values as CSS custom properties
+        return {
+            'css_class': self.css_class,
+            'style': {
+                '--gradient-border-size': f"{self.borderWidth}px",
+                '--gradient-border-radius': f"{wrapper_radius}px",
+                '--gradient-child-radius': f"{child_radius_val}px",
+                'width': self.width
+            }
+        }
+
+    def get_required_css_classes(self) -> Set[str]:
+        # The main class + we need to tell the reconciler to style the child
+        return {self.css_class, f"{self.css_class}-child-override"}
+
+    @staticmethod
+    def _generate_html_stub(widget_instance: 'GradientBorderContainer', html_id: str, props: Dict) -> str:
+        # The stub for the wrapper. The child's HTML will be inserted inside by the reconciler.
+        style_prop = props.get('style', {})
+        style_str = " ".join([f"{key}: {value};" for key, value in style_prop.items()])
+        
+        return f'<div id="{html_id}" class="{props.get("css_class", "")}" style="{style_str}"></div>'
+
+    @staticmethod
+    def generate_css_rule(style_key: Tuple, css_class: str) -> str:
+        """Generates the CSS for the gradient container and its child."""
+        if css_class.endswith("-disabled"):
+            return 
+        # Check if we are generating the special child override rule
+        if css_class.endswith("-child-override"):
+            base_class = css_class.replace("-child-override", "")
+            # This rule modifies the direct child of the gradient border container.
+            # It forces the child's border-radius to match our calculated value.
+            return f"""
+            .{base_class} > * {{
+                border-radius: var(--gradient-child-radius) !important;
+            }}
+            """
+
+        # Otherwise, generate the main container rule
+        (gradient_colors, direction, speed, timing) = style_key
+        
+        gradient_str = ", ".join(gradient_colors)
+
+        return f"""
+        @keyframes borderShift-{css_class} {{
+            0% {{ background-position: 0% 50%; }}
+            50% {{ background-position: 100% 50%; }}
+            100% {{ background-position: 0% 50%; }}
+        }}
+
+        .{css_class} {{
+            padding: var(--gradient-border-size);
+            border-radius: var(--gradient-border-radius);
+            background: linear-gradient({direction}, {gradient_str});
+            background-size: 400% 400%;
+            animation: borderShift-{css_class} {speed} {timing} infinite;
+            /* Ensure it doesn't add extra layout space */
+            display: inline-block;
+            line-height: 0; /* Fix for extra space below inline elements */
+        }}
+        """

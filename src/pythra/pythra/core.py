@@ -207,10 +207,16 @@ class Framework:
         # STEP 5: Start the Asset Server
         # This serves your static files (images, CSS, JS) to the web browser
         package_asset_dirs = self.package_manager.get_asset_server_dirs()
+        
+        # Add render directory to serve CSS, JS, and other web files
+        # This ensures styles.css and other render files are accessible
+        render_serve_dirs = package_asset_dirs.copy() if package_asset_dirs else {}
+        render_serve_dirs['render'] = str(self.render_dir)
+        
         self.asset_server = AssetServer(
             directory=str(self.assets_dir),  # Main assets directory
             port=self.config.get("assets_server_port"),  # Port from config
-            extra_serve_dirs=package_asset_dirs  # Plugin asset directories
+            extra_serve_dirs=render_serve_dirs  # Plugin + render asset directories
         )
 
         # STEP 6: Initialize core components

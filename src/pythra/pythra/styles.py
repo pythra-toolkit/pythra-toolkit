@@ -420,10 +420,11 @@ class BoxConstraints:
 
     def __init__(
         self,
-        minWidth: Optional[float] = 0.0,  # Default min width is 0
-        maxWidth: Optional[float] = float("inf"),  # Default max width is infinity
-        minHeight: Optional[float] = 0.0,  # Default min height is 0
-        maxHeight: Optional[float] = float("inf"),  # Default max height is infinity
+        minWidth: Optional[Union[float, int, str]] = 0.0,  # Default min width is 0
+        maxWidth: Optional[Union[float, int, str]] = '100%',  # Default max width is infinity
+        minHeight: Optional[Union[float, int, str]] = 0.0,  # Default min height is 0
+        maxHeight: Optional[Union[float, int, str]] = '100%',  # Default max height is infinity
+        hideUnder: Optional[Union[float, int, str]] = None,  # Threshold below which widget is hidden
     ):
         """
         Initializes BoxConstraints. Use float('inf') for unbounded max values.
@@ -434,33 +435,55 @@ class BoxConstraints:
             maxWidth (float): Maximum width (default infinity).
             minHeight (float): Minimum height (default 0).
             maxHeight (float): Maximum height (default infinity).
+            hideUnder (Union[float, int, str]): Hide widget if screen/window width is less than this.
         """
         # Validate inputs (ensure non-negative, min <= max)
-        self.minWidth = max(0.0, minWidth) if minWidth is not None else 0.0
-        self.maxWidth = (
-            max(self.minWidth, maxWidth) if maxWidth is not None else float("inf")
-        )
-        self.minHeight = max(0.0, minHeight) if minHeight is not None else 0.0
-        self.maxHeight = (
-            max(self.minHeight, maxHeight) if maxHeight is not None else float("inf")
-        )
+        if isinstance(minWidth, int) or isinstance(minWidth, float):
+            self.minWidth = max(0.0, minWidth) if minWidth is not None else 0.0
+        elif isinstance(minWidth, str):
+            self.minWidth = minWidth if minWidth is not None else "0.0"
+        if isinstance(maxWidth, int) or isinstance(maxWidth, float):
+            if isinstance(self.minWidth, int) or isinstance(self.minWidth, float):
+                self.maxWidth = (
+                    max(self.minWidth, maxWidth) if maxWidth is not None else '100%'
+                )
+            elif isinstance(self.minWidth, str):
+                self.maxWidth = maxWidth
+        elif isinstance(maxWidth, str):
+            self.maxWidth = maxWidth if maxWidth is not None else "100%"
+        if isinstance(minHeight, int) or isinstance(minHeight, float):
+            self.minHeight = max(0.0, minHeight) if minHeight is not None else 0.0
+        elif isinstance(minHeight, str):
+            self.minHeight = minHeight if minHeight is not None else "0.0"
+        if isinstance(maxHeight, int) or isinstance(maxHeight, float):
+            self.maxHeight = maxHeight if maxHeight is not None else '100%'
+        elif isinstance(maxHeight, str):
+            self.maxHeight = maxHeight if maxHeight is not None else "100%"
+
+        if isinstance(hideUnder, (int, float)):
+            self.hideUnder = max(0.0, hideUnder) if hideUnder is not None else None
+        elif isinstance(hideUnder, str):
+            self.hideUnder = hideUnder
+        else:
+            self.hideUnder = None
 
     # --- Static Constructors (Optional) ---
     @staticmethod
-    def tight(width: float, height: float):
+    def tight(width: float, height: float, hideUnder: Optional[Union[float, int, str]] = None):
         """Creates constraints forcing a specific size."""
         return BoxConstraints(
-            minWidth=width, maxWidth=width, minHeight=height, maxHeight=height
+            minWidth=width, maxWidth=width, minHeight=height, maxHeight=height, hideUnder=hideUnder
         )
 
     @staticmethod
-    def expand(width: Optional[float] = None, height: Optional[float] = None):
+    def expand(width: Optional[float] = None, height: Optional[float] = None, hideUnder: Optional[Union[float, int, str]] = None):
         """Creates constraints forcing maximum size (infinity)."""
         return BoxConstraints(
             minWidth=width or 0.0,
-            maxWidth=float("inf"),
+            maxWidth='100%',
             minHeight=height or 0.0,
-            maxHeight=float("inf"),
+            maxHeight='100%',
+            hideUnder=hideUnder,
         )
 
     # --- Compatibility Methods ---
@@ -469,14 +492,22 @@ class BoxConstraints:
         """Returns constraints as a dictionary of CSS properties."""
         styles = {}
         # Only include constraints that are not default (0 for min, inf for max)
-        if self.minWidth > 0.0:
+        if isinstance(self.minWidth, int) or isinstance(self.minWidth, float) and self.minWidth > 0.0:
             styles["min-width"] = f"{self.minWidth}px"
-        if self.maxWidth != float("inf"):
+        elif isinstance(self.minWidth, str):
+            styles["min-width"] = self.minWidth
+        if self.maxWidth != '100%' and isinstance(self.maxWidth, int) or isinstance(self.maxWidth, float):
             styles["max-width"] = f"{self.maxWidth}px"
-        if self.minHeight > 0.0:
+        elif isinstance(self.maxWidth, str):
+            styles["max-width"] = self.maxWidth
+        if self.minHeight > 0.0 and isinstance(self.minHeight, int) or isinstance(self.minHeight, float):
             styles["min-height"] = f"{self.minHeight}px"
-        if self.maxHeight != float("inf"):
+        elif isinstance(self.minHeight, str):
+            styles["min-height"] = self.minHeight
+        if self.maxHeight != '100%' and isinstance(self.maxHeight, int) or isinstance(self.maxHeight, float):
             styles["max-height"] = f"{self.maxHeight}px"
+        elif isinstance(self.maxHeight, str):
+            styles["max-height"] = self.maxHeight
         return styles
 
     def to_css(self) -> str:
@@ -493,23 +524,26 @@ class BoxConstraints:
             and self.maxWidth == other.maxWidth
             and self.minHeight == other.minHeight
             and self.maxHeight == other.maxHeight
+            and self.hideUnder == other.hideUnder
         )
 
     def __hash__(self):
         # Hash a tuple of the defining attributes
-        return hash((self.minWidth, self.maxWidth, self.minHeight, self.maxHeight))
+        return hash((self.minWidth, self.maxWidth, self.minHeight, self.maxHeight, self.hideUnder))
 
     # --- Representation ---
     def __repr__(self):
         props = []
         if self.minWidth != 0.0:
             props.append(f"minWidth={self.minWidth}")
-        if self.maxWidth != float("inf"):
+        if self.maxWidth != '100%':
             props.append(f"maxWidth={self.maxWidth}")
         if self.minHeight != 0.0:
             props.append(f"minHeight={self.minHeight}")
-        if self.maxHeight != float("inf"):
+        if self.maxHeight != '100%':
             props.append(f"maxHeight={self.maxHeight}")
+        if self.hideUnder is not None:
+            props.append(f"hideUnder={self.hideUnder}")
         return f"BoxConstraints({', '.join(props)})"
 
     # --- Reconciler Prop Representation ---
@@ -519,30 +553,32 @@ class BoxConstraints:
             "maxWidth": self.maxWidth,
             "minHeight": self.minHeight,
             "maxHeight": self.maxHeight,
+            "hideUnder": self.hideUnder,
         }
 
     def to_tuple(self):
         """Returns a hashable tuple representation."""
-        return (self.minWidth, self.maxWidth, self.minHeight, self.maxHeight)
+        return (self.minWidth, self.maxWidth, self.minHeight, self.maxHeight, self.hideUnder)
 
 
 class ColorSwatch(str):
     """
-    Acts as a string (so it represents the base CSS color) while allowing array 
+    Acts as a string (so it represents the base CSS color) while allowing array
     indexing to generate proportional shades dynamically (e.g. Colors.grey[300]).
     """
+
     def __new__(cls, base_hex: str):
         return super().__new__(cls, base_hex)
 
     def __init__(self, base_hex: str):
         # normalize to exactly 6 hex characters
-        h = base_hex.strip().lstrip('#')
+        h = base_hex.strip().lstrip("#")
         if len(h) == 3:
-            h = "".join([c*2 for c in h])
+            h = "".join([c * 2 for c in h])
         elif len(h) > 6:
             h = h[:6]
         self.base_hex = h
-            
+
     def __getitem__(self, shade: int) -> str:
         try:
             r = int(self.base_hex[0:2], 16)
@@ -550,10 +586,10 @@ class ColorSwatch(str):
             b = int(self.base_hex[4:6], 16)
         except ValueError:
             return f"#{self.base_hex}"
-            
+
         if shade == 500:
             return f"#{self.base_hex}"
-            
+
         # Lighten colors below 500 by mixing with white
         if shade < 500:
             weight = (500 - shade) / 500.0
@@ -562,14 +598,13 @@ class ColorSwatch(str):
             b = int(b + (255 - b) * weight)
         # Darken colors above 500 by mixing with black
         else:
-            weight = (shade - 500) / 400.0 # From 500 to 900
+            weight = (shade - 500) / 400.0  # From 500 to 900
             weight = max(0.0, min(1.0, weight))
             r = int(r * (1 - weight))
             g = int(g * (1 - weight))
             b = int(b * (1 - weight))
-            
-        return f"#{r:02x}{g:02x}{b:02x}"
 
+        return f"#{r:02x}{g:02x}{b:02x}"
 
 
 class Color:
@@ -636,153 +671,153 @@ class Color:
     white = ColorSwatch("#FFFFFF")
     black = ColorSwatch("#000000")
     grey = ColorSwatch("#9E9E9E")
-    YellowGreen = 'YellowGreen'
-    Yellow = 'Yellow'
-    WhiteSmoke = 'WhiteSmoke'
-    White = 'White'
-    Wheat = 'Wheat'
-    Violet = 'Violet'
-    Turquoise = 'Turquoise'
-    Tomato = 'Tomato'
-    Thistle = 'Thistle'
-    Teal = 'Teal'
-    Tan = 'Tan'
-    SteelBlue = 'SteelBlue'
-    SpringGreen = 'SpringGreen'
-    Snow = 'Snow'
-    SlateGrey = 'SlateGrey'
-    SlateGray = 'SlateGray'
-    SlateBlue = 'SlateBlue'
-    SkyBlue = 'SkyBlue'
-    Silver = 'Silver'
-    Sienna = 'Sienna'
-    SeaShell = 'SeaShell'
-    SeaGreen = 'SeaGreen'
-    SandyBrown = 'SandyBrown'
-    Salmon = 'Salmon'
-    SaddleBrown = 'SaddleBrown'
-    RoyalBlue = 'RoyalBlue'
-    RosyBrown = 'RosyBrown'
-    RebeccaPurple = 'RebeccaPurple'
-    Purple = 'Purple'
-    PowderBlue = 'PowderBlue'
-    Plum = 'Plum'
-    Pink = 'Pink'
-    Peru = 'Peru'
-    PeachPuff = 'PeachPuff'
-    PapayaWhip = 'PapayaWhip'
-    PaleVioletRed = 'PaleVioletRed'
-    PaleTurquoise = 'PaleTurquoise'
-    PaleGreen = 'PaleGreen'
-    PaleGoldenRod = 'PaleGoldenRod'
-    Orchid = 'Orchid'
-    OrangeRed = 'OrangeRed'
-    Orange = 'Orange'
-    OliveDrab = 'OliveDrab'
-    Olive = 'Olive'
-    OldLace = 'OldLace'
-    Navy = 'Navy'
-    NavajoWhite = 'NavajoWhite'
-    Moccasin = 'Moccasin'
-    MistyRose = 'MistyRose'
-    MintCream = 'MintCream'
-    MidnightBlue = 'MidnightBlue'
-    MediumVioletRed = 'MediumVioletRed'
-    MediumTurquoise = 'MediumTurquoise'
-    MediumSpringGreen = 'MediumSpringGreen'
-    MediumSlateBlue = 'MediumSlateBlue'
-    MediumSeaGreen = 'MediumSeaGreen'
-    MediumPurple = 'MediumPurple'
-    MediumOrchid = 'MediumOrchid'
-    MediumBlue = 'MediumBlue'
-    MediumAquaMarine = 'MediumAquaMarine'
-    Maroon = 'Maroon'
-    Magenta = 'Magenta'
-    Linen = 'Linen'
-    LimeGreen = 'LimeGreen'
-    Lime = 'Lime'
-    LightYellow = 'LightYellow'
-    LightSteelBlue = 'LightSteelBlue'
-    LightSlateGrey = 'LightSlateGrey'
-    LightSlateGray = 'LightSlateGray'
-    LightSkyBlue = 'LightSkyBlue'
-    LightSeaGreen = 'LightSeaGreen'
-    LightSalmon = 'LightSalmon'
-    LightPink = 'LightPink'
-    LightGreen = 'LightGreen'
-    LightGrey = 'LightGrey'
-    LightGray = 'LightGray'
-    LightGoldenRodYellow = 'LightGoldenRodYellow'
-    LightCyan = 'LightCyan'
-    LightCoral = 'LightCoral'
-    LightBlue = 'LightBlue'
-    LemonChiffon = 'LemonChiffon'
-    LawnGreen = 'LawnGreen'
-    LavenderBlush = 'LavenderBlush'
-    Lavender = 'Lavender'
-    Khaki = 'Khaki'
-    Ivory = 'Ivory'
-    Indigo = 'Indigo'
-    IndianRed = 'IndianRed'
-    HotPink = 'HotPink'
-    HoneyDew = 'HoneyDew'
-    GreenYellow = 'GreenYellow'
-    Green = 'Green'
-    Grey = 'Grey'
-    Gray = 'Gray'
-    GoldenRod = 'GoldenRod'
-    Gold = 'Gold'
-    GhostWhite = 'GhostWhite'
-    Gainsboro = 'Gainsboro'
-    Fuchsia = 'Fuchsia'
-    ForestGreen = 'ForestGreen'
-    FloralWhite = 'FloralWhite'
-    FireBrick = 'FireBrick'
-    DodgerBlue = 'DodgerBlue'
-    DimGrey = 'DimGrey'
-    DimGray = 'DimGray'
-    DeepSkyBlue = 'DeepSkyBlue'
-    DeepPink = 'DeepPink'
-    DarkViolet = 'DarkViolet'
-    DarkTurquoise = 'DarkTurquoise'
-    DarkSlateGrey = 'DarkSlateGrey'
-    DarkSlateGray = 'DarkSlateGray'
-    DarkSlateBlue = 'DarkSlateBlue'
-    DarkSeaGreen = 'DarkSeaGreen'
-    DarkSalmon = 'DarkSalmon'
-    DarkRed = 'DarkRed'
-    DarkOrchid = 'DarkOrchid'
-    DarkOrange = 'DarkOrange'
-    DarkOliveGreen = 'DarkOliveGreen'
-    DarkMagenta = 'DarkMagenta'
-    DarkKhaki = 'DarkKhaki'
-    DarkGreen = 'DarkGreen'
-    DarkGrey = 'DarkGrey'
-    DarkGray = 'DarkGray'
-    DarkGoldenRod = 'DarkGoldenRod'
-    DarkCyan = 'DarkCyan'
-    DarkBlue = 'DarkBlue'
-    Cyan = 'Cyan'
-    Crimson = 'Crimson'
-    Cornsilk = 'Cornsilk'
-    CornflowerBlue = 'CornflowerBlue'
-    Coral = 'Coral'
-    Chocolate = 'Chocolate'
-    Chartreuse = 'Chartreuse'
-    CadetBlue = 'CadetBlue'
-    BurlyWood = 'BurlyWood'
-    Brown = 'Brown'
-    BlueViolet = 'BlueViolet'
-    Blue = 'Blue'
-    BlanchedAlmond = 'BlanchedAlmond'
-    Black = 'Black'
-    Bisque = 'Bisque'
-    Beige = 'Beige'
-    Azure = 'Azure'
-    Aquamarine = 'Aquamarine'
-    Aqua = 'Aqua'
-    AntiqueWhite = 'AntiqueWhite'
-    AliceBlue = 'AliceBlue'
+    YellowGreen = "YellowGreen"
+    Yellow = "Yellow"
+    WhiteSmoke = "WhiteSmoke"
+    White = "White"
+    Wheat = "Wheat"
+    Violet = "Violet"
+    Turquoise = "Turquoise"
+    Tomato = "Tomato"
+    Thistle = "Thistle"
+    Teal = "Teal"
+    Tan = "Tan"
+    SteelBlue = "SteelBlue"
+    SpringGreen = "SpringGreen"
+    Snow = "Snow"
+    SlateGrey = "SlateGrey"
+    SlateGray = "SlateGray"
+    SlateBlue = "SlateBlue"
+    SkyBlue = "SkyBlue"
+    Silver = "Silver"
+    Sienna = "Sienna"
+    SeaShell = "SeaShell"
+    SeaGreen = "SeaGreen"
+    SandyBrown = "SandyBrown"
+    Salmon = "Salmon"
+    SaddleBrown = "SaddleBrown"
+    RoyalBlue = "RoyalBlue"
+    RosyBrown = "RosyBrown"
+    RebeccaPurple = "RebeccaPurple"
+    Purple = "Purple"
+    PowderBlue = "PowderBlue"
+    Plum = "Plum"
+    Pink = "Pink"
+    Peru = "Peru"
+    PeachPuff = "PeachPuff"
+    PapayaWhip = "PapayaWhip"
+    PaleVioletRed = "PaleVioletRed"
+    PaleTurquoise = "PaleTurquoise"
+    PaleGreen = "PaleGreen"
+    PaleGoldenRod = "PaleGoldenRod"
+    Orchid = "Orchid"
+    OrangeRed = "OrangeRed"
+    Orange = "Orange"
+    OliveDrab = "OliveDrab"
+    Olive = "Olive"
+    OldLace = "OldLace"
+    Navy = "Navy"
+    NavajoWhite = "NavajoWhite"
+    Moccasin = "Moccasin"
+    MistyRose = "MistyRose"
+    MintCream = "MintCream"
+    MidnightBlue = "MidnightBlue"
+    MediumVioletRed = "MediumVioletRed"
+    MediumTurquoise = "MediumTurquoise"
+    MediumSpringGreen = "MediumSpringGreen"
+    MediumSlateBlue = "MediumSlateBlue"
+    MediumSeaGreen = "MediumSeaGreen"
+    MediumPurple = "MediumPurple"
+    MediumOrchid = "MediumOrchid"
+    MediumBlue = "MediumBlue"
+    MediumAquaMarine = "MediumAquaMarine"
+    Maroon = "Maroon"
+    Magenta = "Magenta"
+    Linen = "Linen"
+    LimeGreen = "LimeGreen"
+    Lime = "Lime"
+    LightYellow = "LightYellow"
+    LightSteelBlue = "LightSteelBlue"
+    LightSlateGrey = "LightSlateGrey"
+    LightSlateGray = "LightSlateGray"
+    LightSkyBlue = "LightSkyBlue"
+    LightSeaGreen = "LightSeaGreen"
+    LightSalmon = "LightSalmon"
+    LightPink = "LightPink"
+    LightGreen = "LightGreen"
+    LightGrey = "LightGrey"
+    LightGray = "LightGray"
+    LightGoldenRodYellow = "LightGoldenRodYellow"
+    LightCyan = "LightCyan"
+    LightCoral = "LightCoral"
+    LightBlue = "LightBlue"
+    LemonChiffon = "LemonChiffon"
+    LawnGreen = "LawnGreen"
+    LavenderBlush = "LavenderBlush"
+    Lavender = "Lavender"
+    Khaki = "Khaki"
+    Ivory = "Ivory"
+    Indigo = "Indigo"
+    IndianRed = "IndianRed"
+    HotPink = "HotPink"
+    HoneyDew = "HoneyDew"
+    GreenYellow = "GreenYellow"
+    Green = "Green"
+    Grey = "Grey"
+    Gray = "Gray"
+    GoldenRod = "GoldenRod"
+    Gold = "Gold"
+    GhostWhite = "GhostWhite"
+    Gainsboro = "Gainsboro"
+    Fuchsia = "Fuchsia"
+    ForestGreen = "ForestGreen"
+    FloralWhite = "FloralWhite"
+    FireBrick = "FireBrick"
+    DodgerBlue = "DodgerBlue"
+    DimGrey = "DimGrey"
+    DimGray = "DimGray"
+    DeepSkyBlue = "DeepSkyBlue"
+    DeepPink = "DeepPink"
+    DarkViolet = "DarkViolet"
+    DarkTurquoise = "DarkTurquoise"
+    DarkSlateGrey = "DarkSlateGrey"
+    DarkSlateGray = "DarkSlateGray"
+    DarkSlateBlue = "DarkSlateBlue"
+    DarkSeaGreen = "DarkSeaGreen"
+    DarkSalmon = "DarkSalmon"
+    DarkRed = "DarkRed"
+    DarkOrchid = "DarkOrchid"
+    DarkOrange = "DarkOrange"
+    DarkOliveGreen = "DarkOliveGreen"
+    DarkMagenta = "DarkMagenta"
+    DarkKhaki = "DarkKhaki"
+    DarkGreen = "DarkGreen"
+    DarkGrey = "DarkGrey"
+    DarkGray = "DarkGray"
+    DarkGoldenRod = "DarkGoldenRod"
+    DarkCyan = "DarkCyan"
+    DarkBlue = "DarkBlue"
+    Cyan = "Cyan"
+    Crimson = "Crimson"
+    Cornsilk = "Cornsilk"
+    CornflowerBlue = "CornflowerBlue"
+    Coral = "Coral"
+    Chocolate = "Chocolate"
+    Chartreuse = "Chartreuse"
+    CadetBlue = "CadetBlue"
+    BurlyWood = "BurlyWood"
+    Brown = "Brown"
+    BlueViolet = "BlueViolet"
+    Blue = "Blue"
+    BlanchedAlmond = "BlanchedAlmond"
+    Black = "Black"
+    Bisque = "Bisque"
+    Beige = "Beige"
+    Azure = "Azure"
+    Aquamarine = "Aquamarine"
+    Aqua = "Aqua"
+    AntiqueWhite = "AntiqueWhite"
+    AliceBlue = "AliceBlue"
     gray = grey  # Expose both spellings
     lightgrey = ColorSwatch("#D3D3D3")
     darkgrey = ColorSwatch("#A9A9A9")
@@ -1082,7 +1117,7 @@ class TextStyle:
         color: Optional[str] = None,
         # Font properties
         fontFamily: Optional[str] = None,  # e.g., 'Roboto', 'Arial', sans-serif
-        fontSize: Optional[Union[int, float]] = None,  # Assumed px
+        fontSize: Optional[Union[int, float, str]] = None,  # Assumed px
         fontWeight: Optional[
             Union[str, int]
         ] = None,  # e.g., 'bold', 'normal', 400, 700
@@ -1795,7 +1830,6 @@ class BoxFit:
     NONE = "none"
 
 
-
 # --- BoxDecoration Refactored ---
 class BoxDecoration:
     """
@@ -1819,7 +1853,9 @@ class BoxDecoration:
         # gradient: Optional[Gradient] = None, # TODO: If gradients needed
         # shape: BoxShape = BoxShape.rectangle, # TODO: If specific shapes like circle needed
         # For simplicity, sticking to properties easily mappable to CSS:
-        transform: Optional[Union[str, Any]] = None,  # Raw CSS transform string or Matrix4 object
+        transform: Optional[
+            Union[str, Any]
+        ] = None,  # Raw CSS transform string or Matrix4 object
         # Padding is usually handled by Padding widget, not BoxDecoration
         # padding: Optional[EdgeInsets] = None,
     ):
@@ -1886,7 +1922,11 @@ class BoxDecoration:
             if shadow_strings:
                 styles["box-shadow"] = ", ".join(shadow_strings)
         if self.transform:
-            styles["transform"] = self.transform.to_css() if hasattr(self.transform, "to_css") else self.transform
+            styles["transform"] = (
+                self.transform.to_css()
+                if hasattr(self.transform, "to_css")
+                else self.transform
+            )
         # if self.padding and isinstance(self.padding, EdgeInsets): # Padding removed
         #     styles['padding'] = self.padding.to_css()
         return styles
@@ -1978,7 +2018,6 @@ class BoxDecoration:
         )
 
 
-
 class ButtonStyle:
     """
     Defines the visual properties of buttons (TextButton, ElevatedButton, etc.).
@@ -2016,11 +2055,11 @@ class ButtonStyle:
         padding: Optional[EdgeInsets] = None,  # Padding inside the button
         margin: Optional[EdgeInsets] = None,  # margin outside the button
         minimumSize: Optional[
-            Tuple[Optional[float], Optional[float]]
-        ] = None,  # (minWidth, minHeight) in px
+            Tuple[Optional[Union[float, int, str]], Optional[Union[float, int, str]]]
+        ] = None,  # (minWidth, minHeight)
         maximumSize: Optional[
-            Tuple[Optional[float], Optional[float]]
-        ] = None,  # (maxWidth, maxHeight) in px
+            Tuple[Optional[Union[float, int, str]], Optional[Union[float, int, str]]]
+        ] = None,  # (maxWidth, maxHeight)
         side: Optional[BorderSide] = None,  # Border properties
         shape: Optional[
             Union[float, BorderRadius]
@@ -2047,8 +2086,8 @@ class ButtonStyle:
             shadowColor: Color used for the elevation shadow.
             elevation: Elevation level (used for box-shadow).
             padding: Internal padding.
-            minimumSize: Minimum width/height tuple (pixels).
-            maximumSize: Maximum width/height tuple (pixels).
+            minimumSize: Minimum width/height.
+            maximumSize: Maximum width/height.
             side: Border definition (BorderSide object).
             shape: Corner radius (number for all corners or BorderRadius object).
             textStyle: TextStyle object for button label.
@@ -2106,16 +2145,24 @@ class ButtonStyle:
             styles["margin"] = self.margin.to_css()  # Use EdgeInsets method
         if self.minimumSize:
             min_w, min_h = self.minimumSize
-            if min_w is not None:
+            if min_w is not None and isinstance(min_w, float) or isinstance(min_w, int):
                 styles["min-width"] = f"{min_w}px"
-            if min_h is not None:
+            elif min_w is not None and isinstance(min_w, str):
+                styles["min-width"] = min_w
+            if min_h is not None and isinstance(min_h, float) or isinstance(min_h, int):
                 styles["min-height"] = f"{min_h}px"
+            elif min_h is not None and isinstance(min_h, str):
+                styles["min-height"] = min_h
         if self.maximumSize:
             max_w, max_h = self.maximumSize
-            if max_w is not None:
+            if max_w is not None and isinstance(max_w, float) or isinstance(max_w, int):
                 styles["max-width"] = f"{max_w}px"
-            if max_h is not None:
+            elif max_w is not None and isinstance(max_w, str):
+                styles["max-width"] = max_w
+            if max_h is not None and isinstance(max_h, float) or isinstance(max_h, int):
                 styles["max-height"] = f"{max_h}px"
+            elif max_h is not None and isinstance(max_h, str):
+                styles["max-height"] = max_h
 
         # --- Border & Shape ---
         if self.side and isinstance(self.side, BorderSide):
@@ -2192,15 +2239,15 @@ class ButtonStyle:
         # Ensure nested objects (EdgeInsets, BorderSide, BorderRadius, TextStyle, Alignment) are hashable
         return hash(
             (
-                self.backgroundColor, #1
-                self.foregroundColor, #2
-                self.disabledBackgroundColor, #3
-                self.disabledForegroundColor, #4
-                self.shadowColor, #5
-                self.hoverColor, #6
-                self.activeColor, #7
-                self.elevation, #8
-                self.padding, #9
+                self.backgroundColor,  # 1
+                self.foregroundColor,  # 2
+                self.disabledBackgroundColor,  # 3
+                self.disabledForegroundColor,  # 4
+                self.shadowColor,  # 5
+                self.hoverColor,  # 6
+                self.activeColor,  # 7
+                self.elevation,  # 8
+                self.padding,  # 9
                 self.margin,
                 self.minimumSize,
                 self.maximumSize,  # Tuples are hashable
@@ -2311,7 +2358,6 @@ class ButtonStyle:
                 "activeStyle",
             ]
         )
-
 
 
 class InputDecoration:
@@ -2436,8 +2482,6 @@ class InputDecoration:
         return hash(self.to_tuple())
 
 
-
-
 @dataclass
 class ScrollbarTheme:
     """
@@ -2475,7 +2519,7 @@ class ScrollbarTheme:
             self.trackRadius,
             self.thumbPadding,
             self.trackMargin,
-            self.contentPadding.to_css_value()
+            self.contentPadding.to_css_value(),
         )
 
 
@@ -3698,19 +3742,21 @@ class Matrix4:
     def to_tuple(self):
         return tuple(self.storage)
 
+
 @dataclass
 class ExpandableTheme:
     """
     Configuration object for styling an Expandable widget.
     Allows customization of header and body decorations, padding, margins, and animation properties.
     """
-    headerDecoration: Optional['BoxDecoration'] = None
-    bodyDecoration: Optional['BoxDecoration'] = None
-    headerPadding: Optional['EdgeInsets'] = None
-    bodyPadding: Optional['EdgeInsets'] = None
-    headerMargin: Optional['EdgeInsets'] = None
-    bodyMargin: Optional['EdgeInsets'] = None
+
+    headerDecoration: Optional["BoxDecoration"] = None
+    bodyDecoration: Optional["BoxDecoration"] = None
+    headerPadding: Optional["EdgeInsets"] = None
+    bodyPadding: Optional["EdgeInsets"] = None
+    headerMargin: Optional["EdgeInsets"] = None
+    bodyMargin: Optional["EdgeInsets"] = None
     animationDurationMs: int = 300
     showIcon: bool = True
-    iconColor: Optional[Union[str, 'Color']] = None
+    iconColor: Optional[Union[str, "Color"]] = None
     iconSize: int = 24
