@@ -6,6 +6,99 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.1.24] - 2026-05-19
+
+Responsive layout architecture, rendering performance optimizations, and styling system refinements.
+
+### ✨ New Features
+
+* **ResponsiveBuilder Widget:**
+  * New declarative widget for creating adaptive, responsive layouts that automatically adapt to window size changes.
+  * **Browser-side Resize Signaling:** Implements ResizeObserver on the client-side to detect viewport changes and signal them back to the Python framework via the QWebChannel bridge.
+  * **Throttled Resize Handling:** Resize events are throttled at 16ms intervals (60fps-aligned) to prevent excessive reconciliation cycles during continuous resize operations.
+  * **Builder Pattern:** Accepts a builder function that receives current `width` and `height` and returns the appropriate widget tree for the available space.
+  * **Use Cases:** Perfect for implementing multi-column layouts, adaptive grids, and responsive navigation systems that scale based on available window dimensions.
+
+* **Custom Widget Height Support:**
+  * Added `height` style property to `custom-widget` CSS class for full-height layout support in custom components.
+
+### 🚀 Performance & Architecture
+
+* **Build Tree Caching System:**
+  * Implemented `_last_built_child` caching in `State` class to preserve previously built widget subtrees.
+  * Added `_dirty` flag tracking to invalidate cache only when state actually changes.
+  * Enhanced `Framework._build_widget_tree()` with conditional rebuild logic that checks:
+    - Whether cached child exists and cache is valid (`_dirty == False`)
+    - Whether widget props match the previous render
+    - Whether the widget key exists in the context map
+  * **Result:** Eliminates unnecessary widget tree rebuilds during reconciliation cycles, reducing CPU overhead for complex UIs.
+
+* **Reconciliation System Improvements:**
+  * Updated reconciler to treat `VirtualListView` and `VirtualGridView` as non-renderable container widgets (similar to `StatefulWidget` and `StatelessWidget`).
+  * This ensures container widgets delegate rendering to their children and don't generate spurious DOM patches.
+  * Improves HTML generation for container-based layouts and fixes child-to-parent DOM hierarchy issues.
+
+* **Virtual Grid/List Stylesheet Management:**
+  * Separated virtual list/grid CSS from global `dynamic-styles` into dedicated `virtual-list-styles` stylesheet.
+  * Prevents CSS conflicts and style pollution between virtual components and other framework styles.
+  * Automatically creates the stylesheet on first use if it doesn't exist in the DOM.
+
+* **Scrollbar Widget Key Management:**
+  * Scrollbar instances now use suffixed keys (`{parent_key}_scrollbar`) to prevent widget key collisions in `VirtualListView` and `VirtualGridView`.
+  * Added automatic key suffix stripping in framework event handling and patch generation to maintain proper parent-child relationships.
+  * **Breaking Change:** Custom code relying on scrollbar key matching must account for the `_scrollbar` suffix.
+
+* **ResponsiveBuilder Frame-Rate Optimization:**
+  * Replaced timer-based 50ms debouncing with frame-aligned 16ms throttling using `QTimer.singleShot()`.
+  * Provides smoother responsive behavior while maintaining CPU efficiency.
+  * Added `_throttling` flag to prevent overlapping resize handler executions.
+
+### 🎨 Styling System Refinements
+
+* **BoxConstraints Enhancements:**
+  * Added `hideUnder` media query support to automatically hide elements at specified breakpoints.
+  * Proper type checking and string-based CSS size value support for responsive constraints.
+
+* **Button Constraint Handling:**
+  * Improved `TextButton` and `ElevatedButton` to correctly apply `minimumSize` and `maximumSize` constraints as CSS min-width/height and max-width/height.
+
+* **Scrollbar CSS Fixes:**
+  * Fixed scrollbar width property to handle both numeric and string CSS values.
+  * Added `.simplebar-placeholder` CSS rule with `width: 100% !important` to fix SimpleBar layout calculations.
+
+* **Style Primitives Reorganization:**
+  * Significant cleanup and consolidation of style definitions across the framework.
+  * Extracted utility helpers module for common style operations.
+
+### 🛠️ Build & CLI Enhancements
+
+* **Nuitka Build Output Naming:**
+  * Added `--output-filename={app_name}` to Nuitka build commands to generate executables with the configured application name.
+  * Improves distribution clarity and user experience for compiled PyThra applications.
+
+* **Asset Server Configuration:**
+  * Added render directory to asset server for serving web assets (styles.css and other frontend files) during development.
+  * Ensures proper asset accessibility without manual configuration.
+
+### 📚 Documentation
+
+* **ResponsiveBuilder Documentation:** Added comprehensive guide (`docs/responsive_builder.md`) covering:
+  * Usage patterns and builder function structure
+  * Performance optimization strategies (debouncing, memoization)
+  * Internal architecture and resize event flow
+  * Best practices for stable keys with complex child widgets
+
+### 🐛 Bug Fixes
+
+* **Widget Lifecycle in State:**
+  * Added `didUpdateWidget()` lifecycle hook to ResponsiveBuilder for proper state management during parent dimension changes.
+  * Ensures widget rebuilds correctly when receiving new width/height parameters without causing state corruption.
+
+* **CSS Generation:**
+  * Fixed style sheet creation to always ensure the target stylesheet exists before injecting CSS.
+  * Prevents CSS injection failures in edge cases with missing or uninitialized stylesheets.
+
+---
 ## [0.1.23] - 2026-03-23
 
 Native async/await support, interactive style framework for decorators, and major component architectural refinements.
