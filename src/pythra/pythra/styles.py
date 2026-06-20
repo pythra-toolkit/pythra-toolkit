@@ -6,6 +6,7 @@ import re  # For hex validation
 import math  # For Matrix4 calculations
 
 from .base import make_hashable
+from .helpers import to_unit
 
 # Colors = Color()
 
@@ -103,15 +104,13 @@ class EdgeInsets:
         """
         # Check for simplifications
         if self.left == self.top == self.right == self.bottom:
-            return f"{self.top}px"  # All same: top
+            return f"{to_unit(self.top)}"  # All same: top
         if self.top == self.bottom and self.left == self.right:
-            return f"{self.top}px {self.right}px"  # Vertical Horizontal
+            return f"{to_unit(self.top)} {to_unit(self.right)}"  # Vertical Horizontal
         if self.left == self.right:
-            return (
-                f"{self.top}px {self.right}px {self.bottom}px"  # Top Horizontal Bottom
-            )
+            return f"{to_unit(self.top)} {to_unit(self.right)} {to_unit(self.bottom)}"  # Top Horizontal Bottom
         # Full definition: Top Right Bottom Left
-        return f"{self.top}px {self.right}px {self.bottom}px {self.left}px"
+        return f"{to_unit(self.top)} {to_unit(self.right)} {to_unit(self.bottom)} {to_unit(self.left)}"
 
     def to_css(self) -> str:
         """
@@ -493,19 +492,19 @@ class BoxConstraints:
         styles = {}
         # Only include constraints that are not default (0 for min, inf for max)
         if isinstance(self.minWidth, int) or isinstance(self.minWidth, float) and self.minWidth > 0.0:
-            styles["min-width"] = f"{self.minWidth}px"
+            styles["min-width"] = f"{to_unit(self.minWidth)}"
         elif isinstance(self.minWidth, str):
             styles["min-width"] = self.minWidth
         if self.maxWidth != '100%' and isinstance(self.maxWidth, int) or isinstance(self.maxWidth, float):
-            styles["max-width"] = f"{self.maxWidth}px"
+            styles["max-width"] = f"{to_unit(self.maxWidth)}"
         elif isinstance(self.maxWidth, str):
             styles["max-width"] = self.maxWidth
         if self.minHeight > 0.0 and isinstance(self.minHeight, int) or isinstance(self.minHeight, float):
-            styles["min-height"] = f"{self.minHeight}px"
+            styles["min-height"] = f"{to_unit(self.minHeight)}"
         elif isinstance(self.minHeight, str):
             styles["min-height"] = self.minHeight
         if self.maxHeight != '100%' and isinstance(self.maxHeight, int) or isinstance(self.maxHeight, float):
-            styles["max-height"] = f"{self.maxHeight}px"
+            styles["max-height"] = f"{to_unit(self.maxHeight)}"
         elif isinstance(self.maxHeight, str):
             styles["max-height"] = self.maxHeight
         return styles
@@ -933,7 +932,7 @@ class Offset:
         self.dy = dy
 
     def to_css(self):
-        return f"{self.dx}px {self.dy}px"
+        return f"{to_unit(self.dx)} {to_unit(self.dy)}"
 
     def __eq__(self, other):
         return isinstance(other, Offset) and self.dx == other.dx and self.dy == other.dy
@@ -985,7 +984,7 @@ class BoxShadow:
         Format: offset-x offset-y blur-radius spread-radius color
         """
         # Format: h-offset v-offset blur spread color
-        return f"{self.offset.dx}px {self.offset.dy}px {self.blurRadius}px {self.spreadRadius}px {self.color}"
+        return f"{to_unit(self.offset.dx)} {to_unit(self.offset.dy)} {to_unit(self.blurRadius)} {to_unit(self.spreadRadius)} {self.color}"
 
     def to_css_dict(self) -> dict:
         """Returns the CSS property as a dictionary."""
@@ -1440,13 +1439,13 @@ class BorderRadius:
         """
         # Check for simplifications
         if self.topLeft == self.topRight == self.bottomRight == self.bottomLeft:
-            return f"{self.topLeft}px"  # All same
+            return f"{to_unit(self.topLeft)}"  # All same
         if self.topLeft == self.bottomRight and self.topRight == self.bottomLeft:
-            return f"{self.topLeft}px {self.topRight}px"  # Top-left/bottom-right, Top-right/bottom-left
+            return f"{to_unit(self.topLeft)} {to_unit(self.topRight)}"  # Top-left/bottom-right, Top-right/bottom-left
         if self.topRight == self.bottomLeft:
-            return f"{self.topLeft}px {self.topRight}px {self.bottomRight}px"  # Top-left, Top-right/bottom-left, Bottom-right
+            return f"{to_unit(self.topLeft)} {to_unit(self.topRight)} {to_unit(self.bottomRight)}"  # Top-left, Top-right/bottom-left, Bottom-right
         # Full definition
-        return f"{self.topLeft}px {self.topRight}px {self.bottomRight}px {self.bottomLeft}px"
+        return f"{to_unit(self.topLeft)} {to_unit(self.topRight)} {to_unit(self.bottomRight)} {to_unit(self.bottomLeft)}"
 
     def to_css_dict(self) -> dict:
         """Returns the CSS property as a dictionary."""
@@ -1538,7 +1537,7 @@ class BorderSide:
         if self.style == BorderStyle.NONE or self.width <= 0:
             return "none"
         # Format: width style color
-        return f"{self.width}px {self.style} {self.color}"
+        return f"{to_unit(self.width)} {self.style} {self.color}"
 
     def to_css_dict(self) -> Dict[str, str]:
         """
@@ -1551,7 +1550,7 @@ class BorderSide:
             styles["border-style"] = BorderStyle.NONE
             styles["border-width"] = "0px"  # Explicitly set width to 0
         else:
-            styles["border-width"] = f"{self.width}px"
+            styles["border-width"] = f"{to_unit(self.width)}"
             styles["border-style"] = self.style
             styles["border-color"] = self.color
         return styles
@@ -1910,7 +1909,7 @@ class BoxDecoration:
                     self.borderRadius.to_css_value()
                 )  # Example method name
             elif isinstance(self.borderRadius, (int, float)):
-                styles["border-radius"] = f"{self.borderRadius}px"
+                styles["border-radius"] = f"{to_unit(self.borderRadius)}"
             # Else handle string? For now, require object or number
         if self.boxShadow:
             # Combine multiple shadows with comma
@@ -2137,7 +2136,9 @@ class ButtonStyle:
             blur = max(4, self.elevation * 1.5)
             spread = max(0, self.elevation * 0.2 - 1)
             color = self.shadowColor or Colors.rgba(0, 0, 0, 0.2)
-            styles["box-shadow"] = f"0px {offset_y}px {blur}px {spread}px {color}"
+            styles["box-shadow"] = (
+                f"0px {to_unit(offset_y)} {to_unit(blur)} {to_unit(spread)} {color}"
+            )
 
         if self.padding and isinstance(self.padding, EdgeInsets):
             styles["padding"] = self.padding.to_css()  # Use EdgeInsets method
@@ -2146,21 +2147,21 @@ class ButtonStyle:
         if self.minimumSize:
             min_w, min_h = self.minimumSize
             if min_w is not None and isinstance(min_w, float) or isinstance(min_w, int):
-                styles["min-width"] = f"{min_w}px"
+                styles["min-width"] = f"{to_unit(min_w)}"
             elif min_w is not None and isinstance(min_w, str):
                 styles["min-width"] = min_w
             if min_h is not None and isinstance(min_h, float) or isinstance(min_h, int):
-                styles["min-height"] = f"{min_h}px"
+                styles["min-height"] = f"{to_unit(min_h)}"
             elif min_h is not None and isinstance(min_h, str):
                 styles["min-height"] = min_h
         if self.maximumSize:
             max_w, max_h = self.maximumSize
             if max_w is not None and isinstance(max_w, float) or isinstance(max_w, int):
-                styles["max-width"] = f"{max_w}px"
+                styles["max-width"] = f"{to_unit(max_w)}"
             elif max_w is not None and isinstance(max_w, str):
                 styles["max-width"] = max_w
             if max_h is not None and isinstance(max_h, float) or isinstance(max_h, int):
-                styles["max-height"] = f"{max_h}px"
+                styles["max-height"] = f"{to_unit(max_h)}"
             elif max_h is not None and isinstance(max_h, str):
                 styles["max-height"] = max_h
 
@@ -2181,7 +2182,7 @@ class ButtonStyle:
             if isinstance(self.shape, BorderRadius):
                 styles["border-radius"] = self.shape.to_css_value()
             elif isinstance(self.shape, (int, float)):
-                styles["border-radius"] = f"{max(0.0, self.shape)}px"
+                styles["border-radius"] = f"{to_unit(max(0.0, self.shape))}"
 
         # --- Text Style ---
         # Note: Text styles apply to text *within* the button.

@@ -38,7 +38,12 @@ export class PythraVirtualGrid {
         this.itemWidth = 0;
         this.itemHeight = 0;
         this.rowHeight = 0;
+        this._layoutRetries = 0;
         this.updateLayoutMetrics();
+        // Retry layout if container not yet visible (clientWidth === 0)
+        if (this.rowHeight === 0) {
+            this._retryLayout();
+        }
 
         // Process the initialItems object from Python.
         if (this.options.initialItems) {
@@ -75,11 +80,31 @@ export class PythraVirtualGrid {
         this.scrollEl.addEventListener('scroll', this.render);
 
         // Listen for window resize to recalculate grid layout
-        window.addEventListener('resize', () => {
+        this._resizeHandler = () => {
             this.updateLayoutMetrics();
             this.updateSizerHeight();
             this.render();
-        });
+        };
+        window.addEventListener('resize', this._resizeHandler);
+
+        // Use ResizeObserver for reliable retry when container becomes visible
+        if (typeof ResizeObserver !== 'undefined' && this.scrollEl && this.scrollEl.clientWidth === 0) {
+            this._resizeObserver = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    if (entry.contentBoxSize && entry.contentBoxSize[0].inlineSize > 0) {
+                        this.updateLayoutMetrics();
+                        this.updateSizerHeight();
+                        this.render();
+                        if (this._resizeObserver) {
+                            this._resizeObserver.disconnect();
+                            this._resizeObserver = null;
+                        }
+                        break;
+                    }
+                }
+            });
+            this._resizeObserver.observe(this.scrollEl);
+        }
 
         this.render();
     }
@@ -106,6 +131,20 @@ export class PythraVirtualGrid {
 
         // Store for render loop
         this.rowHeight = this.itemHeight + mainAxisSpacing;
+    }
+
+    _retryLayout() {
+        this._layoutRetries++;
+        if (this._layoutRetries > 20) return;
+        requestAnimationFrame(() => {
+            this.updateLayoutMetrics();
+            if (this.rowHeight > 0) {
+                this.updateSizerHeight();
+                this.render();
+            } else {
+                this._retryLayout();
+            }
+        });
     }
 
     updateSizerHeight() {
@@ -274,8 +313,13 @@ export class PythraVirtualGrid {
     }
 
     destroy() {
-        // Clean up listeners?
-        // window.removeEventListener('resize', this.render); // Actually needs bound reference
+        if (this._resizeHandler) {
+            window.removeEventListener('resize', this._resizeHandler);
+        }
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
         if (this.simplebar && typeof this.simplebar.unMount === 'function') {
             this.simplebar.unMount();
         }

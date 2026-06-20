@@ -71,6 +71,7 @@ except ImportError:
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable, Literal
 from dataclasses import dataclass, field
 from collections import defaultdict, OrderedDict
+from .helpers import to_unit, camel_to_kebab
 
 # near top imports if not already present
 # from collections import defaultdict
@@ -566,7 +567,7 @@ class Reconciler:
 
         # --- THIS IS THE NEW GENERIC INITIALIZER LOGIC ---
         js_init_data = new_props.get("_js_init")
-        
+
         if js_init_data and isinstance(js_init_data, dict):
             # print("js_init_data: ", js_init_data)
             # We don't need the html_id here, as the framework will have it
@@ -922,12 +923,16 @@ class Reconciler:
                 inline_styles["aspect-ratio"] = props["aspectRatio"]
         elif widget_type_name == "SizedBox":
             if (w := props.get("width")) is not None:
-                inline_styles["width"] = f"{w}px" if isinstance(w, (int, float)) else w
+                inline_styles["width"] = (
+                    f"{to_unit(w)}" if isinstance(w, (int, float)) else w
+                )
             if (h := props.get("height")) is not None:
-                inline_styles["height"] = f"{h}px" if isinstance(h, (int, float)) else h
+                inline_styles["height"] = (
+                    f"{to_unit(h)}" if isinstance(h, (int, float)) else h
+                )
         elif widget_type_name == "Divider":
             if "height" in props:
-                inline_styles["height"] = f"{props['height']}px"
+                inline_styles["height"] = to_unit(props["height"])
             if "color" in props:
                 inline_styles["background-color"] = props["color"]
             if "margin" in props:
@@ -943,9 +948,7 @@ class Reconciler:
             for key, value in props["style"].items():
                 # print("css kebab-case: ",props["style"].items())
                 # Convert python camelCase to css kebab-case
-                css_key = "".join(
-                    ["-" + c.lower() if c.isupper() else c for c in key]
-                ).lstrip("-")
+                css_key = camel_to_kebab(key)
                 inline_styles[css_key] = value
         # --- END OF FIX ---
 

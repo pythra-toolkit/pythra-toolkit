@@ -474,7 +474,9 @@ class Framework:
         required_engines = self._analyze_required_js_engines(built_tree_root, result)
         print(f"⚙️  PyThra Framework | Analysis Complete: {len(required_engines)} JS engines needed: {', '.join(required_engines) if required_engines else 'None'}")
 
-        self._loaded_js_engines = required_engines.update(_v_items_required_engines) if _v_items_required_engines else required_engines  # Store the initially loaded engines
+        if _v_items_required_engines:
+            required_engines.update(_v_items_required_engines)
+        self._loaded_js_engines = required_engines  # Store the initially loaded engines
 
         # 5. Generate initial HTML, CSS, and JS with optimized loading
         root_key = initial_tree_to_reconcile.get_unique_id() if initial_tree_to_reconcile else None
@@ -800,8 +802,10 @@ class Framework:
                 pass
             elif init_type == "_RenderableSlider":
                 required_engines.add('PythraSlider')
-            elif init_type == "VirtualList":
+            elif init_type == "virtual_list":
                 required_engines.add('PythraVirtualList')
+            elif init_type == "virtual_grid":
+                required_engines.add('PythraVirtualGrid')
 
         # Check rendered widgets for engine requirements
         for node_data in result.new_rendered_map.values():
@@ -1424,6 +1428,31 @@ class Framework:
                          }}, 0);
                          """)
 
+                    elif init_type == "virtual_grid":
+                        target_id = init["target_id"]
+                        debug_print("Virtual Grid: ", target_id)
+                        data = init.get("data", {})
+                        widget_instance = data['widget_instance']
+                        if widget_instance and widget_instance.key:
+                            widget_key_val = widget_instance.key.value
+                            if widget_key_val.endswith("_scrollbar"):
+                                widget_key_val = widget_key_val[:-10]
+                        else:
+                            widget_key_val = target_id
+                        instance_name = f"{widget_key_val}_vgrid"
+                        options_json = _dumps(data.get('virtual_grid_options', {}))
+                        processed_inits.append(f"""
+                        console.log("VGrid re-initialized {target_id} instance name: {instance_name}");
+                         setTimeout(() => {{
+                             if (typeof PythraVirtualGrid !== 'undefined') {{
+                                 window._pythra_instances['{instance_name}'] = new PythraVirtualGrid(
+                                '{target_id}', 
+                                {options_json}
+                                );
+                             }}
+                         }}, 0);
+                         """)
+
                     elif init_type == "dropdown":
                         target_id = init["target_id"]
                         # The 'data' dict usually contains 'dropdown_options' based on reconciler logic
@@ -1770,42 +1799,32 @@ class Framework:
             """)
 
         # --- VIRTUAL LIST ---
-        elif init_type == "VirtualList":
-            estimated_height = init["estimated_height"]
-            item_count = init["item_count"]
-            js_commands.append(
-                f"""
-                new VirtualList(
-                    "{target_id}",
-                    {item_count},
-                    {estimated_height},
-                    (i) => {{
-                        const div = document.createElement("div");
-                        div.dataset.index = i;
-                        return div;
+        elif init_type == "virtual_list":
+            target_id = init["target_id"]
+            data = init.get("data", {})
+            options_json = _dumps(data.get('virtual_list_options', {}))
+            js_commands.append(f"""
+                setTimeout(() => {{
+                    if (typeof PythraVirtualList !== 'undefined') {{
+                        window._pythra_instances = window._pythra_instances || {{}};
+                        window._pythra_instances['{target_id}'] = new PythraVirtualList('{target_id}', {options_json});
                     }}
-                );
-            """
-            )
+                }}, 0);
+            """)
 
         # --- VIRTUAL GRID ---
-        elif init_type == "VirtualGrid":
-            estimated_height = init["estimated_height"]
-            item_count = init["item_count"]
-            js_commands.append(
-                f"""
-                new VirtualGrid(
-                    "{target_id}",
-                    {item_count},
-                    {estimated_height},
-                    (i) => {{
-                        const div = document.createElement("div");
-                        div.dataset.index = i;
-                        return div;
+        elif init_type == "virtual_grid":
+            target_id = init["target_id"]
+            data = init.get("data", {})
+            options_json = _dumps(data.get('virtual_grid_options', {}))
+            js_commands.append(f"""
+                setTimeout(() => {{
+                    if (typeof PythraVirtualGrid !== 'undefined') {{
+                        window._pythra_instances = window._pythra_instances || {{}};
+                        window._pythra_instances['{target_id}'] = new PythraVirtualGrid('{target_id}', {options_json});
                     }}
-                );
-            """
-            )
+                }}, 0);
+            """)
 
         # --- CLIP PATH ---
         elif init_type == "ResponsiveClipPath":

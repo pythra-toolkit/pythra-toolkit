@@ -228,3 +228,5 @@ export class PythraVirtualList {
         }
     }
 }
+
+window.PythraVirtualList = PythraVirtualList;

@@ -51,6 +51,16 @@ from .icons import *
 from .icons.base import IconData # Import the new data class
 from .controllers import *
 from .config import Config
+from .helpers import (
+    to_unit,
+    build_ripple_css,
+    build_disabled_rule,
+    build_interactive_css,
+    normalize_shape,
+    parse_decoration,
+    elevation_shadow,
+    M3_STANDARD_EASING,
+)
 from .events import TapDetails, PanUpdateDetails
 import weakref
 from typing import Any, Dict, List, Optional, Set, Tuple, Union, Callable
@@ -176,7 +186,7 @@ class Divider(Widget):
         if isinstance(self.margin, EdgeInsets):
              css_margin = self.margin.to_css()
         elif self.height_prop is not None and self.height_prop > 0: # Fallback using height for margin
-             css_margin = f"{self.height_prop / 2.0}px 0" # Approximate vertical margin
+             css_margin = f"{to_unit(self.height_prop / 2.0)} 0" # Approximate vertical margin
 
         props = {
             'render_type': 'divider', # Help reconciler identify
@@ -761,21 +771,19 @@ class BottomSheet(Widget):
                 margin: 0 auto; /* Center if max-width applies */
                 max-height: {maxHeight or '60%'};
                 background-color: {backgroundColor};
-                border-top-left-radius: {borderTopRadius or 28}px;
-                border-top-right-radius: {borderTopRadius or 28}px;
+                border-top-left-radius: {to_unit(borderTopRadius or 28)};
+                border-top-right-radius: {to_unit(borderTopRadius or 28)};
                 z-index: 1100; /* Above scrim, below potential dialogs */
                 transform: translateY(100%); /* Start hidden below screen */
-                transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); /* M3 Standard Easing */
+                transition: transform 0.3s {M3_STANDARD_EASING}; /* M3 Standard Easing */
                 display: flex;
                 flex-direction: column; /* Stack drag handle and content */
                 overflow: hidden; /* Hide content overflow initially */
                 box-sizing: border-box;
             """
 
-            # Elevation/Shadow (M3 Level 1)
-            shadow_style = ""
-            if elevation and elevation >= 1:
-                 shadow_str = f"box-shadow: 0px 1px 3px 0px {shadowColor or 'rgba(0, 0, 0, 0.3)'}, 0px 1px 1px 0px {shadowColor or 'rgba(0, 0, 0, 0.15)'};"
+            # Elevation/Shadow
+            shadow_str = elevation_shadow(elevation, shadowColor)
             base_styles += shadow_str
 
             # --- Drag Handle Styles ---
@@ -1150,14 +1158,14 @@ class SnackBar(Widget):
                 opacity: 0;
                 min-height: 48px; /* M3 min height */
                 width: {width or 'fit-content'}; /* Fit content or specified width */
-                max-width: {f'{maxWidth}px' if isinstance(maxWidth, int) else (maxWidth or '600px')};
+                max-width: {f'{to_unit(maxWidth)}' if isinstance(maxWidth, int) else (maxWidth or '600px')};
                 margin: 8px; /* Margin from edges if width allows */
                 padding: 0; /* Padding applied to inner container */
                 background-color: {backgroundColor};
                 color: {textColor};
-                border-radius: {shapeRadius or 4}px;
+                border-radius: {to_unit(shapeRadius or 4)};
                 z-index: 1200; /* High z-index */
-                transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), /* M3 Standard Easing */
+                transition: transform 0.3s {M3_STANDARD_EASING}, /* M3 Standard Easing */
                             opacity 0.2s linear;
                 display: flex; /* Use flex for content/action layout */
                 align-items: center;
@@ -1166,12 +1174,8 @@ class SnackBar(Widget):
                 pointer-events: none; /* Allow clicks through when hidden */
             """
 
-            # Elevation/Shadow (M3 Level 3 approx)
-            shadow_style = ""
-            if elevation and elevation >= 3:
-                shadow_str = f"box-shadow: 0px 3px 5px -1px {shadowColor or 'rgba(0, 0, 0, 0.2)'}, 0px 6px 10px 0px {shadowColor or 'rgba(0, 0, 0, 0.14)'}, 0px 1px 18px 0px {shadowColor or 'rgba(0, 0, 0, 0.12)'};"
-            elif elevation and elevation > 0: # Lower elevation fallback
-                shadow_str = f"box-shadow: 0px 1px 3px 0px {shadowColor or 'rgba(0, 0, 0, 0.3)'}, 0px 1px 1px 0px {shadowColor or 'rgba(0, 0, 0, 0.15)'};"
+            # Elevation/Shadow
+            shadow_str = elevation_shadow(elevation, shadowColor)
             base_styles += shadow_str
 
 
@@ -1502,7 +1506,7 @@ class Placeholder(Widget):
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                border: {strokeWidth or 1}px dashed {color or '#79747E'};
+                border: {to_unit(strokeWidth or 1)} dashed {color or '#79747E'};
                 color: {color or '#79747E'};
                 font-size: 12px;
                 text-align: center;
@@ -1518,13 +1522,13 @@ class Placeholder(Widget):
             #     background-color: {color or '#79747E'};
             # }}
             # .{css_class}::before {{ /* Line 1 (\) */
-            #     width: {strokeWidth or 1}px;
+            #     width: {to_unit(strokeWidth or 1)};
             #     left: 50%; top: 0; bottom: 0;
             #     transform: translateX(-50%) rotate(45deg);
             #     transform-origin: center;
             # }}
             # .{css_class}::after {{ /* Line 2 (/) */
-            #     height: {strokeWidth or 1}px;
+            #     height: {to_unit(strokeWidth or 1)};
             #     top: 50%; left: 0; right: 0;
             #     transform: translateY(-50%) rotate(45deg);
             #     transform-origin: center;
@@ -2271,7 +2275,7 @@ class Wrap(Widget):
             # gap: row-gap column-gap;
             row_gap = runSpacing if direction == Axis.HORIZONTAL else spacing
             column_gap = spacing if direction == Axis.HORIZONTAL else runSpacing
-            gap_style = f"gap: {row_gap}px {column_gap}px;"
+            gap_style = f"gap: {to_unit(row_gap)} {to_unit(column_gap)};"
 
             # Clipping
             clip_style = ""
@@ -2506,9 +2510,9 @@ class Dialog(Widget):
                 max-height: calc(100vh - 32px);
                 background-color: {backgroundColor};
                 /* Shape/Radius */
-                {'border-radius: {shape_repr.top_left}px {shape_repr.top_right}px {shape_repr.bottom_right}px {shape_repr.bottom_left}px;'.format(shape_repr=shape_repr) if isinstance(shape_repr, BorderRadius) else f'border-radius: {shape_repr}px;' if isinstance(shape_repr, int) else 'border-radius: 28px;'}
+                {'border-radius: {shape_repr.top_left}px {shape_repr.top_right}px {shape_repr.bottom_right}px {shape_repr.bottom_left}px;'.format(shape_repr=shape_repr) if isinstance(shape_repr, BorderRadius) else f'border-radius: {to_unit(shape_repr)};' if isinstance(shape_repr, int) else 'border-radius: 28px;'}
                 z-index: 1300; /* High z-index for dialogs */
-                transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), /* M3 Easing */
+                transition: transform 0.2s {M3_STANDARD_EASING}, /* M3 Easing */
                             opacity 0.15s linear;
                 display: flex;
                 flex-direction: column; /* Stack icon/title/content/actions */
@@ -2517,12 +2521,8 @@ class Dialog(Widget):
                 pointer-events: none; /* Allow clicks through when hidden */
             """
 
-            # Elevation/Shadow (M3 Level 3)
-            shadow_style = ""
-            if elevation and elevation >= 3:
-                shadow_str = f"box-shadow: 0px 3px 5px -1px {shadowColor or 'rgba(0, 0, 0, 0.2)'}, 0px 6px 10px 0px {shadowColor or 'rgba(0, 0, 0, 0.14)'}, 0px 1px 18px 0px {shadowColor or 'rgba(0, 0, 0, 0.12)'};"
-            elif elevation and elevation > 0: # Fallback shadow
-                 shadow_str = f"box-shadow: 0px 1px 3px 0px {shadowColor or 'rgba(0, 0, 0, 0.3)'}, 0px 1px 1px 0px {shadowColor or 'rgba(0, 0, 0, 0.15)'};"
+            # Elevation/Shadow
+            shadow_str = elevation_shadow(elevation, shadowColor)
             base_styles += shadow_str
 
             # --- Child Slot Wrapper Styles ---
@@ -2693,8 +2693,8 @@ class ClipPath(Widget):
         Passes its layout properties and the raw data needed for
         responsive clipping to the Reconciler.
         """
-        width_css = f"{self.width}px" if isinstance(self.width, (int, float)) else self.width
-        height_css = f"{self.height}px" if isinstance(self.height, (int, float)) else self.height
+        width_css = f"{to_unit(self.width)}" if isinstance(self.width, (int, float)) else self.width
+        height_css = f"{to_unit(self.height)}" if isinstance(self.height, (int, float)) else self.height
         
         # The Python side's only job is to serialize the raw data.
         return {
@@ -2918,7 +2918,7 @@ class ListTile(Widget):
                     display: grid;
                     grid-template-areas: "leading title trailing" "leading subtitle trailing";
                     grid-template-columns: auto 1fr auto;
-                    align-items: center; width: 100%; min-height: {min_height}px;
+                    align-items: center; width: 100%; min-height: {to_unit(min_height)};
                     gap: 0 16px; {padding_css} box-sizing: border-box;
                     {transition_str}
                     cursor: pointer;
@@ -2931,7 +2931,7 @@ class ListTile(Widget):
                 .{css_class}.has-subtitle > .listtile-title {{ align-self: end; }}
 
                 .{css_class}:not(.disabled) {{ cursor: pointer; }}
-                .{css_class}.disabled {{ opacity: 0.38; pointer-events: none; }}
+                {build_disabled_rule(css_class)}
                 .{css_class}.selected {{ background-color: {Colors.primaryContainer}; color: {Colors.onPrimaryContainer}; }}
             """
             
@@ -3075,7 +3075,7 @@ class Slider(Widget):
         self.thumbColor = thumbColor or theme.thumbColor or Colors.primary
         self.overlayColor = theme.overlayColor or Colors.rgba(103, 80, 164, 0.15)
         self.trackHeight = theme.trackHeight
-        self.trackRadius = trackRadius.to_css_value() if trackRadius else f"{self.trackHeight / 2}px"
+        self.trackRadius = trackRadius.to_css_value() if trackRadius else f"{to_unit(self.trackHeight / 2)}"
         self.thumbSize = theme.thumbSize
         self.thumbBorderWidth = theme.thumbBorderWidth
         self.thumbBorderColor = thumbBorderColor or theme.thumbBorderColor or Colors.surfaceVariant
@@ -3183,7 +3183,7 @@ class Slider(Widget):
             -webkit-tap-highlight-color: transparent;
         }}
         .{css_class} .slider-track, .{css_class} .slider-track-active {{
-            position: absolute; width: 100%; height: {track_height}px;
+            position: absolute; width: 100%; height: {to_unit(track_height)};
             border-radius: {track_radius}; pointer-events: none;
         }}
         .{css_class} .slider-track {{ background-color: {inactive_color}; }}
@@ -3193,11 +3193,11 @@ class Slider(Widget):
         .{css_class} .slider-thumb {{
             position: absolute; left: var(--slider-percentage, 0%);
             transform: translateX(-50%);
-            width: {thumb_size}px;
-            height: {thumb_size}px;
+            width: {to_unit(thumb_size)};
+            height: {to_unit(thumb_size)};
             background-color: {thumb_color};
             border-radius: {thumb_border_radius};
-            border: {thumb_border_width}px solid {thumb_border_color};
+            border: {to_unit(thumb_border_width)} solid {thumb_border_color};
             transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             pointer-events: none;
@@ -3211,8 +3211,8 @@ class Slider(Widget):
             content: '';
             position: absolute;
             top: 50%; left: 50%;
-            width: {overlay_size * 2}px;
-            height: {overlay_size * 2}px;
+            width: {to_unit(overlay_size * 2)};
+            height: {to_unit(overlay_size * 2)};
             background-color: {overlay_color};
             border-radius: 50%;
             transform: translate(-50%, -50%) scale(0);
@@ -3457,8 +3457,8 @@ class Checkbox(Widget):
         return f"""
         .{css_class}.checkbox-container {{
             position: relative;
-            width: {size}px; height: {size}px;
-            border: {stroke_width}px solid {border_color};
+            width: {to_unit(size)}; height: {to_unit(size)};
+            border: {to_unit(stroke_width)} solid {border_color};
             border-radius: 4px;
             background-color: {background_color};
             cursor: pointer;
@@ -3481,7 +3481,7 @@ class Checkbox(Widget):
         .{css_class} .checkbox-checkmark {{
             stroke-dasharray: 29;
             stroke-dashoffset: {checkmark_offset};
-            transition: stroke-dashoffset 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition: stroke-dashoffset 0.2s {M3_STANDARD_EASING};
         }}
         .{css_class}.checkbox-container:active::before {{
             content: '';
@@ -3494,7 +3494,7 @@ class Checkbox(Widget):
         }}
         @keyframes {animation_name} {{
             from {{ width: 0; height: 0; opacity: 1; }}
-            to {{ width: {splash_radius * 2}px; height: {splash_radius * 2}px; opacity: 0; }}
+            to {{ width: {to_unit(splash_radius * 2)}; height: {to_unit(splash_radius * 2)}; opacity: 0; }}
         }}
         """
 
@@ -3761,7 +3761,7 @@ class Switch(Widget):
             background-color: {thumb_color};
             border-radius: 50%;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), background-color 0.2s ease-in-out;
+            transition: transform 0.2s {M3_STANDARD_EASING}, background-color 0.2s ease-in-out;
             transform: {thumb_transform};
         }}
         """
@@ -3965,7 +3965,7 @@ class Radio(Widget):
             background-color: {dot_bg_color};
             border-radius: 50%;
             transform: {dot_transform};
-            transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transition: transform 0.2s {M3_STANDARD_EASING};
         }}
 
         /* --- INTERACTION STATES (Splash/Ripple Effect) --- */
@@ -4117,10 +4117,10 @@ class Dropdown(Widget):
         self.itemHoverColor = getattr(self.theme, 'itemHoverColor', Colors.rgba(103, 80, 164, 0.1))
         
         theme_width = getattr(self.theme, 'width', "100%")
-        self.width = f"{theme_width}px" if isinstance(theme_width, (int, float)) else f"{theme_width}"
+        self.width = f"{to_unit(theme_width)}" if isinstance(theme_width, (int, float)) else f"{theme_width}"
         
         theme_dd_height = getattr(self.theme, 'dropDownHeight', "auto")
-        self.dropDownHeight = f"{theme_dd_height}px" if isinstance(theme_dd_height, (int, float)) else f"{theme_dd_height}"
+        self.dropDownHeight = f"{to_unit(theme_dd_height)}" if isinstance(theme_dd_height, (int, float)) else f"{theme_dd_height}"
 
         self.dropdownColor = getattr(self.theme, 'dropdownColor', Colors.hex("#FFFFFF"))
         self.dropdownTextColor = getattr(self.theme, 'dropdownTextColor', Colors.hex("#000000"))
@@ -4289,10 +4289,10 @@ class Dropdown(Widget):
             background-color: {fill_color};
             color: {text_color};
             {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css}
-            border-top: {'none' if filled else f"{border_width}px {border_style} {border_color}"};
-            border-left: {'none' if filled else f"{border_width}px {border_style} {border_color}"};
-            border-right: {'none' if filled else f"{border_width}px {border_style} {border_color}"};
-            border-bottom:{border_width}px {border_style} {border_color}; outline: {'none' if filled else border_color}; box-sizing: border-box;
+            border-top: {'none' if filled else f"{to_unit(border_width)} {border_style} {border_color}"};
+            border-left: {'none' if filled else f"{to_unit(border_width)} {border_style} {border_color}"};
+            border-right: {'none' if filled else f"{to_unit(border_width)} {border_style} {border_color}"};
+            border-bottom:{to_unit(border_width)} {border_style} {border_color}; outline: {'none' if filled else border_color}; box-sizing: border-box;
             cursor: pointer;
             transition: border-bottom-color 0.2s, background-color 0.2s, border-color 0.2s;
         }}
@@ -4328,7 +4328,7 @@ class Dropdown(Widget):
             visibility: hidden;
             transform: translateY(-10px);
             transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
-            box-shadow: 0 {elevation / 2}px {elevation}px rgba(0,0,0,0.15);
+            box-shadow: 0 {to_unit(elevation / 2)} {to_unit(elevation)} rgba(0,0,0,0.15);
             overflow-y: auto;
         }}
         /* Elegant Native Scrollbars for Pythra Menu */
@@ -4578,23 +4578,16 @@ class GestureDetector(Widget):
         rules.append(f".{css_class} {{ {' '.join(styles)} }}")
 
         # Interactive styling reconstruction
-        def parse_dec(val):
-            if not val: return None
-            if isinstance(val, tuple):
-                try: from .styles import BoxDecoration; return BoxDecoration(*val)
-                except: return None
-            return val if hasattr(val, 'to_css') else None
-
-        hover_dec = parse_dec(hover_tuple)
+        hover_dec = parse_decoration(hover_tuple)
         if hover_dec:
             rules.append(f".{css_class}:hover > * {{ {hover_dec.to_css()} }}")
         
-        focus_dec = parse_dec(focus_tuple)
+        focus_dec = parse_decoration(focus_tuple)
         if focus_dec:
             rules.append(f".{css_class}:focus-visible > * {{ {focus_dec.to_css()} }}")
             # If focusStyle is present, we might want to make the parent focusable (done in _generate_html_stub)
 
-        active_dec = parse_dec(active_tuple)
+        active_dec = parse_decoration(active_tuple)
         if active_dec:
             rules.append(f".{css_class}:active > * {{ {active_dec.to_css()} }}")
 
@@ -5002,12 +4995,12 @@ class ThreeDLoader(Widget):
 
         # Prepare CSS variables mapping
         css_vars = {
-            '--opt-size': f"{self.size}px",
+            '--opt-size': f"{to_unit(self.size)}",
             '--opt-color': self.color,
         }
 
         if self.gap is not None:
-            css_vars['--opt-gap'] = f"{self.gap}px"
+            css_vars['--opt-gap'] = f"{to_unit(self.gap)}"
 
         if self.secondary_color:
             css_vars['--opt-accent'] = self.secondary_color

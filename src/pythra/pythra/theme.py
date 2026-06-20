@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, Optional
+from .helpers import camel_to_kebab
 
 @dataclass
 class ThemeData:
@@ -75,7 +76,7 @@ class ThemeData:
             if field_name == 'brightness': continue
             if value and isinstance(value, str):
                  # Convert camelCase to kebab-case
-                css_name = "".join(["-" + c.lower() if c.isupper() else c for c in field_name])
+                css_name = camel_to_kebab(field_name)
                 lines.append(f"    --md-sys-color-{css_name}: {value};")
         
         # Add basic aliases and usage

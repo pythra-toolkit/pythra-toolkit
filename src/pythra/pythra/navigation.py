@@ -66,6 +66,12 @@ class NavigatorState(State):
             # except:
             #     print("[Navigator] Failed to set state for active route",)
             # self.history[-1].setState()
+    
+    def initial(self):
+        while len(self.history) > 1:
+            self.history.pop()
+        if len(self.history) == 1:
+            self.setState()
             
     def build(self) -> Widget:
         if not self.history:

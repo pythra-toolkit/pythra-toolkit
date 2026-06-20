@@ -142,7 +142,10 @@ export class PythraVirtualList {
                                     const styleSheet = document.getElementById('dynamic-styles');
                                     if (styleSheet && !styleSheet.textContent.includes(css)) {
                                         styleSheet.textContent += `\n${css}`;
-                                    }
+}
+
+window.PythraVirtualList = PythraVirtualList;
+
                                 }
                                 
                                 if (el.dataset.index === String(item.index)) {

@@ -55,6 +55,16 @@ from .icons import *
 from .icons.base import IconData  # Import the new data class
 from .controllers import *
 from .config import Config
+from .helpers import (
+    to_unit,
+    build_ripple_css,
+    build_disabled_rule,
+    build_interactive_css,
+    normalize_shape,
+    hex_to_rgba,
+    parse_decoration,
+    elevation_shadow,
+)
 import weakref
 from typing import Any, Dict, List, Optional, Set, Tuple, Union, Callable
 
@@ -434,13 +444,13 @@ class Container(Widget):
                 styles.append(f"margin: {EdgeInsets(*margin_tuple).to_css_value()};")
             if width is not None:
                 styles.append(
-                    f"width: {width}px;"
+                    f"width: {to_unit(width)};"
                     if isinstance(width, (int, float))
                     else f"width: {width};"
                 )
             if height is not None:
                 styles.append(
-                    f"height: {height}px;"
+                    f"height: {to_unit(height)};"
                     if isinstance(height, (int, float))
                     else f"height: {height};"
                 )
@@ -452,7 +462,7 @@ class Container(Widget):
                 if getattr(constraints_obj, "hideUnder", None) is not None:
                     val = constraints_obj.hideUnder
                     if isinstance(val, (int, float)):
-                        val = f"{val}px"
+                        val = f"{to_unit(val)}"
                     extra_rules.append(
                         f"@media (max-width: {val}) {{ .{css_class} {{ display: none !important; }} }}"
                     )
@@ -700,7 +710,7 @@ class Transform(Widget):
 
             if origin:
                 # If explicit offset origin is provided, it usually relates to top-left
-                css_styles.append(f"transform-origin: {origin.dx}px {origin.dy}px;")
+                css_styles.append(f"transform-origin: {to_unit(origin.dx)} {to_unit(origin.dy)};")
             elif alignment:
                 css_styles.append(
                     f"transform-origin: {alignment_to_origin(alignment)};"
@@ -1103,7 +1113,7 @@ class TextButton(Widget):
                 'padding': padding_obj.to_css() if padding_obj else '',#'4px 12px', # Use style padding or M3-like default
                 # 'margin': '4px', # Default margin between adjacent buttons
                 "border": "none",  # Text buttons have no border
-                'border-radius': shape_obj.to_css_value() if isinstance(shape_obj, BorderRadius) else f"{BorderRadius(*shape_obj).to_css_value() if isinstance(shape_obj, tuple) else 20}", # Use shape or M3 default
+                'border-radius': normalize_shape(shape_obj, 20),
                 'background-color': bg_color or 'transparent',
                 'color': fg_color, # Use style foreground or M3 primary
                 "cursor": "pointer",
@@ -1111,7 +1121,7 @@ class TextButton(Widget):
                 "text-decoration": "none",
                 "outline": "none",
                 "pointer-events": "auto",  # Ensure clickable even in non-clickable container
-                'min-height': f"{min_height}px", # M3 min target size
+                'min-height': f"{to_unit(min_height)}", # M3 min target size
                 "min-width": "48px",  # Ensure min width for touch target even if padding is small
                 "box-sizing": "border-box",
                 "position": "relative",  # For state layer/ripple
@@ -1128,22 +1138,22 @@ class TextButton(Widget):
             if minSize_tuple:
                 min_w, min_h = minSize_tuple
                 if min_w is not None and isinstance(min_w, float) or isinstance(min_w, int):
-                    base_styles_dict["min-width"] = f"{min_w}px"
+                    base_styles_dict["min-width"] = f"{to_unit(min_w)}"
                 elif min_w is not None and isinstance(min_w, str):
                     base_styles_dict["min-width"] = min_w
                 if min_h is not None and isinstance(min_h, float) or isinstance(min_h, int):
-                    base_styles_dict["min-height"] = f"{min_h}px"
+                    base_styles_dict["min-height"] = f"{to_unit(min_h)}"
                 elif min_h is not None and isinstance(min_h, str):
                     base_styles_dict["min-height"] = min_h
             if maxSize_tuple:
                 max_w, max_h = maxSize_tuple
                 print(maxSize_tuple)
                 if max_w is not None and isinstance(max_w, float) or isinstance(max_w, int):
-                    base_styles_dict["max-width"] = f"{max_w}px"
+                    base_styles_dict["max-width"] = f"{to_unit(max_w)}"
                 elif max_w is not None and isinstance(max_w, str):
                     base_styles_dict["max-width"] = max_w
                 if max_h is not None and isinstance(max_h, float) or isinstance(max_h, int):
-                    base_styles_dict["max-height"] = f"{max_h}px"
+                    base_styles_dict["max-height"] = f"{to_unit(max_h)}"
                 elif max_h is not None and isinstance(max_h, str):
                     base_styles_dict["max-height"] = max_h
 
@@ -1158,20 +1168,14 @@ class TextButton(Widget):
             active_bg_color = (
                 ac_color if ac_color else Colors.rgba(0, 0, 0, 0.12)
             )  # Fallback dark overlay
-            try:  # Try to make overlay from foreground color
-                # Basic check: Assume hex format #RRGGBB
+            try:
                 if fg_color and fg_color.startswith("#") and len(fg_color) == 7:
-                    r, g, b = (
-                        int(fg_color[1:3], 16),
-                        int(fg_color[3:5], 16),
-                        int(fg_color[5:7], 16),
-                    )
-                    hover_bg_color = Colors.rgba(r, g, b, 0.50)  # 8% opacity overlay
-                    active_bg_color = Colors.rgba(r, g, b, 0.00)  # 12% opacity overlay
+                    hover_bg_color = hex_to_rgba(fg_color, 0.08)
+                    active_bg_color = hex_to_rgba(fg_color, 0.12)
             except:
-                pass  # Ignore errors, use fallback
+                pass
 
-            _border_radius__ = f'border-radius: {shape_obj.to_css_value() if isinstance(shape_obj, BorderRadius) else f"{BorderRadius(*shape_obj).to_css_value() if isinstance(shape_obj, tuple) else 20}"};'
+            _border_radius__ = f'border-radius: {normalize_shape(shape_obj, 20)};'
 
             hover_rule = f"""
             .{css_class}:hover {{ 
@@ -1187,15 +1191,13 @@ class TextButton(Widget):
             )
 
             # Disabled state
-            disabled_color = Colors.rgba(0, 0, 0, 0.38)  # M3 Disabled content approx
-            disabled_rule = f"""
-            .{css_class}.disabled {{ 
-                color: {disabled_color}; 
-                background-color: transparent; 
-                cursor: default; 
-                pointer-events: none; 
-                {_border_radius__}
-            }}"""
+            disabled_rule = build_disabled_rule(
+                css_class,
+                bg_color="transparent",
+                fg_color=Colors.rgba(0, 0, 0, 0.38),
+                no_shadow=True,
+                extra=_border_radius__,
+            )
 
             # Apply TextStyle to children (e.g., direct Text widget child)
             text_style_rule = ""
@@ -1213,31 +1215,15 @@ class TextButton(Widget):
                 text_style_rule = f".{css_class} > * {{ {default_text_styles} }}"
 
             # Ripple Effect
-            ripple_keyframes = f"@keyframes ripple_{css_class} {{ 0% {{ transform: translate(-50%, -50%) scale(0); opacity: 0.15; }} 100% {{ transform: translate(-50%, -50%) scale(2.5); opacity: 0; }} }}"
-            ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
-            ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
-
-            # Interactive extra rules from ButtonStyle if provided
-            def parse_dec(val):
-                if not val: return None
-                if isinstance(val, tuple):
-                    try: return BoxDecoration(*val)
-                    except: return None
-                return val if hasattr(val, 'to_css') else None
+            ripple_css = build_ripple_css(css_class, start_opacity=0.15)
 
             extra_rules = []
-            hover_dec = parse_dec(getattr(style_obj, 'hoverStyle', None))
-            if hover_dec:
-                extra_rules.append(f".{css_class}:hover {{ {hover_dec.to_css()} }}")
-            focus_dec = parse_dec(getattr(style_obj, 'focusStyle', None))
-            if focus_dec:
-                extra_rules.append(f".{css_class}:focus-visible {{ {focus_dec.to_css()} }}")
-            active_dec = parse_dec(getattr(style_obj, 'activeStyle', None))
-            if active_dec:
-                extra_rules.append(f".{css_class}:active {{ {active_dec.to_css()} }}")
+            interactive_css = build_interactive_css(css_class, style_obj)
+            if interactive_css:
+                extra_rules.append(interactive_css)
 
             # print("\n".join([main_rule, text_style_rule, hover_rule, active_rule, disabled_rule]))
-            rules_to_join = [main_rule, text_style_rule, hover_rule, active_rule, disabled_rule, ripple_keyframes, ripple_base, ripple_active_anim] + extra_rules
+            rules_to_join = [main_rule, text_style_rule, hover_rule, active_rule, disabled_rule, ripple_css] + extra_rules
             return "\n".join(rules_to_join)
 
         except Exception as e:
@@ -1505,21 +1491,21 @@ class ElevatedButton(Widget):
             if minSize_tuple:
                 min_w, min_h = minSize_tuple
                 if min_w is not None and isinstance(min_w, float) or isinstance(min_w, int):
-                    base_styles_dict["min-width"] = f"{min_w}px"
+                    base_styles_dict["min-width"] = f"{to_unit(min_w)}"
                 elif min_w is not None and isinstance(min_w, str):
                     base_styles_dict["min-width"] = min_w
                 if min_h is not None and isinstance(min_h, float) or isinstance(min_h, int):
-                    base_styles_dict["min-height"] = f"{min_h}px"
+                    base_styles_dict["min-height"] = f"{to_unit(min_h)}"
                 elif min_h is not None and isinstance(min_h, str):
                     base_styles_dict["min-height"] = min_h
             if maxSize_tuple:
                 max_w, max_h = maxSize_tuple
                 if max_w is not None and isinstance(max_w, float) or isinstance(max_w, int):
-                    base_styles_dict["max-width"] = f"{max_w}px"
+                    base_styles_dict["max-width"] = f"{to_unit(max_w)}"
                 elif max_w is not None and isinstance(max_w, str):
                     base_styles_dict["max-width"] = max_w
                 if max_h is not None and isinstance(max_h, float) or isinstance(max_h, int):
-                    base_styles_dict["max-height"] = f"{max_h}px"
+                    base_styles_dict["max-height"] = f"{to_unit(max_h)}"
                 elif max_h is not None and isinstance(max_h, str):
                     base_styles_dict["max-height"] = max_h
 
@@ -1548,24 +1534,14 @@ class ElevatedButton(Widget):
                     except Exception:
                         pass
                 elif isinstance(shape_repr, (int, float)):  # Single value
-                    base_styles_dict["border-radius"] = f"{max(0.0, shape_repr)}px"
+                    base_styles_dict["border-radius"] = f"{to_unit(max(0.0, shape_repr))}"
 
             # Elevation / Shadow
             effective_elevation = (
                 elevation if elevation is not None else 2.0
-            )  # Default elevation = 2
-            if effective_elevation > 0:
-                # M3 Elevation Level 2 (approx)
-                offset_y = 1 + effective_elevation * 0.5
-                blur = 2 + effective_elevation * 1.0
-                spread = 0  # Generally 0 for M3 elevations 1-3
-                s_color = shadowColor or Colors.rgba(0, 0, 0, 0.2)
-                # Use multiple shadows for better M3 feel
-                shadow1 = f"0px {offset_y * 0.5}px {blur * 0.5}px {spread}px rgba(0,0,0,0.15)"  # Ambient
-                shadow2 = (
-                    f"0px {offset_y}px {blur}px {spread+1}px rgba(0,0,0,0.10)"  # Key
-                )
-                base_styles_dict["box-shadow"] = f"{shadow1}, {shadow2}"
+            )
+            s_color = shadowColor or Colors.rgba(0, 0, 0, 0.2)
+            base_styles_dict["box-shadow"] = elevation_shadow(effective_elevation, s_color).removeprefix("box-shadow: ").removesuffix(";")
 
             # Text Style (Apply to direct text children - using descendant selector)
             text_style_css = ""
@@ -1607,9 +1583,9 @@ class ElevatedButton(Widget):
                 h_s_color = shadowColor or Colors.rgba(
                     0, 0, 0, 0.25
                 )  # Slightly darker?
-                h_shadow1 = f"0px {h_offset_y * 0.5}px {h_blur * 0.5}px {h_spread}px rgba(0,0,0,0.18)"
+                h_shadow1 = f"0px {to_unit(h_offset_y * 0.5)} {to_unit(h_blur * 0.5)} {to_unit(h_spread)} rgba(0,0,0,0.18)"
                 h_shadow2 = (
-                    f"0px {h_offset_y}px {h_blur}px {h_spread+1}px rgba(0,0,0,0.13)"
+                    f"0px {to_unit(h_offset_y)} {to_unit(h_blur)} {to_unit(h_spread+1)} rgba(0,0,0,0.13)"
                 )
                 hover_shadow_str = f"box-shadow: {h_shadow1}, {h_shadow2};"
             hover_rule = f""".{css_class}:hover {{ 
@@ -1622,13 +1598,14 @@ class ElevatedButton(Widget):
             active_rule = f".{css_class}:active {{ box-shadow: none; background-color: {activeColor if activeColor else 'rgba(0, 0, 0, 0.12)'} }}"
 
             # Disabled state (Handled by adding .disabled class)
-            disabled_bg = disBgColor or Colors.rgba(
-                0, 0, 0, 0.12
-            )  # M3 Disabled container approx
-            disabled_fg = disFgColor or Colors.rgba(
-                0, 0, 0, 0.38
-            )  # M3 Disabled content approx
-            disabled_rule = f".{css_class}.disabled {{ background-color: {disabled_bg}; color: {disabled_fg}; box-shadow: none; cursor: default; pointer-events: none; }}"
+            disabled_fg = disFgColor or Colors.rgba(0, 0, 0, 0.38)
+            disabled_bg = disBgColor or Colors.rgba(0, 0, 0, 0.12)
+            disabled_rule = build_disabled_rule(
+                css_class,
+                bg_color=disabled_bg,
+                fg_color=disabled_fg,
+                no_shadow=True,
+            )
 
             # Apply text style to children (e.g., direct Text widget child)
             text_style_rule = ""
@@ -1637,36 +1614,20 @@ class ElevatedButton(Widget):
                 text_style_rule = f".{css_class} > * {{ {text_style_css} }}"
 
             # Ripple Effect
-            ripple_keyframes = f"@keyframes ripple_{css_class} {{ 0% {{ transform: translate(-50%, -50%) scale(0); opacity: 0.2; }} 100% {{ transform: translate(-50%, -50%) scale(2.5); opacity: 0; }} }}"
-            ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: {repr(fgColor)} if {repr(fgColor)} else 'currentColor'; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
-            ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
+            ripple_css = build_ripple_css(css_class, fgColor)
 
-            def parse_dec(val):
-                if not val: return None
-                if isinstance(val, tuple):
-                    try: return BoxDecoration(*val)
-                    except: return None
-                return val if hasattr(val, 'to_css') else None
-            
-            # Interactive styling parsing
             try:
                 style_obj = ButtonStyle(*style_key)
             except Exception:
                 style_obj = ButtonStyle()
 
             extra_rules = []
-            hover_dec = parse_dec(getattr(style_obj, 'hoverStyle', None))
-            if hover_dec:
-                extra_rules.append(f".{css_class}:hover {{ {hover_dec.to_css()} }}")
-            focus_dec = parse_dec(getattr(style_obj, 'focusStyle', None))
-            if focus_dec:
-                extra_rules.append(f".{css_class}:focus-visible {{ {focus_dec.to_css()} }}")
-            active_dec = parse_dec(getattr(style_obj, 'activeStyle', None))
-            if active_dec:
-                extra_rules.append(f".{css_class}:active {{ {active_dec.to_css()} }}")
+            interactive_css = build_interactive_css(css_class, style_obj)
+            if interactive_css:
+                extra_rules.append(interactive_css)
 
             return "\n".join(
-                [main_rule, hover_rule, active_rule, disabled_rule, text_style_rule, ripple_keyframes, ripple_base, ripple_active_anim] + extra_rules
+                [main_rule, hover_rule, active_rule, disabled_rule, text_style_rule, ripple_css] + extra_rules
             )
 
         except Exception as e:
@@ -1907,8 +1868,8 @@ class IconButton(Widget):
                 if isinstance(padding_obj, EdgeInsets)
                 else 16
             )
-            base_styles["width"] = f"calc({icon_size or 24}px + {h_padding}px)"
-            base_styles["height"] = f"calc({icon_size or 24}px + {v_padding}px)"
+            base_styles["width"] = f"calc({to_unit(icon_size or 24)} + {to_unit(h_padding)})"
+            base_styles["height"] = f"calc({to_unit(icon_size or 24)} + {to_unit(v_padding)})"
 
             # Apply border and shape overrides from the style object
             if isinstance(border_obj, BorderSide):
@@ -1922,7 +1883,7 @@ class IconButton(Widget):
                     # print("Shape obj value: ", shape_obj.to_css_value())
                     base_styles["border-radius"] = shape_obj.to_css_value()
                 elif isinstance(shape_obj, (int, float)):
-                    base_styles["border-radius"] = f"{max(0.0, shape_obj)}px"
+                    base_styles["border-radius"] = f"{to_unit(max(0.0, shape_obj))}"
                 elif isinstance(shape_obj, tuple):
                     base_styles["border-radius"] = BorderRadius(
                         *shape_obj
@@ -1935,9 +1896,9 @@ class IconButton(Widget):
             # --- Icon Styling (Child Selector) ---
             icon_rule = f"""
             .{css_class} > i, .{css_class} > img, .{css_class} > svg, .{css_class} > * {{
-                font-size: {icon_size or 24}px;
-                width: {icon_size or 24}px;
-                height: {icon_size or 24}px;
+                font-size: {to_unit(icon_size or 24)};
+                width: {to_unit(icon_size or 24)};
+                height: {to_unit(icon_size or 24)};
                 display: block;
                 object-fit: contain;
             }}"""
@@ -1963,33 +1924,19 @@ class IconButton(Widget):
             active_rule_mod = f".{css_class.rstrip()}.active {{ background-color: {ac_color if ac_color else active_bg_color}; }}"
 
             # Disabled state (applied via .disabled class by reconciler)
-            disabled_color = (
-                "rgba(0, 0, 0, 0.38)"  # M3 disabled content color .active {}
+            disabled_rule = build_disabled_rule(
+                css_class.rstrip(),
+                bg_color="transparent",
+                fg_color="rgba(0, 0, 0, 0.38)",
             )
-            disabled_rule = f".{css_class.rstrip()}.disabled {{ color: {disabled_color}; background-color: transparent; cursor: default; pointer-events: none; }}"
 
             # Ripple Effect
-            ripple_keyframes = f"@keyframes ripple_{css_class.rstrip()} {{ 0% {{ transform: translate(-50%, -50%) scale(0); opacity: 0.2; }} 100% {{ transform: translate(-50%, -50%) scale(2.5); opacity: 0; }} }}"
-            ripple_base = f".{css_class.rstrip()}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
-            ripple_active_anim = f".{css_class.rstrip()}:active::after {{ animation: ripple_{css_class.rstrip()} 0.6s ease-out; }}"
-
-            def parse_dec(val):
-                if not val: return None
-                if isinstance(val, tuple):
-                    try: return BoxDecoration(*val)
-                    except: return None
-                return val if hasattr(val, 'to_css') else None
+            ripple_css = build_ripple_css(css_class.rstrip())
 
             extra_rules = []
-            hover_dec = parse_dec(getattr(style_obj, 'hoverStyle', None))
-            if hover_dec:
-                extra_rules.append(f".{css_class.rstrip()}:hover {{ {hover_dec.to_css()} }}")
-            focus_dec = parse_dec(getattr(style_obj, 'focusStyle', None))
-            if focus_dec:
-                extra_rules.append(f".{css_class.rstrip()}:focus-visible {{ {focus_dec.to_css()} }}")
-            active_dec = parse_dec(getattr(style_obj, 'activeStyle', None))
-            if active_dec:
-                extra_rules.append(f".{css_class.rstrip()}:active {{ {active_dec.to_css()} }}")
+            interactive_css = build_interactive_css(css_class.rstrip(), style_obj)
+            if interactive_css:
+                extra_rules.append(interactive_css)
 
             return "\n".join(
                 [
@@ -1999,9 +1946,7 @@ class IconButton(Widget):
                     active_rule,
                     active_rule_mod,
                     disabled_rule,
-                    ripple_keyframes,
-                    ripple_base,
-                    ripple_active_anim,
+                    ripple_css,
                 ] + extra_rules
             )
 
@@ -2228,12 +2173,12 @@ class FloatingActionButton(Widget):
                 "position": "fixed",  # FAB is fixed
                 "bottom": "16px",  # Default position
                 "right": "16px",  # Default position
-                "width": f"{fab_size}px",
-                "height": f"{fab_size}px",
-                "padding": f"{fab_padding}px",  # Apply uniform padding for icon centering
+                "width": f"{to_unit(fab_size)}",
+                "height": f"{to_unit(fab_size)}",
+                "padding": f"{to_unit(fab_padding)}",  # Apply uniform padding for icon centering
                 "margin": "0",
                 "border": "none",
-                "border-radius": f"{fab_radius}px",  # Default circular
+                "border-radius": f"{to_unit(fab_radius)}",  # Default circular
                 "background-color": bgColor
                 or (Colors.primaryContainer or "#EADDFF"),  # M3 Primary Container
                 "color": fgColor
@@ -2275,29 +2220,19 @@ class FloatingActionButton(Widget):
                         except:
                             pass
                     elif isinstance(shape_repr, (int, float)):
-                        base_styles_dict["border-radius"] = f"{max(0.0, shape_repr)}px"
+                        base_styles_dict["border-radius"] = f"{to_unit(max(0.0, shape_repr))}"
                 # Note: width/height overrides are less common for standard FAB, but could be added if needed
 
             # --- Elevation / Shadow (Based on M3 levels) ---
             eff_elevation = (
                 elevation if style_reconstructed and elevation is not None else 6.0
-            )  # Default level 6
+            )
             s_color = shadowColor or Colors.shadow or "#000000"
-            if eff_elevation >= 6:  # M3 Level 3 Shadow (High elevation)
-                shadow1 = f"0px 3px 5px -1px rgba(0,0,0,0.2)"  # Adjusted based on M3 spec examples
-                shadow2 = f"0px 6px 10px 0px rgba(0,0,0,0.14)"
-                shadow3 = f"0px 1px 18px 0px rgba(0,0,0,0.12)"
-                base_styles_dict["box-shadow"] = f"{shadow1}, {shadow2}, {shadow3}"
-            elif eff_elevation >= 3:  # M3 Level 2 Shadow
-                shadow1 = f"0px 1px 3px 1px rgba(0,0,0,0.15)"
-                shadow2 = f"0px 1px 2px 0px rgba(0,0,0,0.30)"
-                base_styles_dict["box-shadow"] = f"{shadow1}, {shadow2}"
-            elif eff_elevation > 0:  # M3 Level 1 Shadow
-                shadow1 = f"0px 1px 3px 0px rgba(0,0,0,0.30)"
-                shadow2 = f"0px 1px 1px 0px rgba(0,0,0,0.15)"
-                base_styles_dict["box-shadow"] = f"{shadow1}, {shadow2}"
+            shadow_val = elevation_shadow(eff_elevation, s_color)
+            if shadow_val:
+                base_styles_dict["box-shadow"] = shadow_val.removeprefix("box-shadow: ").removesuffix(";")
             else:
-                base_styles_dict["box-shadow"] = "none"  # No shadow if elevation is 0
+                base_styles_dict["box-shadow"] = "none"
 
             # --- Assemble Main Rule ---
             main_rule = f".{css_class} {{ {' '.join(f'{k}: {v};' for k, v in base_styles_dict.items())} }}"
@@ -2347,39 +2282,28 @@ class FloatingActionButton(Widget):
             active_rule = f".{css_class}:active {{ transform: scale(0.98); {ac_color}/* Example subtle press */ }}"
 
             # Disabled state (add .disabled class)
-            disabled_rule = f".{css_class}.disabled {{ background-color: {disabled_bg}; color: {disabled_fg}; box-shadow: none; cursor: default; pointer-events: none; }}"
+            disabled_rule = build_disabled_rule(
+                css_class,
+                bg_color="rgba(0, 0, 0, 0.12)",
+                fg_color="rgba(0, 0, 0, 0.38)",
+                no_shadow=True,
+            )
 
             # Ripple Effect
-            ripple_keyframes = f"@keyframes ripple_{css_class} {{ 0% {{ transform: translate(-50%, -50%) scale(0); opacity: 0.2; }} 100% {{ transform: translate(-50%, -50%) scale(2.5); opacity: 0; }} }}"
-            ripple_base = f".{css_class}::after {{ content: ''; position: absolute; top: 50%; left: 50%; width: 100%; padding-top: 100%; background-color: currentColor; border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }}"
-            ripple_active_anim = f".{css_class}:active::after {{ animation: ripple_{css_class} 0.6s ease-out; }}"
+            ripple_css = build_ripple_css(css_class)
 
-            # Interactive styling parsing
             try:
                 style_obj = ButtonStyle(*style_key)
             except Exception:
                 style_obj = ButtonStyle()
-            
-            def parse_dec(val):
-                if not val: return None
-                if isinstance(val, tuple):
-                    try: return BoxDecoration(*val)
-                    except: return None
-                return val if hasattr(val, 'to_css') else None
 
             extra_rules = []
-            hover_dec = parse_dec(getattr(style_obj, 'hoverStyle', None))
-            if hover_dec:
-                extra_rules.append(f".{css_class}:hover {{ {hover_dec.to_css()} }}")
-            focus_dec = parse_dec(getattr(style_obj, 'focusStyle', None))
-            if focus_dec:
-                extra_rules.append(f".{css_class}:focus-visible {{ {focus_dec.to_css()} }}")
-            active_dec = parse_dec(getattr(style_obj, 'activeStyle', None))
-            if active_dec:
-                extra_rules.append(f".{css_class}:active {{ {active_dec.to_css()} }}")
+            interactive_css = build_interactive_css(css_class, style_obj)
+            if interactive_css:
+                extra_rules.append(interactive_css)
 
             return "\n".join(
-                [main_rule, icon_rule, hover_rule, active_rule, disabled_rule, ripple_keyframes, ripple_base, ripple_active_anim] + extra_rules
+                [main_rule, icon_rule, hover_rule, active_rule, disabled_rule, ripple_css] + extra_rules
             )
 
         except Exception as e:
@@ -2723,15 +2647,15 @@ class GlobalScrollbarStyle(Widget):
             # It targets the global scrollbar, not a specific class.
             webkit_css = f"""
                 ::-webkit-scrollbar {{
-                    width: {scroll_width}px;
-                    height: {scroll_height}px;
+                    width: {to_unit(scroll_width)};
+                    height: {to_unit(scroll_height)};
                 }}
                 ::-webkit-scrollbar-track {{
                     background: {track_color};
                 }}
                 ::-webkit-scrollbar-thumb {{
                     background-color: {thumb_color};
-                    border-radius: {radius}px;
+                    border-radius: {to_unit(radius)};
                 }}
                 ::-webkit-scrollbar-thumb:hover {{
                     background-color: {thumb_hover_color};
@@ -2920,14 +2844,14 @@ class Scrollbar(Widget):
         styles = {}
         if self.width is not None:
             styles["width"] = (
-                f"{self.width}px"
+                f"{to_unit(self.width)}"
                 if isinstance(self.width, (int, float))
                 else self.width
             )
         if self.height is not None:
             print(self.height)
             styles["height"] = (
-                f"{self.height}px"
+                f"{to_unit(self.height)}"
                 if isinstance(self.height, (int, float))
                 else self.height
             )
@@ -2958,8 +2882,8 @@ class Scrollbar(Widget):
             ) = style_key
             # print(style_key)
 
-            height_str = f"{height}px" if isinstance(height, (int, float)) else height
-            width_str = f"{width}px" if isinstance(width, (int, float)) else width
+            height_str = f"{to_unit(height)}" if isinstance(height, (int, float)) else height
+            width_str = f"{to_unit(width)}" if isinstance(width, (int, float)) else width
 
             # These selectors precisely target the DOM elements created by SimpleBar.
             return f"""
@@ -2967,29 +2891,29 @@ class Scrollbar(Widget):
                 .{css_class} .simplebar-track.simplebar-vertical {{
                     background: {track_color};
                     width: {width_str};
-                    border-radius: {track_radius}px;
+                    border-radius: {to_unit(track_radius)};
                     margin: {track_margin};
                 }}
                 .{css_class} .simplebar-track.simplebar-horizontal {{
                     background: {track_color};
                     height: {height_str};
-                    border-radius: {track_radius}px;
+                    border-radius: {to_unit(track_radius)};
                 }}
 
                 /* Style the draggable scrollbar thumb */
                 .{css_class} .simplebar-scrollbar::before {{
                     background-color: {thumb_color};
-                    border-radius: {radius}px;
+                    border-radius: {to_unit(radius)};
                     /* Use a transparent border to create padding inside the thumb */
-                    border: {thumb_padding}px solid transparent;
+                    border: {to_unit(thumb_padding)} solid transparent;
                     background-clip: content-box;
                 }}
 
                 .{css_class} .simplebar-scrollbar::after {{
                     background-color: {thumb_color};
-                    border-radius: {radius}px;
+                    border-radius: {to_unit(radius)};
                     /* Use a transparent border to create padding inside the thumb */
-                    border: {thumb_padding}px solid transparent;
+                    border: {to_unit(thumb_padding)} solid transparent;
                     background-clip: content-box;
                 }}
 
@@ -3801,13 +3725,13 @@ class Image(Widget):
             # Handle width/height units (px default, allow strings like '100%')
             width_style = ""
             if isinstance(width, (int, float)):
-                width_style = f"width: {width}px;"
+                width_style = f"width: {to_unit(width)};"
             elif isinstance(width, str):
                 width_style = f"width: {width};"
 
             height_style = ""
             if isinstance(height, (int, float)):
-                height_style = f"height: {height}px;"
+                height_style = f"height: {to_unit(height)};"
             elif isinstance(height, str):
                 height_style = f"height: {height};"
 
@@ -4065,7 +3989,7 @@ class Icon(Widget):
                     font-family: '{fontFamily}';
                     font-weight: normal;
                     font-style: normal;
-                    font-size: {size}px;
+                    font-size: {to_unit(size)};
                     {color_rule}
                     line-height: 1;
                     letter-spacing: normal;
@@ -4232,7 +4156,7 @@ class _VirtualListViewState(State):
             print(
                 f"Python: Commanding JS instance '{instance_name}' to perform a FULL refresh."
             )
-            js_command = f"window._pythra_instances['{instance_name}']?.refreshAll();"
+            js_command = f"window._pythra_instances['{instance_name}']?.refresh();"
         else:
             print(
                 f"Python: Commanding JS instance '{instance_name}' to refresh items at indices: {indices}"
@@ -5089,7 +5013,7 @@ class GridView(Widget):
                 # Columns
                 if childMinWidth:
                     # Responsive columns
-                    grid_template_style = f"grid-template-columns: repeat(auto-fill, minmax({childMinWidth}px, 1fr));"
+                    grid_template_style = f"grid-template-columns: repeat(auto-fill, minmax({to_unit(childMinWidth)}, 1fr));"
                 else:
                     # Columns are fixed by crossAxisCount
                     grid_template_style = (
@@ -5097,12 +5021,12 @@ class GridView(Widget):
                     )
 
                 # Gap maps mainAxis (vertical) to row-gap, crossAxis (horizontal) to column-gap
-                grid_gap_style = f"gap: {mainAxisSpacing}px {crossAxisSpacing}px;"
+                grid_gap_style = f"gap: {to_unit(mainAxisSpacing)} {to_unit(crossAxisSpacing)};"
             else:  # HORIZONTAL
                 # Rows
                 if childMinWidth:
                     # Responsive rows (assuming minWidth implies minCrossAxisSize here too)
-                    grid_template_style = f"grid-template-rows: repeat(auto-fill, minmax({childMinWidth}px, 1fr));"
+                    grid_template_style = f"grid-template-rows: repeat(auto-fill, minmax({to_unit(childMinWidth)}, 1fr));"
                 else:
                     # Rows are fixed by crossAxisCount
                     grid_template_style = (
@@ -5117,7 +5041,7 @@ class GridView(Widget):
                     " grid-auto-columns: 1fr;"  # Example: columns fill space
                 )
                 # Gap maps mainAxis (horizontal) to column-gap, crossAxis (vertical) to row-gap
-                grid_gap_style = f"gap: {crossAxisSpacing}px {mainAxisSpacing}px;"
+                grid_gap_style = f"gap: {to_unit(crossAxisSpacing)} {to_unit(mainAxisSpacing)};"
 
             # Combine styles for the main GridView container
             container_styles = (
@@ -6020,7 +5944,7 @@ class AppBar(Widget):
                 )  # Example mapping elevation to Y offset
                 blur = offset_y * 2
                 spread = 0
-                shadow_style = f"box-shadow: 0 {offset_y}px {blur}px {spread}px {shadowColor or 'rgba(0,0,0,0.2)'};"
+                shadow_style = f"box-shadow: 0 {to_unit(offset_y)} {to_unit(blur)} {to_unit(spread)} {shadowColor or 'rgba(0,0,0,0.2)'};"
             base_styles += shadow_style
 
             # Pinned behavior
@@ -6035,7 +5959,7 @@ class AppBar(Widget):
             toolbar_row_styles = (
                 f"display: flex; "
                 f"align-items: center; "
-                f"height: {toolbarHeight or 56}px; "
+                f"height: {to_unit(toolbarHeight or 56)}; "
                 f"padding: 0 16px; "  # Default horizontal padding
             )
 
@@ -6263,16 +6187,16 @@ class BottomNavigationBarItem(Widget):
         }}
          .bnb-item .bnb-icon {{ /* Styles for the icon itself */
              color: {unselected_color};
-             font-size: {icon_size}px;
-             width: {icon_size}px;
-             height: {icon_size}px;
+             font-size: {to_unit(icon_size)};
+             width: {to_unit(icon_size)};
+             height: {to_unit(icon_size)};
              display: block;
              transition: color 0.2s ease-in-out;
              z-index: 1; /* Keep icon above indicator background */
         }}
         .bnb-item .bnb-label {{
              color: {unselected_color};
-             font-size: {label_unselected_size}px;
+             font-size: {to_unit(label_unselected_size)};
              /* TODO: Apply M3 Label Small/Medium font weights/styles */
              font-weight: 500;
              line-height: 16px;
@@ -6290,7 +6214,7 @@ class BottomNavigationBarItem(Widget):
         }}
          .bnb-item.selected .bnb-label {{
             color: {Colors.onSurface or '#1C1B1F'}; /* M3 Label color when selected */
-            font-size: {label_selected_size}px;
+            font-size: {to_unit(label_selected_size)};
              /* TODO: Apply M3 Label Medium font weights/styles */
         }}
         """
@@ -6511,7 +6435,7 @@ class BottomNavigationBar(Widget):
                 f"flex-direction: row; "
                 f"justify-content: space-around; "  # Distribute items
                 f"align-items: stretch; "  # Stretch items vertically
-                f"height: {height or 80}px; "  # M3 default height
+                f"height: {to_unit(height or 80)}; "  # M3 default height
                 f"width: 100%; "
                 f"background-color: {bg_color}; "
                 f"position: fixed; "  # Usually fixed at bottom
@@ -7309,7 +7233,7 @@ class TextField(Widget):
             else f"""
         .textfield-root-container.{css_class} .textfield-input::placeholder {{
             color: {hint_font_color or Colors.hex("#757575")}; /* show placeholder on focus */
-            font-size: {hint_font_size}px;
+            font-size: {to_unit(hint_font_size)};
             {hint_font_family}
         }}
         """
@@ -7328,10 +7252,10 @@ class TextField(Widget):
             position: relative; padding-top: 0px;
             background-color: {fill_color or 'rgba(0, 0, 0, 0.04)'};
             {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css} /* Top corners only generally for filled */
-            border-top: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
-            border-left: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
-            border-right: {'none' if filled else f"{border_width}px {border_style} {border_color or '#757575'}"};
-            border-bottom:{border_width}px {border_style} {border_color or '#757575'}; outline: {'none' if filled else border_color}; box-sizing: border-box;
+            border-top: {'none' if filled else f"{to_unit(border_width)} {border_style} {border_color or '#757575'}"};
+            border-left: {'none' if filled else f"{to_unit(border_width)} {border_style} {border_color or '#757575'}"};
+            border-right: {'none' if filled else f"{to_unit(border_width)} {border_style} {border_color or '#757575'}"};
+            border-bottom:{to_unit(border_width)} {border_style} {border_color or '#757575'}; outline: {'none' if filled else border_color}; box-sizing: border-box;
             transition: border-bottom-color 0.2s, background-color 0.2s, border-color 0.2s;
             cursor: text;
             display: flex;
@@ -7351,7 +7275,7 @@ class TextField(Widget):
         }}
         .textfield-root-container.{css_class} .textfield-input {{
             flex-grow: 1;
-            width: 100%; height: {field_height}px; padding: {content_padding_css}; font-size: {input_font_size}px;
+            width: 100%; height: {to_unit(field_height)}; padding: {content_padding_css}; font-size: {to_unit(input_font_size)};
             color: {input_font_color or Colors.onSurface}; {input_font_family} background-color: transparent;
             border: none; outline: none; box-sizing: border-box;
             {border_radius_css.replace('border-', 'border-top-').replace('border-top-radius', 'border-radius') if filled else border_radius_css}
@@ -7359,11 +7283,11 @@ class TextField(Widget):
         {hide_placeholder}
         .textfield-root-container.{css_class} .textfield-input:focus::placeholder {{
             color: {hint_font_color or Colors.hex("#757575")}; /* show placeholder on focus */
-            font-size: {hint_font_size}px;
+            font-size: {to_unit(hint_font_size)};
             {hint_font_family}
         }}
         .textfield-root-container.{css_class} .textfield-label {{
-            position: absolute; left: 16px; top: 18px; font-size: {label_font_size}px; {label_font_family}
+            position: absolute; left: 16px; top: 18px; font-size: {to_unit(label_font_size)}; {label_font_family}
             color: {label_font_color or label_color or '#757575'}; pointer-events: none;
             transform-origin: left top; 
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s, top 0.2s cubic-bezier(0.4, 0, 0.2, 1), left 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -7392,14 +7316,14 @@ class TextField(Widget):
 
         /* --- FOCUSED & VALUE STATE (Scoped) --- */
         .textfield-root-container.{css_class}:focus-within .textfield-container {{
-            border-top: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
-            border-left: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
-            border-right: {'none' if filled else f"{focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'}"};
-            border-bottom: {focused_border_width}px {focused_border_style} {focused_border_color or '#FF94DA'};
+            border-top: {'none' if filled else f"{to_unit(focused_border_width)} {focused_border_style} {focused_border_color or '#FF94DA'}"};
+            border-left: {'none' if filled else f"{to_unit(focused_border_width)} {focused_border_style} {focused_border_color or '#FF94DA'}"};
+            border-right: {'none' if filled else f"{to_unit(focused_border_width)} {focused_border_style} {focused_border_color or '#FF94DA'}"};
+            border-bottom: {to_unit(focused_border_width)} {focused_border_style} {focused_border_color or '#FF94DA'};
         }}
         .textfield-root-container.{css_class} .textfield-input:focus ~ .textfield-label,
         .textfield-root-container.{css_class} .textfield-input:not(:placeholder-shown) ~ .textfield-label {{
-            transform: translateY(-{float(label_font_size) * 0.625}px) scale(0.75); /* Dynamic translation based on font base */
+            transform: translateY(-{to_unit(float(label_font_size) * 0.625)}) scale(0.75); /* Dynamic translation based on font base */
             top: 4px; /* Adjust top so the label breaks the border line */
             color: {focus_color or '#FF94DA'};
             background: {f'linear-gradient(to bottom, transparent 37%, {fill_color} 37%);' if not filled else 'transparent'};
@@ -7420,7 +7344,7 @@ class TextField(Widget):
             color: {error_color};
         }}
         .textfield-root-container.{css_class}.error .textfield-outline {{
-            height: {error_border_width}px;
+            height: {to_unit(error_border_width)};
             background-color: {error_border_color};
         }}
         .textfield-root-container.{css_class}.error .textfield-helper-text {{
@@ -7607,7 +7531,7 @@ class GradientBorderContainer(Widget):
         if not child:
             raise ValueError("GradientBorderContainer requires a child widget.")
         
-        self.width = f"{width}px" if isinstance(width, int) or isinstance(width, float) else width
+        self.width = f"{to_unit(width)}" if isinstance(width, int) or isinstance(width, float) else width
         self.borderWidth = borderWidth
         self.theme = theme or GradientBorderTheme()
         self.play = play
@@ -7640,9 +7564,9 @@ class GradientBorderContainer(Widget):
         return {
             'css_class': self.css_class,
             'style': {
-                '--gradient-border-size': f"{self.borderWidth}px",
-                '--gradient-border-radius': f"{wrapper_radius}px",
-                '--gradient-child-radius': f"{child_radius_val}px",
+                '--gradient-border-size': f"{to_unit(self.borderWidth)}",
+                '--gradient-border-radius': f"{to_unit(wrapper_radius)}",
+                '--gradient-child-radius': f"{to_unit(child_radius_val)}",
                 'width': self.width
             }
         }
