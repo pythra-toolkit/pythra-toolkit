@@ -1,4 +1,3 @@
 # MANIFEST.in
 graft project_template
-graft pythra/web_template   # <-- ADD THIS
-graft pythra/assets_template # <-- ADD THIS
+graft pythra/assets_template

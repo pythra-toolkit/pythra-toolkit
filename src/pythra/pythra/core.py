@@ -382,7 +382,7 @@ class Framework:
         """
         # Find the source path inside the installed pythra package
         package_root = Path(__file__).parent
-        source_render_dir = package_root / 'web_template'
+        source_render_dir = package_root / 'project_template' / 'render'
         source_assets_dir = package_root / 'assets_template'
 
         # Copy web files (js, etc.)
