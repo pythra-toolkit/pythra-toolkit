@@ -1,0 +1,37 @@
+{
+    "name": "pythra_motion",
+    "version": "1.0.0",
+    "description": "A Flutter-style animation plugin for Pythra powered by motion.dev",
+    "package_type": "plugin",
+    "dependencies": {
+        "pythra": ">=0.1.0"
+    },
+    "author": {
+        "name": "itsredx",
+        "email": "ambashir02@gmail.com",
+        "url": "https://github.com/itsredx"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itsredx/pythra-toolkit",
+        "directory": "plugins/pythra_motion"
+    },
+    "min_python_version": "0.1.0",
+    "supported_platforms": ["windows", "linux", "macos"],
+    "python_modules": [
+        "__init__",
+        "widget",
+        "controller",
+        "motion_state",
+        "easing",
+        "types",
+        "spring"
+    ],
+    "asset_dir": "render",
+    "js_modules": {
+        "Motion": "js/motion.js",
+        "PythraMotion": "js/animation_engine.js"
+    },
+    "tags": ["animation", "motion", "transition", "gesture", "scroll"]
+}

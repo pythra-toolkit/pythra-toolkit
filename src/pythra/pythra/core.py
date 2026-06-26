@@ -2069,18 +2069,49 @@ body {{
                
         html_output = (
             f"""<!DOCTYPE html>
-<html lang=\"en\">
+<html lang="en">
 <head>
-    <meta charset=\"UTF-8\">
+    <meta charset="UTF-8">
     <title>{html.escape(title)}</title>
+    <script>
+        window._console_logs = [];
+        (function() {{
+            const origLog = console.log;
+            const origWarn = console.warn;
+            const origErr = console.error;
+            console.log = function(...args) {{
+                window._console_logs.push("[LOG] " + args.map(String).join(" "));
+                origLog.apply(console, args);
+            }};
+            console.warn = function(...args) {{
+                window._console_logs.push("[WARN] " + args.map(String).join(" "));
+                origWarn.apply(console, args);
+            }};
+            console.error = function(...args) {{
+                window._console_logs.push("[ERROR] " + args.map(String).join(" "));
+                origErr.apply(console, args);
+            }};
+        }})();
+    </script>
     <!-- ADD SIMPLEBAR CSS -->
-    <link rel=\"stylesheet\" href=\"./js/scroll-bar/simplebar.min.css\" />
-     <link id=\"base-stylesheet\" type=\"text/css\" rel=\"stylesheet\" href=\"styles.css\">\n
-                <style id=\"theme-styles\">{ThemeManager.instance().current_theme.to_css_vars()}</style>\n
-                <style id=\"dynamic-styles\">{initial_css_rules}</style>\n
-                {self._get_js_includes()}\n
-                {plugin_css_str}\n
-            </head>\n<body>\n    <div id=\"root-container\">{html_content}</div>\n    <div id=\"overlay-container\"></div>\n\n    <!-- ADD SIMPLEBAR JS -->\n    <script src=\"./js/scroll-bar/simplebar.min.js\"></script>\n    <script src=\"./js/pythra_bridge.js\"></script>\n    <!-- ADD THE NEW SLIDER JS ENGINE -->\n    {initial_js}\n</body>\n</html>"""
+    <link rel="stylesheet" href="./js/scroll-bar/simplebar.min.css" />
+     <link id="base-stylesheet" type="text/css" rel="stylesheet" href="styles.css">
+                <style id="theme-styles">{ThemeManager.instance().current_theme.to_css_vars()}</style>
+                <style id="dynamic-styles">{initial_css_rules}</style>
+                {self._get_js_includes()}
+                {plugin_css_str}
+            </head>
+<body>
+    <div id="root-container">{html_content}</div>
+    <div id="overlay-container"></div>
+
+    <!-- ADD SIMPLEBAR JS -->
+    <script src="./js/scroll-bar/simplebar.min.js"></script>
+    <script src="./js/pythra_bridge.js"></script>
+    <!-- ADD THE NEW SLIDER JS ENGINE -->
+    {initial_js}
+</body>
+</html>"""
         )
 
         try:

@@ -9,9 +9,9 @@ easy to mock in tests. It exposes:
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, Future
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 from PySide6.QtCore import QTimer
-from PySide6.QtCore import QObject, Slot, QMetaObject, Qt, Signal, QCoreApplication
+from PySide6.QtCore import QObject, Slot, QMetaObject, Qt, Signal, QCoreApplication, QThread, QEventLoop
 
 # Module-level singleton executor. Consumers may override by assigning
 # to `executor` for testing or configuration.
@@ -122,3 +122,72 @@ def ui_thread(func):
     def wrapper(*args, **kwargs):
         dispatch_to_main(lambda: func(*args, **kwargs))
     return wrapper
+
+
+# ── Synchronous JS Evaluation ─────────────────────────────────────────
+
+def evaluate_js_sync(script: str, window_id: Optional[str] = None) -> Any:
+    """
+    Evaluate a JavaScript expression and return its result synchronously.
+
+    If called from the main Qt UI thread, it spins a local QEventLoop to avoid
+    deadlocking the application while waiting for the QWebEngineView's async callback.
+    If called from a background worker thread, it dispatches the call to the UI
+    thread and blocks the background thread until the result is ready.
+    """
+    from .core import Framework
+    from .window import webwidget
+
+    fw = Framework.instance()
+    if not fw or not fw.window:
+        raise RuntimeError("PyThra Framework window is not initialized.")
+
+    w_id = window_id or getattr(fw, "id", "main_window_id")
+    window = webwidget.window_manager.windows.get(w_id)
+    if not window or not hasattr(window, "webview") or not window.webview:
+        raise ValueError(f"Window with ID '{w_id}' not found or has no webview.")
+
+    # Check if we are executing on the main Qt UI thread
+    is_main_thread = False
+    app = QCoreApplication.instance()
+    if app:
+        is_main_thread = (QThread.currentThread() == app.thread())
+
+    if is_main_thread:
+        # UI Thread: spin a local event loop
+        loop = QEventLoop()
+        result_holder = {"value": None, "error": None}
+
+        def cb(res):
+            result_holder["value"] = res
+            loop.quit()
+
+        try:
+            window.webview.page().runJavaScript(script, cb)
+            loop.exec()
+        except Exception as e:
+            result_holder["error"] = e
+
+        if result_holder["error"]:
+            raise result_holder["error"]
+        return result_holder["value"]
+
+    else:
+        # Background/Worker Thread: block thread using Future
+        fut = Future()
+
+        def run_on_ui():
+            try:
+                loop = QEventLoop()
+
+                def cb(res):
+                    fut.set_result(res)
+                    loop.quit()
+
+                window.webview.page().runJavaScript(script, cb)
+                loop.exec()
+            except Exception as e:
+                fut.set_exception(e)
+
+        dispatch_to_main(run_on_ui)
+        return fut.result()
