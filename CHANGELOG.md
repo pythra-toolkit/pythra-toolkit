@@ -6,9 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
-## [0.1.24] - 2026-05-19
+## [0.1.25] - 2026-06-26
 
-Responsive layout architecture, rendering performance optimizations, and styling system refinements.
+ContextMenu widget, Text maxLines support, state rescue fix, and spellcheck integration.
+
+### ✨ New Features
+
+* **ContextMenu Widget:**
+  * New `ContextMenu`, `ContextMenuTheme`, and `MenuItem` widgets for right-click context menus.
+  * Client-side JS engine (`context_menu.js`) handles positioning, animation, and dismissal.
+  * Supports icons, dividers, and themed styling via `ContextMenuTheme`.
+* **Text Widget Enhancements:**
+  * Added `maxLines` parameter to `Text` widget for multi-line truncation with ellipsis using `-webkit-line-clamp` CSS.
+  * CSS rule generation updated to handle `maxLines` style key component.
+* **Spellcheck Support:**
+  * Enabled QWebEngine spellcheck with `en-US` language dictionary in `WebWindow`.
+
+### 🐛 Bug Fixes
+
+* **State Rescue Path:** Fixed `_build_widget_tree` in `core.py` — the rescued state's `_dirty` flag is now set to `True` in the `didUpdateWidget` branch (line 1136), ensuring the reused state triggers a rebuild of its widget tree during reconciliation.
+
+### 🔧 Internal
+
+* **Cython Rebuild:** Regenerated `key_cython.c` and `reconciler_cython.c` with Cython 3.2.5 (up from 3.2.4).
+* **JS Engine Registration:** Registered `PythraContextMenuInternal` in the framework's built-in JS engines list.
+* **Debug Cleanup:** Commented out verbose `print("callback: ", callback)` in `webwidget.py`, migrated to `debug_print`.
 
 ### ✨ New Features
 

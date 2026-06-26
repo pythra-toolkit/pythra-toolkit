@@ -257,7 +257,8 @@ class Framework:
             'PythraVirtualList': "render/js/virtual_list.js",
             'PythraVirtualGrid': "render/js/virtual_grid.js",
             'PythraTextField': "render/js/textfield.js",
-            'PythraVirtualizedDropdownInternal': "render/js/virtual_dropdown.js"
+            'PythraVirtualizedDropdownInternal': "render/js/virtual_dropdown.js",
+            'PythraContextMenuInternal': "render/js/context_menu.js"
         }
 
         self._result = None  # Stores UI update results
@@ -668,7 +669,8 @@ class Framework:
             'PythraVirtualList': "render/js/virtual_list.js",
             'PythraVirtualGrid': "render/js/virtual_grid.js",
             'PythraTextField': "render/js/textfield.js",
-            'PythraVirtualizedDropdownInternal': "render/js/virtual_dropdown.js"
+            'PythraVirtualizedDropdownInternal': "render/js/virtual_dropdown.js",
+            'PythraContextMenuInternal': "render/js/context_menu.js"
             #'PythraMarkdownEditor': "render/js/dropdown.js", # Placeholder key to suppress warning, actual loaded via plugin
         }
         # Build a cache key. None means 'ALL' engines load; use a stable frozenset.
@@ -1131,6 +1133,7 @@ class Framework:
                                 widget._state = old_state
                                 old_state._set_widget(widget)
                                 old_state.didUpdateWidget(old_widget, widget)
+                                old_state._dirty = True
                                 state = old_state
 
             # If still no state (first render), create it fresh
@@ -2145,6 +2148,7 @@ body {{
                     originalWarn.apply(console, args);
                 }};
             }})();
+
             
             document.addEventListener('DOMContentLoaded', () => {{
                 new QWebChannel(qt.webChannelTransport, (channel) => {{

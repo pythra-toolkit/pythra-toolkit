@@ -641,7 +641,7 @@ class Api(QObject):
         Finds the registered callback by its name and executes it with the new value.
         """
         callback = self.callbacks.get(callback_name)
-        print("callback: ", callback)
+        # print("callback: ", callback)
         debug_print("callback: ", callback)
         if callback:
             try:
@@ -859,6 +859,11 @@ class WebWindow(QWidget):
         profile.setPersistentStoragePath(cache_path)
         # Enable disk cache
         profile.setHttpCacheType(QWebEngineProfile.DiskHttpCache)
+        profile.setSpellCheckEnabled(True)
+        try:
+            profile.setSpellCheckLanguages(["en-US"])
+        except Exception as e:
+            debug_print(f"⚠️ Failed to set spellcheck languages: {e}")
 
         # print("📁 Setup WebEngine Config: ", cache_path)
         debug_print("📁 Setup WebEngine Config: ", cache_path)

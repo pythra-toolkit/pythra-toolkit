@@ -22,3 +22,6 @@ build/
 src/pythra/pythra.egg-info/PKG-INFO
 src/pythra/pythra/__pycache__/core.cpython-312.pyc
 src/pythra/pythra/__pycache__/__init__.cpython-312.pyc
+
+# Documentation planning
+tobedoc.md

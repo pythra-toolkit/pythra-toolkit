@@ -30,6 +30,7 @@ from .controllers import (
     ProgressIndicatorController,
 )
 from .events import TapDetails, PanUpdateDetails
+from .context_menu import ContextMenu, ContextMenuTheme, MenuItem
 from .derived_widgets.dropdown.dropdown import VirtualDropdown
 from .derived_widgets.dropdown.controller import VirtualDropdownController
 from .derived_widgets.dropdown.style import VirtualDropdownTheme
@@ -334,6 +335,9 @@ __all__ = [
     "submit_task",
     "dispatch_to_main",
     "ResponsiveBuilder",
+    "ContextMenu",
+    "ContextMenuTheme",
+    "MenuItem",
 ]
 
 # --- Auto-inject project root to sys.path ---
@@ -351,6 +355,6 @@ except Exception:
     pass
 
 
-__version__ = "0.1.24"  # Example version
+__version__ = "0.1.25"  # Example version
 
 print("PyThra Toolkit Initialized")  # Optional: Confirmation message

@@ -805,6 +805,7 @@ class Text(Widget):
         style=None,
         textAlign=None,
         overflow=None,
+        maxLines=None,
         hoverStyle=None,
         focusStyle=None,
         activeStyle=None,
@@ -814,6 +815,7 @@ class Text(Widget):
         self.style = style  # Assume TextStyle object or similar
         self.textAlign = textAlign
         self.overflow = overflow
+        self.maxLines = maxLines
         self.hoverStyle = hoverStyle
         self.focusStyle = focusStyle
         self.activeStyle = activeStyle
@@ -825,6 +827,7 @@ class Text(Widget):
                 self.style.to_css() if hasattr(self.style, 'to_css') else self.style,
                 self.textAlign,
                 self.overflow,
+                self.maxLines,
                 self.hoverStyle.to_css() if hasattr(self.hoverStyle, 'to_css') else self.hoverStyle,
                 self.focusStyle.to_css() if hasattr(self.focusStyle, 'to_css') else self.focusStyle,
                 self.activeStyle.to_css() if hasattr(self.activeStyle, 'to_css') else self.activeStyle,
@@ -840,10 +843,11 @@ class Text(Widget):
     def render_props(self) -> Dict[str, Any]:
         """Return properties for diffing."""
         props = {
-            "data": self.data,  # The text content itself is a key property
+            "data": self.data,
             "style": self._get_render_safe_prop(self.style),
             "textAlign": self.textAlign,
             "overflow": self.overflow,
+            "maxLines": self.maxLines,
             "css_class": self.css_class,
         }
         return {k: v for k, v in props.items() if v is not None}
@@ -856,16 +860,21 @@ class Text(Widget):
     def generate_css_rule(style_key: Tuple, css_class: str) -> str:
         """Static method for Reconciler to generate CSS rule string."""
         try:
-            (style, textAlign, overflow, hover_style, focus_style, active_style) = style_key
+            (style, textAlign, overflow, maxLines, hover_style, focus_style, active_style) = style_key
 
             # Assume style.to_css() returns combined font/color etc. rules
             style_str = style if style else ""
             # print("Style str: ", style)
             text_align_str = f"text-align: {textAlign};" if textAlign else ""
 
-            # If overflow is 'ellipsis', force single line.
-            # Otherwise, or if overflow is specifically 'visible' (or None implied), use pre-wrap to respect \n
-            if overflow == "ellipsis":
+            if maxLines:
+                overflow_str = (
+                    f"overflow: hidden;"
+                    f"display: -webkit-box;"
+                    f"-webkit-line-clamp: {maxLines};"
+                    f"-webkit-box-orient: vertical;"
+                )
+            elif overflow == "ellipsis":
                 overflow_str = (
                     f"overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
                 )
