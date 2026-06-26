@@ -1,2 +1,8 @@
+_assets
+assets
+build
+perv_tests
+plugins
 project_template
 pythra
+render
