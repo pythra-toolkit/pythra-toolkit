@@ -382,7 +382,7 @@
             var resolvedSequence = sequence.map(function (step) {
                 if (Array.isArray(step) && step.length >= 2) {
                     var newStep = step.slice();
-                    var resolvedTarget = _resolveSelectorTarget(self.el, step[0]);
+                    var resolvedTarget = _resolveSelectorTarget(self.element, step[0]);
                     console.log("PythraMotion: target", step[0], "resolved to:", resolvedTarget);
                     newStep[0] = resolvedTarget;
                     if (step.length >= 3) {
@@ -415,7 +415,7 @@
 
         sequence.forEach(function (step) {
             if (!Array.isArray(step) || step.length < 2) return;
-            var target = _resolveSelectorTarget(self.el, step[0]);
+            var target = _resolveSelectorTarget(self.element, step[0]);
             if (!target) return;
 
             var keyframes = step[1];
