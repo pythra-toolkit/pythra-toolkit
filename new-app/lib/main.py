@@ -119,10 +119,30 @@ class DemoPageState(State):
         self.reactive_val = MotionValue(0.0)
         self.reactive_opacity = self.reactive_val.map([0, 100], [0.3, 1.0])
         self.reactive_rotate = self.reactive_val.map([0, 100], ["rotate(0deg)", "rotate(360deg)"])
+        self.splash_ctrl = AnimationController()
 
     def _on_slider_changed(self, new_value):
         self.slider_ctrl.value = new_value
         self.reactive_val.set(new_value)
+
+    def _trigger_splash(self):
+        sequence = [
+            # Fall droplet
+            [".splash-droplet", {"translateY": [0, 55], "scaleY": [1.4, 0.6], "opacity": [1, 1]}, {"duration": 0.4, "ease": "easeIn"}],
+            # Hide droplet instantly
+            [".splash-droplet", {"opacity": [1, 0]}, {"duration": 0.01, "at": 0.4}],
+            # Ripple 1 expands and fades
+            [".ripple-1", {"scale": [0, 2.5], "opacity": [1, 0]}, {"duration": 0.6, "ease": "easeOut", "at": 0.4}],
+            # Ripple 2 expands slightly delayed
+            [".ripple-2", {"scale": [0, 1.8], "opacity": [1, 0]}, {"duration": 0.5, "ease": "easeOut", "at": 0.48}],
+            # Particle 1 (Left-up)
+            [".particle-1", {"x": [0, -22], "y": [0, -25], "scale": [1, 0], "opacity": [1, 0]}, {"duration": 0.5, "ease": "easeOut", "at": 0.4}],
+            # Particle 2 (Right-up)
+            [".particle-2", {"x": [0, 22], "y": [0, -25], "scale": [1, 0], "opacity": [1, 0]}, {"duration": 0.5, "ease": "easeOut", "at": 0.4}],
+            # Particle 3 (Center-high)
+            [".particle-3", {"x": [0, 0], "y": [0, -35], "scale": [1.2, 0], "opacity": [1, 0]}, {"duration": 0.5, "ease": "easeOut", "at": 0.4}]
+        ]
+        self.splash_ctrl.timeline(sequence)
 
     def _toggle_layout_expand(self):
         self.layout_expanded = not self.layout_expanded
@@ -624,6 +644,126 @@ class DemoPageState(State):
                                                     style=TextStyle(color=Colors.black, fontSize=12, fontWeight="bold"),
                                                 ),
                                             ),
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        ),
+                        SizedBox(height=16, key=Key("stagger_row_size_reactive_splash"),),
+                        # --- Example 10: Svg Droplet Splash ---
+                        _card(
+                            key=Key("splash_animation_card"),
+                            title="SVG Droplet Splash Timeline",
+                            description="Uses timeline sequences to coordinate a falling droplet, ripples, and radial particles.",
+                            child=Column(
+                                key=Key("splash_col"),
+                                children=[
+                                    ElevatedButton(
+                                        key=Key("splash_btn"),
+                                        onPressed=self._trigger_splash,
+                                        child=Text("Release Droplet", key=Key("splash_btn_txt")),
+                                    ),
+                                    SizedBox(height=24, key=Key("splash_spacer")),
+                                    MotionWidget(
+                                        key=Key("splash_canvas"),
+                                        controller=self.splash_ctrl,
+                                        child=Svg(
+                                            key=Key("splash_svg"),
+                                            width=160,
+                                            height=160,
+                                            viewBox="0 0 100 100",
+                                            style={
+                                                "background": "#121212",
+                                                "border-radius": "12px",
+                                                "border": "1px solid #333",
+                                            },
+                                            children=[
+                                                SvgLine(
+                                                    key=Key("splash_line"),
+                                                    x1=10,
+                                                    y1=70,
+                                                    x2=90,
+                                                    y2=70,
+                                                    stroke="#333",
+                                                    strokeWidth=2,
+                                                ),
+                                                SvgCircle(
+                                                    key=Key("splash_ripple_1"),
+                                                    cx=50,
+                                                    cy=70,
+                                                    r=15,
+                                                    fill="none",
+                                                    stroke="#03DAC6",
+                                                    strokeWidth=2,
+                                                    css_class="ripple-1",
+                                                    style={
+                                                        "transform-origin": "50px 70px",
+                                                        "opacity": 0,
+                                                    },
+                                                ),
+                                                SvgCircle(
+                                                    key=Key("splash_ripple_2"),
+                                                    cx=50,
+                                                    cy=70,
+                                                    r=15,
+                                                    fill="none",
+                                                    stroke="#BB86FC",
+                                                    strokeWidth=1.5,
+                                                    css_class="ripple-2",
+                                                    style={
+                                                        "transform-origin": "50px 70px",
+                                                        "opacity": 0,
+                                                    },
+                                                ),
+                                                SvgCircle(
+                                                    key=Key("splash_part_1"),
+                                                    cx=50,
+                                                    cy=70,
+                                                    r=3,
+                                                    fill="#03DAC6",
+                                                    css_class="particle-1",
+                                                    style={
+                                                        "transform-origin": "50px 70px",
+                                                        "opacity": 0,
+                                                    },
+                                                ),
+                                                SvgCircle(
+                                                    key=Key("splash_part_2"),
+                                                    cx=50,
+                                                    cy=70,
+                                                    r=3,
+                                                    fill="#03DAC6",
+                                                    css_class="particle-2",
+                                                    style={
+                                                        "transform-origin": "50px 70px",
+                                                        "opacity": 0,
+                                                    },
+                                                ),
+                                                SvgCircle(
+                                                    key=Key("splash_part_3"),
+                                                    cx=50,
+                                                    cy=70,
+                                                    r=4,
+                                                    fill="#BB86FC",
+                                                    css_class="particle-3",
+                                                    style={
+                                                        "transform-origin": "50px 70px",
+                                                        "opacity": 0,
+                                                    },
+                                                ),
+                                                SvgCircle(
+                                                    key=Key("splash_droplet_circle"),
+                                                    cx=50,
+                                                    cy=15,
+                                                    r=4,
+                                                    fill="#BB86FC",
+                                                    css_class="splash-droplet",
+                                                    style={
+                                                        "transform-origin": "50px 15px",
+                                                        "opacity": 0,
+                                                    },
+                                                ),
+                                            ],
                                         ),
                                     ),
                                 ],
