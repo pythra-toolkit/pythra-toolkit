@@ -650,11 +650,11 @@ class DemoPageState(State):
                             ),
                         ),
                         SizedBox(height=16, key=Key("stagger_row_size_reactive_splash"),),
-                        # --- Example 10: Svg Droplet Splash ---
+                        # --- Example 10: Droplet Splash ---
                         _card(
                             key=Key("splash_animation_card"),
-                            title="SVG Droplet Splash Timeline",
-                            description="Uses timeline sequences to coordinate a falling droplet, ripples, and radial particles.",
+                            title="Coordinated Droplet Splash Timeline",
+                            description="Uses timeline sequences to coordinate a falling droplet, expanding ripples, and radial particles.",
                             child=Column(
                                 key=Key("splash_col"),
                                 children=[
@@ -667,103 +667,156 @@ class DemoPageState(State):
                                     MotionWidget(
                                         key=Key("splash_canvas"),
                                         controller=self.splash_ctrl,
-                                        child=Svg(
-                                            key=Key("splash_svg"),
+                                        child=Container(
+                                            key=Key("splash_canvas_container"),
                                             width=160,
                                             height=160,
-                                            viewBox="0 0 100 100",
+                                            decoration=BoxDecoration(
+                                                color=Colors.hex("#121212"),
+                                                borderRadius=BorderRadius.all(12),
+                                                border=Border.all(color=Colors.hex("#333"), width=1),
+                                            ),
                                             style={
-                                                "background": "#121212",
-                                                "border-radius": "12px",
-                                                "border": "1px solid #333",
+                                                "position": "relative",
+                                                "overflow": "hidden",
                                             },
-                                            children=[
-                                                SvgLine(
-                                                    key=Key("splash_line"),
-                                                    x1=10,
-                                                    y1=70,
-                                                    x2=90,
-                                                    y2=70,
-                                                    stroke="#333",
-                                                    strokeWidth=2,
-                                                ),
-                                                SvgCircle(
-                                                    key=Key("splash_ripple_1"),
-                                                    cx=50,
-                                                    cy=70,
-                                                    r=15,
-                                                    fill="none",
-                                                    stroke="#03DAC6",
-                                                    strokeWidth=2,
-                                                    css_class="ripple-1",
-                                                    style={
-                                                        "transform-origin": "50px 70px",
-                                                        "opacity": 0,
-                                                    },
-                                                ),
-                                                SvgCircle(
-                                                    key=Key("splash_ripple_2"),
-                                                    cx=50,
-                                                    cy=70,
-                                                    r=15,
-                                                    fill="none",
-                                                    stroke="#BB86FC",
-                                                    strokeWidth=1.5,
-                                                    css_class="ripple-2",
-                                                    style={
-                                                        "transform-origin": "50px 70px",
-                                                        "opacity": 0,
-                                                    },
-                                                ),
-                                                SvgCircle(
-                                                    key=Key("splash_part_1"),
-                                                    cx=50,
-                                                    cy=70,
-                                                    r=3,
-                                                    fill="#03DAC6",
-                                                    css_class="particle-1",
-                                                    style={
-                                                        "transform-origin": "50px 70px",
-                                                        "opacity": 0,
-                                                    },
-                                                ),
-                                                SvgCircle(
-                                                    key=Key("splash_part_2"),
-                                                    cx=50,
-                                                    cy=70,
-                                                    r=3,
-                                                    fill="#03DAC6",
-                                                    css_class="particle-2",
-                                                    style={
-                                                        "transform-origin": "50px 70px",
-                                                        "opacity": 0,
-                                                    },
-                                                ),
-                                                SvgCircle(
-                                                    key=Key("splash_part_3"),
-                                                    cx=50,
-                                                    cy=70,
-                                                    r=4,
-                                                    fill="#BB86FC",
-                                                    css_class="particle-3",
-                                                    style={
-                                                        "transform-origin": "50px 70px",
-                                                        "opacity": 0,
-                                                    },
-                                                ),
-                                                SvgCircle(
-                                                    key=Key("splash_droplet_circle"),
-                                                    cx=50,
-                                                    cy=15,
-                                                    r=4,
-                                                    fill="#BB86FC",
-                                                    css_class="splash-droplet",
-                                                    style={
-                                                        "transform-origin": "50px 15px",
-                                                        "opacity": 0,
-                                                    },
-                                                ),
-                                            ],
+                                            child=Stack(
+                                                key=Key("splash_stack"),
+                                                children=[
+                                                    # Platform line
+                                                    Positioned(
+                                                        key=Key("splash_line"),
+                                                        top=110,
+                                                        left=20,
+                                                        right=20,
+                                                        height=2,
+                                                        child=Container(
+                                                            key=Key("splash_line_box"),
+                                                            color="#333",
+                                                        ),
+                                                    ),
+                                                    # Ripple 1
+                                                    Positioned(
+                                                        key=Key("splash_ripple_1_pos"),
+                                                        left=70,
+                                                        top=100,
+                                                        width=20,
+                                                        height=20,
+                                                        child=Container(
+                                                            key=Key("splash_ripple_1"),
+                                                            css_class="ripple-1",
+                                                            decoration=BoxDecoration(
+                                                                borderRadius=BorderRadius.all(10),
+                                                                border=Border.all(color=Colors.hex("#03DAC6"), width=2),
+                                                            ),
+                                                            style={
+                                                                "opacity": "0",
+                                                                "transform-origin": "center",
+                                                            },
+                                                        ),
+                                                    ),
+                                                    # Ripple 2
+                                                    Positioned(
+                                                        key=Key("splash_ripple_2_pos"),
+                                                        left=70,
+                                                        top=100,
+                                                        width=20,
+                                                        height=20,
+                                                        child=Container(
+                                                            key=Key("splash_ripple_2"),
+                                                            css_class="ripple-2",
+                                                            decoration=BoxDecoration(
+                                                                borderRadius=BorderRadius.all(10),
+                                                                border=Border.all(color=Colors.hex("#BB86FC"), width=1.5),
+                                                            ),
+                                                            style={
+                                                                "opacity": "0",
+                                                                "transform-origin": "center",
+                                                            },
+                                                        ),
+                                                    ),
+                                                    # Particle 1 (Left-up)
+                                                    Positioned(
+                                                        key=Key("splash_part_1_pos"),
+                                                        left=78,
+                                                        top=108,
+                                                        width=4,
+                                                        height=4,
+                                                        child=Container(
+                                                            key=Key("splash_part_1"),
+                                                            css_class="particle-1",
+                                                            decoration=BoxDecoration(
+                                                                color=Colors.hex("#03DAC6"),
+                                                                borderRadius=BorderRadius.all(2),
+                                                            ),
+                                                            style={
+                                                                "opacity": "0",
+                                                                "transform-origin": "center",
+                                                            },
+                                                        ),
+                                                    ),
+                                                    # Particle 2 (Right-up)
+                                                    Positioned(
+                                                        key=Key("splash_part_2_pos"),
+                                                        left=78,
+                                                        top=108,
+                                                        width=4,
+                                                        height=4,
+                                                        child=Container(
+                                                            key=Key("splash_part_2"),
+                                                            css_class="particle-2",
+                                                            decoration=BoxDecoration(
+                                                                color=Colors.hex("#03DAC6"),
+                                                                borderRadius=BorderRadius.all(2),
+                                                            ),
+                                                            style={
+                                                                "opacity": "0",
+                                                                "transform-origin": "center",
+                                                            },
+                                                        ),
+                                                    ),
+                                                    # Particle 3 (Center-high)
+                                                    Positioned(
+                                                        key=Key("splash_part_3_pos"),
+                                                        left=78,
+                                                        top=108,
+                                                        width=4,
+                                                        height=4,
+                                                        child=Container(
+                                                            key=Key("splash_part_3"),
+                                                            css_class="particle-3",
+                                                            decoration=BoxDecoration(
+                                                                color=Colors.hex("#BB86FC"),
+                                                                borderRadius=BorderRadius.all(2),
+                                                            ),
+                                                            style={
+                                                                "opacity": "0",
+                                                                "transform-origin": "center",
+                                                            },
+                                                        ),
+                                                    ),
+                                                    # Falling Droplet
+                                                    Positioned(
+                                                        key=Key("splash_droplet_pos"),
+                                                        left=76,
+                                                        top=20,
+                                                        width=8,
+                                                        height=8,
+                                                        child=Container(
+                                                            key=Key("splash_droplet_circle"),
+                                                            css_class="splash-droplet",
+                                                            decoration=BoxDecoration(
+                                                                color=Colors.hex("#BB86FC"),
+                                                                borderRadius=BorderRadius.all(4),
+                                                            ),
+                                                            style={
+                                                                "opacity": "0",
+                                                                "transform-origin": "center",
+                                                            },
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
                                         ),
                                     ),
                                 ],
