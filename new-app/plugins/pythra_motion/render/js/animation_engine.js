@@ -371,13 +371,16 @@
     };
 
     PythraMotion.prototype.timeline = function (sequence, options) {
+        console.log("PythraMotion: timeline called with:", JSON.stringify(sequence));
+        var self = this;
         if (MotionAPI.timeline) {
-            var self = this;
             var resolvedOptions = _resolveMotionOptions(options);
             var resolvedSequence = sequence.map(function (step) {
                 if (Array.isArray(step) && step.length >= 2) {
                     var newStep = step.slice();
-                    newStep[0] = _resolveSelectorTarget(self.el, step[0]);
+                    var resolvedTarget = _resolveSelectorTarget(self.el, step[0]);
+                    console.log("PythraMotion: target", step[0], "resolved to:", resolvedTarget);
+                    newStep[0] = resolvedTarget;
                     if (step.length >= 3) {
                         var stepOptions = step[2];
                         if (stepOptions && typeof stepOptions === 'object') {
@@ -389,12 +392,75 @@
                 return step;
             });
 
-            var controls = MotionAPI.timeline(resolvedSequence, resolvedOptions);
-            var id = generateId('timeline_');
-            this.animations[id] = controls;
-            return id;
+            try {
+                console.log("PythraMotion: calling MotionAPI.timeline with resolvedSequence:", resolvedSequence);
+                var controls = MotionAPI.timeline(resolvedSequence, resolvedOptions);
+                console.log("PythraMotion: timeline controls generated:", controls);
+                var id = generateId('timeline_');
+                this.animations[id] = controls;
+                return id;
+            } catch (err) {
+                console.error("PythraMotion: Error during MotionAPI.timeline:", err);
+            }
         }
-        return null;
+
+        // Custom Timeline Polyfill using individual animate calls
+        console.log("PythraMotion: MotionAPI.timeline not available, using custom polyfill.");
+        var prevStepEnd = 0;
+        var animationControls = [];
+
+        sequence.forEach(function (step) {
+            if (!Array.isArray(step) || step.length < 2) return;
+            var target = _resolveSelectorTarget(self.el, step[0]);
+            if (!target) return;
+
+            var keyframes = step[1];
+            var stepOptions = step[2] || {};
+            var resolvedOpts = _resolveMotionOptions(stepOptions);
+
+            var delay = 0;
+            var duration = resolvedOpts.duration !== undefined ? resolvedOpts.duration : 0.3;
+
+            if (stepOptions.at !== undefined) {
+                var at = stepOptions.at;
+                if (typeof at === 'number') {
+                    delay = at;
+                } else if (typeof at === 'string') {
+                    if (at.startsWith('+=')) {
+                        delay = prevStepEnd + parseFloat(at.slice(2));
+                    } else if (at.startsWith('-=')) {
+                        delay = prevStepEnd - parseFloat(at.slice(2));
+                    } else {
+                        delay = parseFloat(at) || 0;
+                    }
+                }
+            } else {
+                delay = prevStepEnd;
+            }
+
+            resolvedOpts.delay = (resolvedOpts.delay || 0) + delay;
+            console.log("PythraMotion timeline polyfill: animating", step[0], "with delay:", resolvedOpts.delay, "duration:", duration);
+
+            var controls = MotionAPI.animate(target, keyframes, resolvedOpts);
+            if (controls) {
+                animationControls.push(controls);
+            }
+
+            var stepEnd = delay + duration;
+            prevStepEnd = stepEnd;
+        });
+
+        var id = generateId('timeline_polyfill_');
+        var mockControls = {
+            play: function () { animationControls.forEach(function (c) { if (c.play) c.play(); }); },
+            pause: function () { animationControls.forEach(function (c) { if (c.pause) c.pause(); }); },
+            stop: function () { animationControls.forEach(function (c) { if (c.stop) c.stop(); }); },
+            reverse: function () { animationControls.forEach(function (c) { if (c.reverse) c.reverse(); }); },
+            setSpeed: function (s) { animationControls.forEach(function (c) { if (c.setSpeed) c.setSpeed(s); }); },
+            setTime: function (t) { animationControls.forEach(function (c) { if (c.setTime) c.setTime(t); }); },
+        };
+        this.animations[id] = mockControls;
+        return id;
     };
 
     PythraMotion.prototype.getKeyframes = function () {
