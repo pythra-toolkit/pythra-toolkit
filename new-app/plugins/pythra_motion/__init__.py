@@ -9,6 +9,8 @@ from .controller import AnimationController
 from .easing import Easing, SpringPreset
 from .types import AnimationOptions, ScrollOptions, InViewOptions, TimelineStep
 from .spring import solve_spring, solve_spring_details
+from .svg import Svg, SvgPath, SvgCircle, SvgRect, SvgLine, SvgGroup
+from .values import MotionValue, TransformValue
 
 __version__ = "1.0.0"
 __all__ = [
@@ -22,6 +24,14 @@ __all__ = [
     "TimelineStep",
     "solve_spring",
     "solve_spring_details",
+    "Svg",
+    "SvgPath",
+    "SvgCircle",
+    "SvgRect",
+    "SvgLine",
+    "SvgGroup",
+    "MotionValue",
+    "TransformValue",
 ]
 
 plugin_definition = {

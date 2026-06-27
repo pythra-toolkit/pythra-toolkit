@@ -119,6 +119,15 @@
         return document.scrollingElement;
     }
 
+    function _resolveTarget(el, options) {
+        if (options && options.selector) {
+            var targets = el.querySelectorAll(options.selector);
+            if (targets.length === 1) return targets[0];
+            if (targets.length > 1) return targets;
+        }
+        return el;
+    }
+
     // ── Path Options & Easing Resolution ──────────────────────────────────
     function _resolveMotionOptions(animOptions) {
         var motionOptions = {};
@@ -189,8 +198,9 @@
             self._notify('complete', { animationId: id });
         };
 
+        var target = _resolveTarget(self.element, animOptions);
         if (MotionAPI.animate) {
-            var controls = MotionAPI.animate(self.element, keyframes, motionOptions);
+            var controls = MotionAPI.animate(target, keyframes, motionOptions);
             self.animations[id] = controls;
         } else {
             console.error('PythraMotion: motion.js not loaded');
@@ -209,11 +219,12 @@
         if (motionOptions.duration === undefined) motionOptions.duration = 1;
 
         if (MotionAPI.animate && MotionAPI.scroll) {
-            var animation = MotionAPI.animate(self.element, keyframes, motionOptions);
+            var target = _resolveTarget(self.element, animOpts);
+            var animation = MotionAPI.animate(target, keyframes, motionOptions);
 
             var targetEl = sopts.targetSelector
                 ? document.querySelector(sopts.targetSelector)
-                : self.element;
+                : target;
 
             var containerEl = sopts.containerSelector
                 ? document.querySelector(sopts.containerSelector)
@@ -252,7 +263,8 @@
 
             var stopFn = MotionAPI.inView(self.element, function () {
                 var motionOptions = _resolveMotionOptions(animOpts);
-                var controls = MotionAPI.animate(self.element, keyframes, motionOptions);
+                var target = _resolveTarget(self.element, animOpts);
+                var controls = MotionAPI.animate(target, keyframes, motionOptions);
                 var id = generateId('inview_');
                 self.animations[id] = controls;
                 self._notify('inView', { animationId: id });
@@ -270,6 +282,7 @@
     PythraMotion.prototype.hoverAnimate = function (keyframesEnter, keyframesLeave, options) {
         var self = this;
         var opts = options || {};
+        var target = _resolveTarget(self.element, opts);
 
         if (MotionAPI.hover) {
             return MotionAPI.hover(
@@ -277,7 +290,7 @@
                 function () {
                     if (keyframesEnter) {
                         var motionOptions = _resolveMotionOptions(opts);
-                        var ctrl = MotionAPI.animate(self.element, keyframesEnter, motionOptions);
+                        var ctrl = MotionAPI.animate(target, keyframesEnter, motionOptions);
                         var id = generateId('hover_');
                         self.animations[id] = ctrl;
                     }
@@ -285,7 +298,7 @@
                 function () {
                     if (keyframesLeave) {
                         var motionOptions = _resolveMotionOptions(opts);
-                        var ctrl = MotionAPI.animate(self.element, keyframesLeave, motionOptions);
+                        var ctrl = MotionAPI.animate(target, keyframesLeave, motionOptions);
                         var id = generateId('hover_leave_');
                         self.animations[id] = ctrl;
                     }
@@ -298,6 +311,7 @@
     PythraMotion.prototype.pressAnimate = function (keyframesStart, keyframesEnd, options) {
         var self = this;
         var opts = options || {};
+        var target = _resolveTarget(self.element, opts);
 
         if (MotionAPI.press) {
             return MotionAPI.press(
@@ -305,14 +319,14 @@
                 function () {
                     if (keyframesStart) {
                         var motionOptions = _resolveMotionOptions(opts);
-                        var ctrl = MotionAPI.animate(self.element, keyframesStart, motionOptions);
+                        var ctrl = MotionAPI.animate(target, keyframesStart, motionOptions);
                         self.animations[generateId('press_')] = ctrl;
                     }
                 },
                 function () {
                     if (keyframesEnd) {
                         var motionOptions = _resolveMotionOptions(opts);
-                        var ctrl = MotionAPI.animate(self.element, keyframesEnd, motionOptions);
+                        var ctrl = MotionAPI.animate(target, keyframesEnd, motionOptions);
                         self.animations[generateId('press_end_')] = ctrl;
                     }
                 }

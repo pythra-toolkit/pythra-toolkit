@@ -27,6 +27,9 @@ class AnimationOptions:
     path_direction: Optional[str] = None
     path_rotate: Optional[bool] = None
 
+    # ── Target Selector ───────────────────────────────────────────────────
+    selector: Optional[str] = None
+
     def to_dict(self) -> dict:
         d = {
             "type": self.type,
@@ -65,6 +68,8 @@ class AnimationOptions:
             d["pathDirection"] = self.path_direction
         if self.path_rotate is not None:
             d["pathRotate"] = self.path_rotate
+        if self.selector is not None:
+            d["selector"] = self.selector
         return d
 
 

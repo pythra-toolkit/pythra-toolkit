@@ -815,6 +815,12 @@ class Reconciler:
             "Dialog": "div",
             "AspectRatio": "div",
             "ClipPath": "div",
+            "Svg": "svg",
+            "SvgPath": "path",
+            "SvgCircle": "circle",
+            "SvgRect": "rect",
+            "SvgLine": "line",
+            "SvgGroup": "g",
         }
         if widget_type_name == "Icon" and getattr(widget, "custom_icon_source", None):
             return "img"

@@ -229,9 +229,12 @@ class Container(Widget):
         hoverStyle: Optional[BoxDecoration] = None,
         focusStyle: Optional[BoxDecoration] = None,
         activeStyle: Optional[BoxDecoration] = None,
+        attributes: Optional[Dict[str, str]] = None,
     ):
 
         super().__init__(key=key, children=[child] if child else [])
+
+        self.attributes = attributes
 
         self.padding = padding
         self.color = color
@@ -309,13 +312,16 @@ class Container(Widget):
         css_classes = [self.css_class] + [cls for cls in self.cssClass if cls]
         css_class = " ".join(filter(None, css_classes))
 
-        return {
+        res = {
             "css_class": css_class,
             "style": instance_styles,
             "data-key": self.key.value if self.key else None,
             "role": self.role,
             "_js_init": getattr(self, "js_init", {}),
         }
+        if getattr(self, "attributes", None):
+            res["attributes"] = self.attributes
+        return res
 
     def get_required_css_classes(self) -> Set[str]:
         return {self.css_class}
