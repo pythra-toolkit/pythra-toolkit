@@ -145,6 +145,29 @@
         return target;
     }
 
+    function _nudgeKeyframes(keyframes) {
+        if (!keyframes) return keyframes;
+        if (Array.isArray(keyframes)) {
+            if (keyframes.length === 2 && keyframes[0] === keyframes[1]) {
+                if (typeof keyframes[0] === 'number') {
+                    keyframes[1] = keyframes[0] === 0 ? 0.0001 : keyframes[0] + 0.0001;
+                }
+            }
+        } else if (typeof keyframes === 'object') {
+            for (var prop in keyframes) {
+                if (Object.prototype.hasOwnProperty.call(keyframes, prop)) {
+                    var val = keyframes[prop];
+                    if (Array.isArray(val) && val.length === 2 && val[0] === val[1]) {
+                        if (typeof val[0] === 'number') {
+                            val[1] = val[0] === 0 ? 0.0001 : val[0] + 0.0001;
+                        }
+                    }
+                }
+            }
+        }
+        return keyframes;
+    }
+
     // ── Path Options & Easing Resolution ──────────────────────────────────
     function _resolveMotionOptions(animOptions) {
         var motionOptions = {};
@@ -193,6 +216,7 @@
         var animOptions = options || {};
         var id = animOptions.id || generateId('anim_');
 
+        keyframes = _nudgeKeyframes(keyframes);
         var motionOptions = _resolveMotionOptions(animOptions);
 
         if (animOptions.onUpdate) {
@@ -419,7 +443,7 @@
             var target = _resolveSelectorTarget(self.element, step[0]);
             if (!target) return;
 
-            var keyframes = step[1];
+            var keyframes = _nudgeKeyframes(step[1]);
             var stepOptions = step[2] || {};
             var resolvedOpts = _resolveMotionOptions(stepOptions);
 
