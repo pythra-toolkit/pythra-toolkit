@@ -128,7 +128,7 @@ class DemoPageState(State):
     def _trigger_splash(self):
         sequence = [
             # Fall droplet
-            [".splash-droplet", {"translateY": [0, 55], "scaleY": [1.4, 0.6], "opacity": [1, 1]}, {"duration": 0.4, "ease": "easeIn"}],
+            [".splash-droplet", {"y": [0, 55], "scaleY": [1.4, 0.6], "opacity": [1, 1]}, {"duration": 0.4, "ease": "easeIn"}],
             # Hide droplet instantly
             [".splash-droplet", {"opacity": [1, 0]}, {"duration": 0.01, "at": 0.4}],
             # Ripple 1 expands and fades

@@ -128,6 +128,19 @@
         return el;
     }
 
+    function _resolveSelectorTarget(rootEl, target) {
+        if (typeof target === 'string' && rootEl) {
+            try {
+                var targets = rootEl.querySelectorAll(target);
+                if (targets.length === 1) return targets[0];
+                if (targets.length > 1) return Array.from(targets);
+            } catch (e) {
+                console.error("Error resolving selector target:", target, e);
+            }
+        }
+        return target;
+    }
+
     // ── Path Options & Easing Resolution ──────────────────────────────────
     function _resolveMotionOptions(animOptions) {
         var motionOptions = {};
@@ -359,15 +372,19 @@
 
     PythraMotion.prototype.timeline = function (sequence, options) {
         if (MotionAPI.timeline) {
+            var self = this;
             var resolvedOptions = _resolveMotionOptions(options);
             var resolvedSequence = sequence.map(function (step) {
-                if (Array.isArray(step) && step.length >= 3) {
-                    var stepOptions = step[2];
-                    if (stepOptions && typeof stepOptions === 'object') {
-                        var newStep = step.slice();
-                        newStep[2] = _resolveMotionOptions(stepOptions);
-                        return newStep;
+                if (Array.isArray(step) && step.length >= 2) {
+                    var newStep = step.slice();
+                    newStep[0] = _resolveSelectorTarget(self.el, step[0]);
+                    if (step.length >= 3) {
+                        var stepOptions = step[2];
+                        if (stepOptions && typeof stepOptions === 'object') {
+                            newStep[2] = _resolveMotionOptions(stepOptions);
+                        }
                     }
+                    return newStep;
                 }
                 return step;
             });
