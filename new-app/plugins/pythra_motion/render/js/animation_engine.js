@@ -412,6 +412,7 @@
         console.log("PythraMotion: MotionAPI.timeline not available, using custom polyfill.");
         var prevStepEnd = 0;
         var animationControls = [];
+        self.timers = self.timers || [];
 
         sequence.forEach(function (step) {
             if (!Array.isArray(step) || step.length < 2) return;
@@ -442,13 +443,18 @@
                 delay = prevStepEnd;
             }
 
-            resolvedOpts.delay = (resolvedOpts.delay || 0) + delay;
-            console.log("PythraMotion timeline polyfill: animating", step[0], "with delay:", resolvedOpts.delay, "duration:", duration);
+            var runDelayMs = delay * 1000;
+            resolvedOpts.delay = 0; // Handled by setTimeout
 
-            var controls = MotionAPI.animate(target, keyframes, resolvedOpts);
-            if (controls) {
-                animationControls.push(controls);
-            }
+            console.log("PythraMotion timeline polyfill: scheduling", step[0], "to run in", runDelayMs, "ms with duration:", duration);
+
+            var timerId = setTimeout(function () {
+                var controls = MotionAPI.animate(target, keyframes, resolvedOpts);
+                if (controls) {
+                    animationControls.push(controls);
+                }
+            }, runDelayMs);
+            self.timers.push(timerId);
 
             var stepEnd = delay + duration;
             prevStepEnd = stepEnd;
@@ -472,7 +478,20 @@
         var mockControls = {
             play: function () { animationControls.forEach(function (c) { if (c.play) c.play(); }); },
             pause: function () { animationControls.forEach(function (c) { if (c.pause) c.pause(); }); },
-            stop: function () { animationControls.forEach(function (c) { if (c.stop) c.stop(); }); },
+            stop: function () {
+                animationControls.forEach(function (c) { if (c.stop) c.stop(); });
+                if (self.timers) {
+                    self.timers.forEach(clearTimeout);
+                    self.timers = [];
+                }
+            },
+            cancel: function () {
+                animationControls.forEach(function (c) { if (c.cancel) c.cancel(); });
+                if (self.timers) {
+                    self.timers.forEach(clearTimeout);
+                    self.timers = [];
+                }
+            },
             reverse: function () { animationControls.forEach(function (c) { if (c.reverse) c.reverse(); }); },
             setSpeed: function (s) { animationControls.forEach(function (c) { if (c.setSpeed) c.setSpeed(s); }); },
             setTime: function (t) { animationControls.forEach(function (c) { if (c.setTime) c.setTime(t); }); },
