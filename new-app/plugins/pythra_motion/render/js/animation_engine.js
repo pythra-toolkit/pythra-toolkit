@@ -460,7 +460,8 @@
             debugCount++;
             var droplet = self.element.querySelector(".splash-droplet");
             if (droplet) {
-                console.log("PythraMotion Debug [" + debugCount + "] - droplet style attribute:", droplet.getAttribute("style"), "transform:", droplet.style.transform, "opacity:", droplet.style.opacity);
+                var computedOpacity = window.getComputedStyle(droplet).opacity;
+                console.log("PythraMotion Debug [" + debugCount + "] - droplet style attribute:", droplet.getAttribute("style"), "transform:", droplet.style.transform, "inline opacity:", droplet.style.opacity, "computed opacity:", computedOpacity);
             } else {
                 console.log("PythraMotion Debug [" + debugCount + "] - droplet element not found in DOM");
             }
