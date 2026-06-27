@@ -132,6 +132,10 @@
         if (typeof target === 'string' && rootEl) {
             try {
                 var targets = rootEl.querySelectorAll(target);
+                console.log("PythraMotion selector:", target, "found count:", targets.length);
+                if (targets.length > 0) {
+                    console.log("PythraMotion target[0] tagName:", targets[0].tagName, "namespace:", targets[0].namespaceURI);
+                }
                 if (targets.length === 1) return targets[0];
                 if (targets.length > 1) return Array.from(targets);
             } catch (e) {
