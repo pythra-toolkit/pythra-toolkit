@@ -40,6 +40,7 @@ from pythra import (
     MenuItem,
     Icons,
     ContextMenuTheme,
+    Border,
 )
 from pythra.styles import Offset
 
@@ -704,7 +705,7 @@ class DemoPageState(State):
                                                         height=20,
                                                         child=Container(
                                                             key=Key("splash_ripple_1"),
-                                                            css_class="ripple-1",
+                                                            cssClass="ripple-1",
                                                             decoration=BoxDecoration(
                                                                 borderRadius=BorderRadius.all(10),
                                                                 border=Border.all(color=Colors.hex("#03DAC6"), width=2),
@@ -724,7 +725,7 @@ class DemoPageState(State):
                                                         height=20,
                                                         child=Container(
                                                             key=Key("splash_ripple_2"),
-                                                            css_class="ripple-2",
+                                                            cssClass="ripple-2",
                                                             decoration=BoxDecoration(
                                                                 borderRadius=BorderRadius.all(10),
                                                                 border=Border.all(color=Colors.hex("#BB86FC"), width=1.5),
@@ -744,7 +745,7 @@ class DemoPageState(State):
                                                         height=4,
                                                         child=Container(
                                                             key=Key("splash_part_1"),
-                                                            css_class="particle-1",
+                                                            cssClass="particle-1",
                                                             decoration=BoxDecoration(
                                                                 color=Colors.hex("#03DAC6"),
                                                                 borderRadius=BorderRadius.all(2),
@@ -764,7 +765,7 @@ class DemoPageState(State):
                                                         height=4,
                                                         child=Container(
                                                             key=Key("splash_part_2"),
-                                                            css_class="particle-2",
+                                                            cssClass="particle-2",
                                                             decoration=BoxDecoration(
                                                                 color=Colors.hex("#03DAC6"),
                                                                 borderRadius=BorderRadius.all(2),
@@ -784,7 +785,7 @@ class DemoPageState(State):
                                                         height=4,
                                                         child=Container(
                                                             key=Key("splash_part_3"),
-                                                            css_class="particle-3",
+                                                            cssClass="particle-3",
                                                             decoration=BoxDecoration(
                                                                 color=Colors.hex("#BB86FC"),
                                                                 borderRadius=BorderRadius.all(2),
@@ -804,7 +805,7 @@ class DemoPageState(State):
                                                         height=8,
                                                         child=Container(
                                                             key=Key("splash_droplet_circle"),
-                                                            css_class="splash-droplet",
+                                                            cssClass="splash-droplet",
                                                             decoration=BoxDecoration(
                                                                 color=Colors.hex("#BB86FC"),
                                                                 borderRadius=BorderRadius.all(4),

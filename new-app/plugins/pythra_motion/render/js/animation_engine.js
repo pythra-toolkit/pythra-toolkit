@@ -454,6 +454,19 @@
             prevStepEnd = stepEnd;
         });
 
+        // Diagnostic polling to inspect styles in DOM
+        var debugCount = 0;
+        var debugTimer = setInterval(function() {
+            debugCount++;
+            var droplet = self.element.querySelector(".splash-droplet");
+            if (droplet) {
+                console.log("PythraMotion Debug [" + debugCount + "] - droplet style attribute:", droplet.getAttribute("style"), "transform:", droplet.style.transform, "opacity:", droplet.style.opacity);
+            } else {
+                console.log("PythraMotion Debug [" + debugCount + "] - droplet element not found in DOM");
+            }
+        }, 100);
+        setTimeout(function() { clearInterval(debugTimer); }, 2000);
+
         var id = generateId('timeline_polyfill_');
         var mockControls = {
             play: function () { animationControls.forEach(function (c) { if (c.play) c.play(); }); },
