@@ -815,8 +815,9 @@ class Text(Widget):
         hoverStyle=None,
         focusStyle=None,
         activeStyle=None,
+        cssClass: Optional[Union[str, List[str]]] = None,
     ):
-        super().__init__(key=key)
+        super().__init__(key=key, cssClass=cssClass)
         self.data = data
         self.style = style  # Assume TextStyle object or similar
         self.textAlign = textAlign
@@ -848,13 +849,18 @@ class Text(Widget):
 
     def render_props(self) -> Dict[str, Any]:
         """Return properties for diffing."""
+        css_classes = [self.css_class]
+        if hasattr(self, "cssClass") and self.cssClass:
+            css_classes += [cls for cls in self.cssClass if cls]
+        css_class_str = " ".join(filter(None, css_classes))
+
         props = {
             "data": self.data,
             "style": self._get_render_safe_prop(self.style),
             "textAlign": self.textAlign,
             "overflow": self.overflow,
             "maxLines": self.maxLines,
-            "css_class": self.css_class,
+            "css_class": css_class_str,
         }
         return {k: v for k, v in props.items() if v is not None}
 
@@ -5399,13 +5405,13 @@ class Positioned(Widget):
         super().__init__(key=key, children=[child])
 
         self.child = child  # Keep direct reference
-        # Store positioning properties
-        self.top = top or 0
-        self.right = right or 0
-        self.bottom = bottom or 0
-        self.left = left or 0
-        self.width = width or 0
-        self.height = height or 0
+        # Store positioning properties (None means "not set")
+        self.top = top
+        self.right = right
+        self.bottom = bottom
+        self.left = left
+        self.width = width
+        self.height = height
 
     def render_props(self) -> Dict[str, Any]:
         """

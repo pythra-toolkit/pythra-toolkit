@@ -963,12 +963,12 @@ class Reconciler:
             inline_styles["position"] = props["position_type"]
 
         if widget_type_name == "Positioned":
-            inline_styles["height"] = props["height"] if props["height"] else ""
-            inline_styles["width"] = props["width"] if props["width"] else ""
-            inline_styles["bottom"] = props["bottom"] if props["bottom"] else ""
-            inline_styles["top"] = props["top"] if props["top"] else ""
-            inline_styles["right"] = props["right"] if props["right"] else ""
-            inline_styles["left"] = props["left"] if props["left"] else ""
+            inline_styles["height"] = to_unit(props.get("height"))
+            inline_styles["width"] = to_unit(props.get("width"))
+            inline_styles["bottom"] = to_unit(props.get("bottom"))
+            inline_styles["top"] = to_unit(props.get("top"))
+            inline_styles["right"] = to_unit(props.get("right"))
+            inline_styles["left"] = to_unit(props.get("left"))
             # print(props, " with attrs: ", attrs," with inline_styles: ", inline_styles)
 
         if inline_styles:

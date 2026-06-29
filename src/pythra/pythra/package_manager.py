@@ -574,7 +574,9 @@ class PackageManager:
         """Cache JavaScript modules paths for framework"""
         for engine_name, js_file in package_info.manifest.js_modules.items():
             full_path = package_info.get_asset_path(js_file)
-            if full_path.exists():
+            exists = full_path.exists()
+            print(f"[DEBUG] JS module {engine_name}: file={js_file}, path={full_path}, exists={exists}")
+            if exists:
                 package_info.js_modules_cache[engine_name] = str(full_path)
                 
                 # Add to framework's plugin JS modules if framework is available

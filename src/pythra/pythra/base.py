@@ -194,7 +194,12 @@ class Widget:
         """
         cls._framework_ref = weakref.ref(framework)
 
-    def __init__(self, key: Optional[Key] = None, children: Optional[List['Widget']] = None):
+    def __init__(
+        self,
+        key: Optional[Key] = None,
+        children: Optional[List['Widget']] = None,
+        cssClass: Optional[Union[str, List[str]]] = None
+    ):
         """
         Initialize base widget. No framework interaction for IDs here.
         """
@@ -207,6 +212,13 @@ class Widget:
         # Every widget, upon creation, gets a direct reference to the framework.
         self.framework: Optional['Framework'] = self._framework_ref() if self._framework_ref else None # type: ignore
         # --- END OF FIX ---
+
+        if isinstance(cssClass, str):
+            self.cssClass = [cssClass]
+        elif isinstance(cssClass, list):
+            self.cssClass = cssClass
+        else:
+            self.cssClass = []
 
     def get_unique_id(self) -> Union[Key, str]:
         """
