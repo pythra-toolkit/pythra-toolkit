@@ -2006,8 +2006,9 @@ class Framework:
         #  }}
         #  """
         # --- END OF DEPRECATED FONT CSS ---
-        # Use transparent background if video overlay is requested
-        bg_color = "transparent" if getattr(self, '_video_overlay_requested', False) else "#f0f0f0"
+        # Use transparent background if video overlay or frameless is requested
+        is_frameless = self.config.get('frameless', False)
+        bg_color = "transparent" if getattr(self, '_video_overlay_requested', False) or is_frameless else "#f0f0f0"
 
         base_css = f"""
 body {{ 
@@ -2017,6 +2018,37 @@ body {{
     overflow: hidden;
     user-select: none;
 }}
+#app-wrapper {{
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    /* Optional: uncomment if users want rounded corners by default for frameless */
+    /* border-radius: 12px; */
+    background-color: { "var(--theme-background, #f0f0f0)" if is_frameless else "transparent" };
+}}
+/* Resize Handles */
+.resize-handle {{
+    position: absolute;
+    z-index: 999999;
+}}
+.resize-handle.top {{ top: 0; left: 10px; right: 10px; height: 8px; cursor: n-resize; }}
+.resize-handle.bottom {{ bottom: 0; left: 10px; right: 10px; height: 8px; cursor: s-resize; }}
+.resize-handle.left {{ top: 10px; bottom: 10px; left: 0; width: 8px; cursor: w-resize; }}
+.resize-handle.right {{ top: 10px; bottom: 10px; right: 0; width: 8px; cursor: e-resize; }}
+.resize-handle.top-left {{ top: 0; left: 0; width: 15px; height: 15px; cursor: nw-resize; }}
+.resize-handle.top-right {{ top: 0; right: 0; width: 15px; height: 15px; cursor: ne-resize; }}
+.resize-handle.bottom-left {{ bottom: 0; left: 0; width: 15px; height: 15px; cursor: sw-resize; }}
+.resize-handle.bottom-right {{ bottom: 0; right: 0; width: 15px; height: 15px; cursor: se-resize; }}
+
+/* Draggable Region */
+.pythra-window-drag {{
+    cursor: grab;
+}}
+.pythra-window-drag:active {{
+    cursor: grabbing;
+}}
+
 * {{ 
     box-sizing: border-box; 
 }}
@@ -2102,8 +2134,20 @@ body {{
                 {plugin_css_str}
             </head>
 <body>
-    <div id="root-container">{html_content}</div>
-    <div id="overlay-container"></div>
+    <div id="app-wrapper">
+        <!-- Resize Handles for Frameless Window -->
+        <div class="resize-handle top" data-edge="1"></div>
+        <div class="resize-handle bottom" data-edge="8"></div>
+        <div class="resize-handle left" data-edge="2"></div>
+        <div class="resize-handle right" data-edge="4"></div>
+        <div class="resize-handle top-left" data-edge="3"></div>
+        <div class="resize-handle top-right" data-edge="5"></div>
+        <div class="resize-handle bottom-left" data-edge="10"></div>
+        <div class="resize-handle bottom-right" data-edge="12"></div>
+
+        <div id="root-container">{html_content}</div>
+        <div id="overlay-container"></div>
+    </div>
 
     <!-- ADD SIMPLEBAR JS -->
     <script src="./js/scroll-bar/simplebar.min.js"></script>
@@ -2202,6 +2246,28 @@ body {{
                         }});
                         ro.observe(root);
                     }}
+                    
+                    // --- Frameless Drag & Resize Listeners ---
+                    document.querySelectorAll('.resize-handle').forEach(handle => {{
+                        handle.addEventListener('mousedown', (e) => {{
+                            if (e.button === 0 && window.pywebview) {{
+                                const edge = parseInt(handle.dataset.edge, 10);
+                                window.pywebview.startWindowResize(edge);
+                                e.preventDefault();
+                            }}
+                        }});
+                    }});
+
+                    document.addEventListener('mousedown', (e) => {{
+                        if (e.button !== 0) return;
+                        
+                        // Check if we clicked on or inside a drag region
+                        const dragRegion = e.target.closest('.pythra-window-drag');
+                        if (dragRegion && window.pywebview) {{
+                            window.pywebview.startWindowDrag();
+                            e.preventDefault();
+                        }}
+                    }});
                 }});
                 window.__PYTHRA_CONFIG__ = {_dumps(self.config_dict)};
                 try {{

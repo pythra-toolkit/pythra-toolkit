@@ -1,6 +1,6 @@
-# =============================================================================
+# -----------------------------------------------------------------------------
 # PYTHRA WIDGET LIBRARY - The "LEGO Blocks" for Building Your UI
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 """
 PyThra Widget Library
@@ -75,9 +75,9 @@ port = config.get("assets_server_port")
 # Colors = Colors()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # RESPONSIVE BUILDER - Adaptive UI Layouts
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 class ResponsiveBuilderState(State):
     def initState(self):
@@ -130,9 +130,9 @@ class ResponsiveBuilder(StatefulWidget):
         return ResponsiveBuilderState()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # CONTAINER WIDGET - The "Styled Box" That Holds Other Widgets
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Container(Widget):
@@ -528,9 +528,45 @@ class Container(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
+# WINDOW DRAG WIDGET - Frameless Window Move Area
+# -----------------------------------------------------------------------------
+
+class WindowDrag(Container):
+    """
+    A widget that acts as a draggable area for moving frameless windows.
+    
+    This widget is a customized Container that automatically adds the 
+    'pythra-window-drag' CSS class. When the user clicks and drags this widget,
+    the framework natively moves the application window.
+    
+    Example:
+    ```python
+    # Use as a transparent overlay
+    WindowDrag(
+        width="100%",
+        height=40,
+        cssPosition="absolute",
+        zAxisIndex=999
+    )
+    ```
+    """
+    def __init__(self, **kwargs):
+        cssClass = kwargs.pop('cssClass', [])
+        if isinstance(cssClass, str):
+            cssClass = [cssClass]
+        elif not isinstance(cssClass, list):
+            cssClass = list(cssClass)
+            
+        if "pythra-window-drag" not in cssClass:
+            cssClass.append("pythra-window-drag")
+            
+        super().__init__(cssClass=cssClass, **kwargs)
+
+
+# -----------------------------------------------------------------------------
 # TRANSFORM WIDGET - The "Shape Shifter" for Rotating, Scaling, and Moving
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Transform(Widget):
@@ -736,9 +772,9 @@ class Transform(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # TEXT WIDGET - The "Word Display" for Showing Text Content
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Text(Widget):
@@ -923,9 +959,9 @@ class Text(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # TEXTBUTTON WIDGET - The "Simple Click Button" for Basic Actions
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class TextButton(Widget):
@@ -1257,9 +1293,9 @@ class TextButton(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # ELEVATEDBUTTON WIDGET - The "Primary Action Button" with Emphasis
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class ElevatedButton(Widget):
@@ -1663,9 +1699,9 @@ class ElevatedButton(Widget):
     # Removed instance methods: to_html(), to_css(), to_js()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # ICONBUTTON WIDGET - The "Icon-Only Button" for Compact Actions
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class IconButton(Widget):
@@ -1981,9 +2017,9 @@ class IconButton(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # FLOATING ACTION BUTTON - The "Quick Action" Button That Floats Above Everything
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class FloatingActionButton(Widget):
@@ -2339,9 +2375,9 @@ class FloatingActionButton(Widget):
     # Removed instance methods: to_html(), to_css(), to_js()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # SINGLECHILDSCROLLVIEW WIDGET - The "Scrollable Container" for Overflow Content
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class SingleChildScrollView(Widget):
@@ -2545,9 +2581,9 @@ class SingleChildScrollView(Widget):
             return f"/* Error generating rule for .{css_class} */"
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # GLOBAL SCROLLBAR STYLE - A "Set It and Forget It" Theme for Your App's Main Scrollbar
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class GlobalScrollbarStyle(Widget):
@@ -2701,9 +2737,9 @@ class GlobalScrollbarStyle(Widget):
             return "/* Error generating global scrollbar style */"
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # SCROLLBAR - A Highly-Customizable Scrollable Container
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Scrollbar(Widget):
@@ -2966,9 +3002,9 @@ class Scrollbar(Widget):
             return ""
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # COLUMN WIDGET - The "Vertical Stack" for Organizing Content Up-and-Down
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Column(Widget):
@@ -3211,9 +3247,9 @@ class Column(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # ROW WIDGET - The "Horizontal Stack" for Organizing Content Left-to-Right
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Row(Widget):
@@ -3452,9 +3488,9 @@ class Row(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # IMAGE HELPER CLASSES - The "Image Source Managers" for Different Image Types
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class AssetImage:
@@ -3572,9 +3608,9 @@ class NetworkImage:
         return f"NetworkImage('{self.src}')"
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # IMAGE WIDGET - The "Picture Display" for Showing Photos and Graphics
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Image(Widget):
@@ -3805,9 +3841,9 @@ class Image(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # ICON WIDGET - The "Symbol Display" for Showing Vector Icons
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Icon(Widget):
@@ -4048,9 +4084,9 @@ class Icon(Widget):
 # A good way is to call the widget's own static method if it exists.
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # VIRTUAL LIST VIEW STATE (Internal Class)
-# =============================================================================
+# -----------------------------------------------------------------------------
 class _VirtualListViewState(State):
     """
     The internal state management and logic for the `VirtualListView` widget.
@@ -4365,9 +4401,9 @@ class VirtualListView(StatefulWidget):
 
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # VIRTUAL GRID VIEW - The High-Performance Grid for "Infinite" Scrolling
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class _VirtualGridViewState(State):
@@ -4571,9 +4607,9 @@ class VirtualGridView(StatefulWidget):
 
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # LIST VIEW - The Simple, Standard Scrollable List
-# =============================================================================
+# -----------------------------------------------------------------------------
 class ListView(Widget):
     """
     A standard scrollable list that arranges its children linearly and renders
@@ -4806,9 +4842,9 @@ class ListView(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # GRID VIEW - The Scrollable Grid for Photo Galleries, Products, and More
-# =============================================================================
+# -----------------------------------------------------------------------------
 class GridView(Widget):
     """ "
     A scrollable, 2D array of widgets arranged in a grid layout. Ideal for
@@ -5114,9 +5150,9 @@ class GridView(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # STACK - The Widget for Layering and Positioning
-# =============================================================================
+# -----------------------------------------------------------------------------
 class Stack(Widget):
     """
     A widget that layers its children on top of each other, allowing for
@@ -5309,9 +5345,9 @@ class Stack(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # POSITIONED - The Widget That Pins a Child Within a Stack
-# =============================================================================
+# -----------------------------------------------------------------------------
 class Positioned(Widget):
     """
     Controls the position of a child widget within a `Stack`. It only works
@@ -5444,9 +5480,9 @@ class Positioned(Widget):
 # --- Expanded Refactored ---
 # In pythra/widgets.py
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # EXPANDED WIDGET - The "Space Filler" for Flexible Layout Children
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Expanded(Widget):
@@ -5615,9 +5651,9 @@ class Spacer(Widget):
 
 
 # --- SizedBox Refactored ---
-# =============================================================================
+# -----------------------------------------------------------------------------
 # SIZEDBOX WIDGET - The "Invisible Spacer" for Precise Layout Control
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class SizedBox(Widget):
@@ -5749,9 +5785,9 @@ class SizedBox(Widget):
     # Removed instance methods: to_html(), widget_id() (use base ID logic)
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # APPBAR WIDGET - The "top navigation bar" for Precise Layout Control
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class AppBar(Widget):
@@ -6024,9 +6060,9 @@ class AppBar(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # BOTTOM NAVIGATION BAR ITEM - A Single "Tab" in the Bottom Navigation Bar
-# =============================================================================
+# -----------------------------------------------------------------------------
 class BottomNavigationBarItem(Widget):
     """
     Represents the configuration for a single item (an icon and a label) within a
@@ -6243,9 +6279,9 @@ class BottomNavigationBarItem(Widget):
     # Removed instance methods: to_html()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # BOTTOM NAVIGATION BAR - The Main Navigation Hub at the Bottom of the Screen
-# =============================================================================
+# -----------------------------------------------------------------------------
 class BottomNavigationBar(Widget):
     """
     A material design navigation bar that is displayed at the bottom of an app,
@@ -6488,9 +6524,9 @@ class BottomNavigationBar(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # SCAFFOLD WIDGET - The "page layout frame" for Precise Layout Control
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 
 class Scaffold(Widget):
@@ -6773,9 +6809,9 @@ class Scaffold(Widget):
     # Removed instance methods: to_html(), to_css()
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # TEXTFIELD WIDGET - The "Text Input Box" for User Data Entry
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 class _RawInput(Widget):
     """An internal atomic widget that renders a raw HTML <input> element for TextField."""
@@ -7386,9 +7422,9 @@ class TextField(Widget):
         }}
         """
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # RESPONSIVE BUILDER WIDGET
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 class ResponsiveBuilderState(State):
     """State for ResponsiveBuilder that listens for browser viewport resize events.
@@ -7470,9 +7506,9 @@ class ResponsiveBuilder(StatefulWidget):
 
 
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 # GRADIENT BORDER CONTAINER - The "Animated Glowing Border" Widget
-# =============================================================================
+# -----------------------------------------------------------------------------
 class GradientBorderContainer(Widget):
     """
     A decorative widget that wraps its child with an animated, glowing gradient

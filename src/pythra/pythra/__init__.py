@@ -173,6 +173,7 @@ from .widgets import (
     VirtualGridView,
     Expandable,
     ResponsiveBuilder,
+    WindowDrag,
 )
 
 # FutureBuilder (async helper widget)
@@ -338,6 +339,7 @@ __all__ = [
     "ContextMenu",
     "ContextMenuTheme",
     "MenuItem",
+    "WindowDrag",
 ]
 
 # --- Auto-inject project root to sys.path ---

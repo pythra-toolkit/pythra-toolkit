@@ -780,6 +780,19 @@ class Api(QObject):
         except Exception as e:
             debug_print("Failed to handle viewport resize:", e)
 
+    # --- Frameless Window Drag & Resize Slots ---
+    @Slot()
+    def startWindowDrag(self):
+        window = window_manager.windows.get("main_window_id")
+        if window and window.windowHandle():
+            window.windowHandle().startSystemMove()
+
+    @Slot(int)
+    def startWindowResize(self, edge):
+        window = window_manager.windows.get("main_window_id")
+        if window and window.windowHandle():
+            window.windowHandle().startSystemResize(Qt.Edge(edge))
+
 
 # Create a global instance of the WindowManager
 window_manager = WindowManager()
