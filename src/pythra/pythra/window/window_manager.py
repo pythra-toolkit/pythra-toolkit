@@ -71,15 +71,8 @@ class SystemSleepManager(QObject):
     def _start_linux_dbus_listener(self):
         """Listens for systemd sleep signals via D-Bus in a background thread."""
         def listen_thread():
-            DBusGMainLoop(set_as_default=True)
-            bus = dbus.SystemBus()
-            bus.add_signal_receiver(
-                self._on_prepare_for_sleep,
-                signal_name="PrepareForSleep",
-                dbus_interface="org.freedesktop.login1.Manager"
-            )
-            loop = GLib.MainLoop()
-            loop.run()
+            print("SystemSleepManager: Note: D-Bus sleep listener is temporarily disabled to prevent Wayland/Qt segfaults.")
+            return
 
         # Run the D-Bus listener in a daemon thread so it doesn't block app exit
         thread = threading.Thread(target=listen_thread, daemon=True)

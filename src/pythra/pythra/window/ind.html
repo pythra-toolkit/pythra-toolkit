@@ -108,6 +108,28 @@
                     window.pywebview.on_input_changed(name, value, ()=>{});
                 }
             }
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                const titlebar = document.getElementById('titlebar');
+                if (titlebar) {
+                    titlebar.addEventListener('mousedown', (e) => {
+                        if (e.button === 0 && window.pywebview) {
+                            window.pywebview.startWindowDrag();
+                        }
+                    });
+                }
+
+                const handles = document.querySelectorAll('.resize-handle');
+                handles.forEach(handle => {
+                    handle.addEventListener('mousedown', (e) => {
+                        if (e.button === 0 && window.pywebview) {
+                            e.preventDefault();
+                            const edge = parseInt(handle.getAttribute('data-edge'), 10);
+                            window.pywebview.startWindowResize(edge);
+                        }
+                    });
+                });
+            });
         </script>
         <script>
         function PythraSlider(elementId, options) {
@@ -189,10 +211,80 @@ PythraSlider.prototype.destroy = function() {
 };
         </script>
         
+    <style>
+        :root, html, body {
+            background-color: transparent !important;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #app-wrapper {
+            background: rgb(42, 42, 42);
+            border-radius: 25px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .shared-container-3 {
+            background: transparent !important;
+        }
+        #titlebar {
+            height: 30px;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            user-select: none;
+            cursor: default;
+            flex-shrink: 0;
+            border-bottom: 1px solid #ccc;
+            font-family: sans-serif;
+            font-weight: bold;
+            color: #333;
+        }
+        .resize-handle {
+            position: fixed;
+            z-index: 9999;
+        }
+        .resize-handle.top { top: 0; left: 8px; right: 8px; height: 5px; cursor: n-resize; }
+        .resize-handle.bottom { bottom: 0; left: 8px; right: 8px; height: 5px; cursor: s-resize; }
+        .resize-handle.left { top: 8px; bottom: 8px; left: 0; width: 5px; cursor: w-resize; }
+        .resize-handle.right { top: 8px; bottom: 8px; right: 0; width: 5px; cursor: e-resize; }
+        .resize-handle.top-left { top: 0; left: 0; width: 8px; height: 8px; cursor: nw-resize; }
+        .resize-handle.top-right { top: 0; right: 0; width: 8px; height: 8px; cursor: ne-resize; }
+        .resize-handle.bottom-left { bottom: 0; left: 0; width: 8px; height: 8px; cursor: sw-resize; }
+        .resize-handle.bottom-right { bottom: 0; right: 0; width: 8px; height: 8px; cursor: se-resize; }
+        
+        #root-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        #fw_id_73 {
+            flex-grow: 1;
+            height: auto !important; /* Override inline height to allow flex-grow */
+        }
+    </style>
 </head>
 <body>
-    <div id="root-container"><div id="fw_id_73" class="shared-container-3"><div id="fw_id_74" class="shared-column-0"><p id="fw_id_75" class="shared-text-0" style="font-size: 24; font-weight: bold">Virtual List Test (400000 Items)</p><p id="fw_id_76" class="shared-text-1">1 item(s) selected. Scroll to see virtualization in action.</p><div id="fw_id_77" class="" style="height: 16px"></div><div id="fw_id_78" class="shared-container-2"><div id="fw_id_80" class="simplebar-themed-0"><div id="fw_id_81" class="shared-container-4"></div></div></div></div></div></div>
-    <div id="overlay-container"></div>
+    <div id="app-wrapper">
+        <div id="titlebar">
+            Custom HTML Titlebar (Drag Me)
+        </div>
+        
+        <div id="root-container"><div id="fw_id_73" class="shared-container-3"><div id="fw_id_74" class="shared-column-0"><p id="fw_id_75" class="shared-text-0" style="font-size: 24; font-weight: bold">Virtual List Test (400000 Items)</p><p id="fw_id_76" class="shared-text-1">1 item(s) selected. Scroll to see virtualization in action.</p><div id="fw_id_77" class="" style="height: 16px"></div><div id="fw_id_78" class="shared-container-2"><div id="fw_id_80" class="simplebar-themed-0"><div id="fw_id_81" class="shared-container-4"></div></div></div></div></div></div>
+        <div id="overlay-container"></div>
+    </div>
+    
+    <div class="resize-handle top" data-edge="1"></div>
+    <div class="resize-handle bottom" data-edge="8"></div>
+    <div class="resize-handle left" data-edge="2"></div>
+    <div class="resize-handle right" data-edge="4"></div>
+    <div class="resize-handle top-left" data-edge="3"></div>
+    <div class="resize-handle top-right" data-edge="5"></div>
+    <div class="resize-handle bottom-left" data-edge="10"></div>
+    <div class="resize-handle bottom-right" data-edge="12"></div>
 
     <!-- ADD SIMPLEBAR JS -->
     <script src="./js/scroll-bar/simplebar.min.js"></script>
