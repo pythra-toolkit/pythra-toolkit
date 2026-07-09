@@ -182,13 +182,13 @@ class Framework:
             for pkg_name, pkg_info in loaded_packages.items():
                 if hasattr(pkg_info, 'manifest'):
                     manifest = pkg_info.manifest
-                    
+
                     self.plugins[pkg_name] = {}
-                    
+
                     if manifest.js_modules:
                         self.plugins[pkg_name]['js_modules'] = manifest.js_modules
                         print(f"📦 PyThra Framework | Found JS modules in {pkg_name}: {manifest.js_modules}")
-                        
+
                     if manifest.css_files:
                         self.plugins[pkg_name]['css_files'] = manifest.css_files
                         print(f"🎨 PyThra Framework | Found CSS files in {pkg_name}: {manifest.css_files}")
@@ -207,12 +207,12 @@ class Framework:
         # STEP 5: Start the Asset Server
         # This serves your static files (images, CSS, JS) to the web browser
         package_asset_dirs = self.package_manager.get_asset_server_dirs()
-        
+
         # Add render directory to serve CSS, JS, and other web files
         # This ensures styles.css and other render files are accessible
         render_serve_dirs = package_asset_dirs.copy() if package_asset_dirs else {}
         render_serve_dirs['render'] = str(self.render_dir)
-        
+
         self.asset_server = AssetServer(
             directory=str(self.assets_dir),  # Main assets directory
             port=self.config.get("assets_server_port"),  # Port from config
@@ -281,10 +281,144 @@ class Framework:
 
         debug_print("🚀 PyThra Framework | Initialization Complete! Ready to build your amazing app! 🎯")
 
-    # Package management methods are now handled by PackageManager
-    # Legacy methods kept for backward compatibility if needed
+        # Stdin listener thread for hot reload commands from runner
+        import threading
+        def listen_stdin():
+            import sys
+            while True:
+                try:
+                    line = sys.stdin.readline()
+                    if not line:
+                        break
+                    if line.strip() == "hot_reload":
+                        from .async_utils import dispatch_to_main
+                        dispatch_to_main(self.hot_reload)
+                except Exception:
+                    break
+
+        threading.Thread(target=listen_stdin, daemon=True).start()
+
+        # Package management methods are now handled by PackageManager
+        # Legacy methods kept for backward compatibility if needed
         import atexit
         atexit.register(self._maybe_auto_run)
+
+    def hot_reload(self):
+        """Perform a state-preserving hot reload of the application."""
+        print("⚡ PyThra Framework | Performing Hot Reload...")
+        debug_print("⚡ PyThra Framework | Performing Hot Reload...")
+        
+        try:
+            # 1. Reload project modules
+            import importlib
+            import sys
+            import inspect
+            
+            project_modules = {}
+            for name, mod in list(sys.modules.items()):
+                if hasattr(mod, '__file__') and mod.__file__:
+                    filepath = os.path.abspath(mod.__file__)
+                    # Only reload modules in the user project, excluding the pythra framework package itself
+                    if filepath.startswith(str(self.project_root)) and 'src/pythra/pythra' not in filepath:
+                        project_modules[name] = mod
+            
+            # Re-bind reloaded classes to existing instances
+            new_classes = {}
+            for name, old_mod in project_modules.items():
+                try:
+                    new_mod = importlib.reload(old_mod)
+                    print(f"  🔄 Reloaded module: {name}")
+                    for attr_name, attr_val in inspect.getmembers(new_mod, inspect.isclass):
+                        if attr_val.__module__ == new_mod.__name__:
+                            new_classes[attr_name] = attr_val
+                except Exception as e:
+                    print(f"  ❌ Error reloading module {name}: {e}")
+            
+            # 2. Re-create the root widget using the reloaded class definition
+            if not self.root_widget:
+                print("⚠️ No root widget set. Hot reload aborted.")
+                return
+            
+            root_module_name = self.root_widget.__class__.__module__
+            root_class_name = self.root_widget.__class__.__name__
+            
+            reloaded_root_module = sys.modules.get(root_module_name)
+            if reloaded_root_module and hasattr(reloaded_root_module, root_class_name):
+                root_class = getattr(reloaded_root_module, root_class_name)
+            else:
+                root_class = type(self.root_widget)
+                
+            new_root = root_class()
+            
+            # Find the root key from the previous map
+            previous_map = self.reconciler.context_maps["main"]
+            old_root_key = None
+            for key, data in previous_map.items():
+                if data.get("parent_html_id") == "root-container" and data.get("parent_key") is None:
+                    old_root_key = key
+                    break
+            
+            if old_root_key and new_root.key is None:
+                new_root._internal_id = old_root_key
+            
+            # 3. Re-bind the class definitions of all rescued state objects in the previous map
+            # This ensures that when built_child = state.build() is called, it runs the new code.
+            for key, data in previous_map.items():
+                widget_inst = data.get("widget_instance")
+                if widget_inst and isinstance(widget_inst, StatefulWidget):
+                    old_state = widget_inst.get_state()
+                    if old_state:
+                        state_class_name = old_state.__class__.__name__
+                        if state_class_name in new_classes:
+                            old_state.__class__ = new_classes[state_class_name]
+            
+            # 4. Build the widget tree using the reloaded widget instances
+            built_tree_root = self._build_widget_tree(new_root, context_map=previous_map, force_rebuild=True)
+            
+            # 5. Perform reconciliation between old render map and new tree
+            result = self.reconciler.reconcile(
+                previous_map=previous_map,
+                new_widget_root=built_tree_root,
+                parent_html_id="root-container",
+                is_partial_reconciliation=True
+            )
+            
+            # 6. Update framework's context mapping
+            self.reconciler.context_maps["main"] = result.new_rendered_map
+            for cb_id, cb_func in result.registered_callbacks.items():
+                self.api.register_callback(cb_id, cb_func)
+                
+            # 7. Generate updated CSS rules and script
+            full_css_details = {}
+            for data in result.new_rendered_map.values():
+                widget_inst = data.get("widget_instance")
+                if widget_inst and hasattr(widget_inst, "style_key"):
+                    for css_class in data["props"].get("css_class", "").split():
+                        full_css_details[css_class] = (
+                            type(widget_inst).generate_css_rule,
+                            widget_inst.style_key,
+                        )
+            
+            css_rules = self._generate_css_from_details(full_css_details)
+            css_update_script = self._generate_css_update_script(css_rules)
+            self._last_css_keys = set(full_css_details.keys())
+            
+            # 8. Generate DOM patches script
+            dom_patch_script = self._generate_dom_patch_script(result.patches, js_initializers=result.js_initializers)
+            
+            # Combine and evaluate
+            combined_script = (css_update_script + "\n" + dom_patch_script).strip()
+            
+            if combined_script and self.window:
+                self.window.evaluate_js(self.id, combined_script)
+                print(f"⚡ Hot Reload applied: {len(result.patches)} DOM patches and updated stylesheet sent to browser.")
+            else:
+                print("⚡ Hot Reload applied: UI is already up to date.")
+                
+        except Exception as e:
+            import traceback
+            print(f"❌ Hot Reload failed: {e}")
+            traceback.print_exc()
 
     def _maybe_auto_run(self):
         """Automatically calls run() if a root widget is set but the app hasn't started yet."""
@@ -1059,63 +1193,63 @@ class Framework:
         thread = threading.Thread(target=_worker, daemon=True)
         thread.start()
 
+    def _adopt_single_identity(self, widget: Widget, old_key: str):
+        """Helper to adopt an identity for a widget, updating all derived ID attributes."""
+        old_uuid = widget._internal_id
+        widget._internal_id = old_key
+        for attr, val in list(vars(widget).items()):
+            if isinstance(val, str) and old_uuid in val:
+                setattr(widget, attr, val.replace(old_uuid, old_key))
+
     def _build_widget_tree(
-        self, widget: Optional[Widget], context_map: Optional[Dict] = None
+        self,
+        widget: Optional[Widget],
+        context_map: Optional[Dict] = None,
+        parent_key: Optional[str] = None,
+        child_index: Optional[int] = None,
+        force_rebuild: bool = False
     ) -> Optional[Widget]:
         """
         The "Widget Tree Builder" - converts your nested widgets into a complete tree structure.
-        
-        Think of this like building a family tree, but for widgets:
-        - Each widget might have children (other widgets inside it)
-        - StatefulWidgets need special handling (they have changing data)
-        - StatelessWidgets are simpler (they just display things)
-        
-        What this method does:
-        1. **StatelessWidget**: Calls its build() method to get its child widget
-        2. **StatefulWidget**: Gets its current state, calls state.build() to get child
-        3. **Regular Widget**: Just processes any children it already has
-        4. **Recursive**: Does this for every widget and all their children
-        
-        Args:
-            widget: The widget to build (could be any type of widget)
-            
-        Returns:
-            The same widget, but with all its children properly built and connected
-            
-        Example Widget Tree:
-        ```
-        Scaffold (StatelessWidget)
-        └─ Column (Regular Widget)
-            ├─ Text("Hello") (Regular Widget)
-            └─ Counter (StatefulWidget)
-                └─ Text("Count: 5") (Built from Counter's state)
-        ```
-        
-        This method makes sure every widget in your tree is "ready to render".
         """
         if widget is None:
             return None
+
+        # --- POSITION-BASED IDENTITY ADOPTION ---
+        if widget.key is None and context_map and parent_key is not None and child_index is not None:
+            old_parent = context_map.get(parent_key)
+            if old_parent:
+                old_children_keys = old_parent.get("children_keys", [])
+                if child_index < len(old_children_keys):
+                    old_key = old_children_keys[child_index]
+                    old_data = context_map.get(old_key)
+                    if old_data and old_data.get("key") is None:
+                        if old_data.get("widget_type") == type(widget).__name__:
+                            self._adopt_single_identity(widget, old_key)
 
         # --- OPTIMIZATION: Check for preloaded subtree ---
         # If this widget was built in the background, use the prebuilt result
         # and clear the flag to ensure future updates rebuild normally.
         if getattr(widget, '_preloaded', False):
-            # print(f"🚀 Using preloaded subtree for {widget}")
             widget._preloaded = False
             return widget
 
-        # --- THIS IS THE FIX ---
-        # Handle StatelessWidget and StatefulWidget with the same pattern.
+        # --- Handle StatelessWidget and StatefulWidget ---
         if isinstance(widget, StatelessWidget):
             # 1. Build the child widget from the StatelessWidget.
             built_child = widget.build()
             # 2. Recursively process the built child to build its own subtree.
-            processed_child = self._build_widget_tree(built_child, context_map)
+            processed_child = self._build_widget_tree(
+                built_child,
+                context_map,
+                parent_key=widget.get_unique_id(),
+                child_index=0,
+                force_rebuild=force_rebuild
+            )
             # 3. CRITICAL: The StatelessWidget's children list becomes the processed child.
             #    This keeps the StatelessWidget in the tree as the parent.
             widget._children = [processed_child] if processed_child else []
             return widget # Return the original StatelessWidget
-        # --- END OF FIX ---
 
         if isinstance(widget, StatefulWidget):
             state = widget.get_state()
@@ -1130,6 +1264,13 @@ class Framework:
                         if old_widget and type(old_widget) == type(widget):
                             old_state = old_widget.get_state()
                             if old_state:
+                                # Re-bind old state object to the newly loaded state class definition
+                                try:
+                                    temp_state = widget.createState()
+                                    old_state.__class__ = temp_state.__class__
+                                except Exception as e:
+                                    print(f"Warning: Failed to update state class for {widget}: {e}")
+
                                 widget._state = old_state
                                 old_state._set_widget(widget)
                                 old_state.didUpdateWidget(old_widget, widget)
@@ -1146,7 +1287,7 @@ class Framework:
 
             # Check if we can reuse the previously built child subtree
             should_rebuild = True
-            if hasattr(state, '_last_built_child') and not getattr(state, '_dirty', False):
+            if not force_rebuild and hasattr(state, '_last_built_child') and not getattr(state, '_dirty', False):
                 if context_map:
                     widget_key = widget.get_unique_id()
                     old_node = context_map.get(widget_key)
@@ -1163,7 +1304,13 @@ class Framework:
                 built_child = state._last_built_child
 
             # Recursively process the built child to build its own subtree.
-            processed_child = self._build_widget_tree(built_child, context_map)
+            processed_child = self._build_widget_tree(
+                built_child,
+                context_map,
+                parent_key=widget.get_unique_id(),
+                child_index=0,
+                force_rebuild=force_rebuild
+            )
 
             # CRITICAL: The StatefulWidget's children list becomes the *single* processed child.
             # This keeps the StatefulWidget as the parent node in the tree.
@@ -1176,9 +1323,15 @@ class Framework:
         else:
             if hasattr(widget, "get_children"):
                 new_children = []
-                for child in widget.get_children():
+                for idx, child in enumerate(widget.get_children()):
                     # Recursively build each child.
-                    built_child = self._build_widget_tree(child, context_map)
+                    built_child = self._build_widget_tree(
+                        child,
+                        context_map,
+                        parent_key=widget.get_unique_id(),
+                        child_index=idx,
+                        force_rebuild=force_rebuild
+                    )
                     if built_child:
                         new_children.append(built_child)
                 # Replace the old children list with the newly built one.
@@ -1241,7 +1394,6 @@ class Framework:
         props = node_data["props"]
         widget_instance = node_data["widget_instance"]
 
-
         stub = self.reconciler._generate_html_stub(widget_instance, html_id, props)
         # print("stub: ", stub)
 
@@ -1252,7 +1404,7 @@ class Framework:
 
         if "{children}" in stub:
             return stub.replace("{children}", children_html)
-        
+
         if ">" in stub and "</" in stub:
             tag = self.reconciler._get_widget_render_tag(widget_instance)
             closing_tag = f"</{tag}>"
@@ -2091,16 +2243,128 @@ body {{
 }}
 """
         # Prepare the strings we may write
-        css_output = base_css + font_face_rules
+        debug_mode = self.config.get("Debug", False)
+
+        debug_css = ""
+        debug_banner_html = ""
+
+        if debug_mode:
+            debug_css = """
+/* Interactive Debug Banner Styles */
+#pythra-debug-banner-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 999999;
+}
+#pythra-debug-banner {
+    position: absolute;
+    top: 15px;
+    right: -30px;
+    width: 120px;
+    height: 24px;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    font-family: sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    transform-origin: center;
+}
+#pythra-debug-banner .banner-text {
+    letter-spacing: 1px;
+}
+#pythra-debug-banner .debug-controls {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+#pythra-debug-banner:hover {
+    top: 15px;
+    right: 15px;
+    width: 90px;
+    height: 36px;
+    transform: rotate(0deg);
+    border-radius: 18px;
+    background: rgba(15, 15, 20, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+#pythra-debug-banner:hover .banner-text {
+    display: none;
+}
+#pythra-debug-banner:hover .debug-controls {
+    display: flex;
+}
+.debug-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+.debug-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: scale(1.1);
+}
+.debug-btn.restart-btn:hover {
+    color: #4facfe;
+}
+.debug-btn.close-btn:hover {
+    color: #ff4b2b;
+}
+"""
+            debug_banner_html = """
+        <!-- Interactive Debug Banner -->
+        <div id="pythra-debug-banner-wrapper">
+            <div id="pythra-debug-banner">
+                <span class="banner-text">DEBUG</span>
+                <div class="debug-controls">
+                    <button class="debug-btn restart-btn" title="Hot Restart" onclick="if(window.pywebview) { window.pywebview.hot_restart(); } else { window.location.reload(); }">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                        </svg>
+                    </button>
+                    <button class="debug-btn close-btn" title="Close App" onclick="if(window.pywebview) { window.pywebview.close_app(); } else { window.close(); }">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+            """
+
+        css_output = base_css + debug_css + font_face_rules
 
         # Note: remove the timestamp query param to keep the generated HTML stable
         # so we don't rewrite files every run. Dynamic updates are handled via
         # the <style id="dynamic-styles"> tag and JS patches.
-    #     <link rel=\"stylesheet\" href=\"./js/scroll-bar/simplebar.min.css\" />
-    # <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n
-               
-        html_output = (
-            f"""<!DOCTYPE html>
+        #     <link rel=\"stylesheet\" href=\"./js/scroll-bar/simplebar.min.css\" />
+        # <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n
+
+        html_output = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2147,6 +2411,7 @@ body {{
 
         <div id="root-container">{html_content}</div>
         <div id="overlay-container"></div>
+        {debug_banner_html}
     </div>
 
     <!-- ADD SIMPLEBAR JS -->
@@ -2156,7 +2421,6 @@ body {{
     {initial_js}
 </body>
 </html>"""
-        )
 
         try:
             # If we've written initial files before and cached content matches, skip writes

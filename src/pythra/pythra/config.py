@@ -18,9 +18,25 @@ The system automatically creates a config.yaml file in your project if one doesn
 """
 
 from __future__ import annotations
+import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 import yaml
+
+def get_project_root() -> Path:
+    """Detects the project root directory based on the execution script."""
+    try:
+        main_script = os.path.abspath(sys.argv[0])
+        if main_script and os.path.exists(main_script):
+            main_path = Path(main_script)
+            if "lib" in main_path.parts:
+                return main_path.parent.parent
+            else:
+                return main_path.parent
+    except Exception:
+        pass
+    return Path.cwd()
 
 # =============================================================================
 # DEFAULT CONFIGURATION - The "Factory Settings" for PyThra Apps
@@ -96,14 +112,25 @@ class Config:
             return
         self._initialized = True
         
-        # --- THIS IS THE FIX ---
-        # The Config class now takes a single, unambiguous path.
-        self.config_file_path = Path(config_path).resolve()
+        path = Path(config_path)
+        if not path.is_absolute():
+            self.config_file_path = (get_project_root() / path).resolve()
+        else:
+            self.config_file_path = path.resolve()
+            
         self._config: Dict[str, Any] = {}
+        
+        # If running as a built executable, try importing the embedded config
+        if getattr(sys, "frozen", False):
+            try:
+                import _embedded_config
+                self._config = _embedded_config.CONFIG
+                return
+            except ImportError:
+                pass
         
         # Load the configuration. This method will now also CREATE the file.
         self.reload()
-        # --- END OF FIX ---
 
     def reload(self):
         """

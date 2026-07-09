@@ -964,12 +964,71 @@ def install_linux(
 @app.command()
 def run(script: str = typer.Option("lib/main.py", "--script", "-s", help="Script to run relative to the project root.")):
     """Runs the application with a clean-restart-on-keypress loop."""
-    # This command is perfect as-is.
     project_root = Path.cwd()
     script_path = (project_root / script).resolve()
     if not script_path.exists():
         print(f"❌ Error: Script not found at '{script_path}'")
         raise typer.Exit(code=1)
+    
+    import queue
+    import threading
+    
+    q = queue.Queue()
+    
+    def read_stdin(q):
+        while True:
+            try:
+                line = sys.stdin.readline()
+                if not line:
+                    break
+                q.put(line.strip().lower())
+            except Exception:
+                break
+
+    stdin_thread = threading.Thread(target=read_stdin, args=(q,), daemon=True)
+    stdin_thread.start()
+
+    def watch_files(project_root, q):
+        import time
+        def get_mtimes():
+            mtimes = {}
+            for root, dirs, files in os.walk(str(project_root)):
+                if any(x in root for x in ['/build', '/venv', '/.git', '__pycache__', '/new-app/plugins/vlc_to_web/backend/.venv']):
+                    continue
+                for f in files:
+                    if f.endswith('.py'):
+                        path = os.path.join(root, f)
+                        try:
+                            mtimes[path] = os.path.getmtime(path)
+                        except Exception:
+                            pass
+            return mtimes
+
+        last_mtimes = get_mtimes()
+        while True:
+            time.sleep(0.5)
+            try:
+                current_mtimes = get_mtimes()
+                changed = False
+                for path, mtime in current_mtimes.items():
+                    if path not in last_mtimes or last_mtimes[path] < mtime:
+                        changed = True
+                        break
+                if len(current_mtimes) != len(last_mtimes):
+                    changed = True
+                
+                if changed:
+                    print("\n⚡ File change detected. Triggering Hot Reload...")
+                    q.put('h')
+                    last_mtimes = current_mtimes
+            except Exception:
+                pass
+
+    watcher_thread = threading.Thread(target=watch_files, args=(project_root, q), daemon=True)
+    watcher_thread.start()
+    
+    print("🔥 Hot Reload active (auto on save). Press [h] + Enter to manual reload, [r] + Enter to restart, [q] + Enter to quit:")
+
     process = None
     try:
         while True:
@@ -983,13 +1042,45 @@ def run(script: str = typer.Option("lib/main.py", "--script", "-s", help="Script
             else:
                 env["PYTHONPATH"] = str(project_root)
                 
-            process = subprocess.Popen([sys.executable, "-u", str(script_path)], env=env)
-            cmd = input("🔥 Clean Restart active. Press [r] + Enter to restart, [q] + Enter to quit: ").strip().lower()
-            if cmd and readline:
-                try:
-                    readline.add_history(cmd)
-                except Exception:
-                    pass
+            process = subprocess.Popen([sys.executable, "-u", str(script_path)], env=env, stdin=subprocess.PIPE)
+            
+            cmd = None
+            while True:
+                # 1. Check if child process has exited
+                ret = process.poll()
+                if ret is not None:
+                    if ret == 3: # Special exit code for Hot Restart
+                        cmd = 'r'
+                        break
+                    else:
+                        if not hasattr(process, '_exit_printed'):
+                            print(f"\n⚠️ Process exited with code {ret}. Press [r] + Enter to restart, [q] + Enter to quit: ")
+                            process._exit_printed = True
+                
+                # 2. Check if user typed anything or file watcher triggered
+                if not q.empty():
+                    item = q.get()
+                    if item and readline:
+                        try:
+                            readline.add_history(item)
+                        except Exception:
+                            pass
+                    
+                    if item == 'h':
+                        if process.poll() is None:
+                            try:
+                                process.stdin.write(b"hot_reload\n")
+                                process.stdin.flush()
+                            except Exception as e:
+                                print(f"Error sending hot reload signal: {e}")
+                        else:
+                            print("⚠️ Cannot hot reload: process is not running.")
+                    else:
+                        cmd = item
+                        break
+                
+                time.sleep(0.1)
+
             if process.poll() is None:
                 process.terminate()
                 try: process.wait(timeout=2)
@@ -997,11 +1088,12 @@ def run(script: str = typer.Option("lib/main.py", "--script", "-s", help="Script
             if cmd == 'q':
                 print("👋 Exiting...")
                 break
-            elif cmd != 'r':
+            elif cmd == 'r':
+                print("🔄 Restarting application...")
+                time.sleep(0.5)
+            else:
                 print("❓ Unknown command. Exiting.")
                 break
-            print("🔄 Restarting application...")
-            time.sleep(0.5)
     finally:
         if process and process.poll() is None:
             process.kill()

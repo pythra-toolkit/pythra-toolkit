@@ -88,7 +88,7 @@ if platform.system() == "Darwin":
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout    # Basic UI components
 from PySide6.QtCore import Qt, QObject, Slot, QUrl, QSize, qInstallMessageHandler, QtMsgType, QTimer, QEvent, Signal  # Core functionality
 from PySide6.QtWebEngineWidgets import QWebEngineView               # Web browser widget
-from PySide6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile # Browser configuration
+from PySide6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile, QWebEnginePage # Browser configuration
 from PySide6.QtWebChannel import QWebChannel                        # Python ↔ JavaScript communication
 from PySide6.QtGui import QShortcut, QKeySequence, QGuiApplication  # Keyboard shortcuts and UI helpers
 from PySide6.QtCore import (
@@ -103,7 +103,6 @@ import io                                       # Input/Output operations
 from contextlib import redirect_stdout, redirect_stderr  # Context managers for stream redirection
 
 import threading
-
 
 
 from .window_manager import SystemSleepManager 
@@ -355,11 +354,11 @@ def _setup_platform_icon():
     try:
         from pathlib import Path
         import shutil as _shutil
-        
+
         # Guard: only run if a QApplication exists (skip for CLI tools)
         if app is None:
             return
-        
+
         # --- Resolve the project root ---
         main_script = os.path.abspath(sys.argv[0])
         if 'lib' in os.path.normpath(main_script).split(os.sep):
@@ -370,6 +369,7 @@ def _setup_platform_icon():
         # --- Read app_id and app_name from config if available ---
         app_id = 'com.pythra.app'
         app_name = 'PyThra App'
+        debug_mode = True
         try:
             import yaml
             config_path = os.path.join(project_root, 'config.yaml')
@@ -379,9 +379,10 @@ def _setup_platform_icon():
                 if isinstance(cfg, dict):
                     app_id = cfg.get('app_id', app_id)
                     app_name = cfg.get('app_name', app_name)
+                    debug_mode = cfg.get("Debug", True)
         except Exception:
             pass
-        
+
         # --- 1. WINDOWS: Set AppUserModelID for correct taskbar icon grouping ---
         if sys.platform == 'win32':
             try:
@@ -393,7 +394,7 @@ def _setup_platform_icon():
         # --- 2. Set the application-wide icon (all platforms) ---
         icon_search_paths = []
         resolved_icon = None
-        
+
         if sys.platform == 'win32':
             icon_search_paths = [
                 os.path.join(project_root, 'windows', 'appIcon.ico'),
@@ -410,10 +411,10 @@ def _setup_platform_icon():
                 os.path.join(project_root, 'linux', 'hicolor', '256x256', 'apps', 'appIcon.png'),
                 os.path.join(project_root, 'linux', 'hicolor', '128x128', 'apps', 'appIcon.png'),
             ]
-        
+
         # Universal fallback: PNG in assets
         icon_search_paths.append(os.path.join(project_root, 'assets', 'appIcon.png'))
-        
+
         for icon_path in icon_search_paths:
             if os.path.exists(icon_path):
                 app.setWindowIcon(QIcon(icon_path))
@@ -426,27 +427,29 @@ def _setup_platform_icon():
         # installed in ~/.local/share/applications/ with matching hicolor icons.
         if sys.platform.startswith('linux'):
             try:
-                home = Path.home()
-                apps_dir = home / '.local' / 'share' / 'applications'
-                icons_base = home / '.local' / 'share' / 'icons' / 'hicolor'
-                
-                apps_dir.mkdir(parents=True, exist_ok=True)
-                
-                # Determine executable — if running from a compiled binary,
-                # use the binary itself; otherwise use python3 + script
-                if getattr(sys, 'frozen', False):
-                    # Running as compiled binary (Nuitka/PyInstaller)
-                    exec_line = f'Exec={sys.executable}'
-                else:
-                    exec_line = f'Exec=python3 {os.path.abspath(main_script)}'
-                
-                # Find the best icon to reference (absolute path for dev .desktop)
-                icon_line = f'Icon={app_id}'  # Default: FreeDesktop theme lookup
-                if resolved_icon:
-                    icon_line = f'Icon={os.path.abspath(resolved_icon)}'
-                
-                # Write the .desktop file
-                desktop_content = f"""[Desktop Entry]
+                # Only automatically create/install .desktop and hicolor icons in debug mode
+                if debug_mode and not getattr(sys, "frozen", False):
+                    home = Path.home()
+                    apps_dir = home / ".local" / "share" / "applications"
+                    icons_base = home / ".local" / "share" / "icons" / "hicolor"
+
+                    apps_dir.mkdir(parents=True, exist_ok=True)
+
+                    # Determine executable — if running from a compiled binary,
+                    # use the binary itself; otherwise use python3 + script
+                    if getattr(sys, "frozen", False):
+                        # Running as compiled binary (Nuitka/PyInstaller)
+                        exec_line = f"Exec={sys.executable}"
+                    else:
+                        exec_line = f"Exec=python3 {os.path.abspath(main_script)}"
+
+                    # Find the best icon to reference (absolute path for dev .desktop)
+                    icon_line = f"Icon={app_id}"  # Default: FreeDesktop theme lookup
+                    if resolved_icon:
+                        icon_line = f"Icon={os.path.abspath(resolved_icon)}"
+
+                    # Write the .desktop file
+                    desktop_content = f"""[Desktop Entry]
 Type=Application
 Name={app_name}
 Comment=A PyThra desktop application
@@ -456,41 +459,47 @@ Terminal=false
 Categories=Utility;
 StartupWMClass={app_id}
 """
-                desktop_path = apps_dir / f'{app_id}.desktop'
-                desktop_path.write_text(desktop_content)
-                
-                # Install hicolor icons to system dir
-                linux_hicolor = os.path.join(project_root, 'linux', 'hicolor')
-                if os.path.isdir(linux_hicolor):
-                    for size_dir in Path(linux_hicolor).iterdir():
-                        if not size_dir.is_dir():
-                            continue
-                        for apps_subdir in size_dir.iterdir():
-                            if not apps_subdir.is_dir():
+                    desktop_path = apps_dir / f"{app_id}.desktop"
+                    desktop_path.write_text(desktop_content)
+
+                    # Install hicolor icons to system dir
+                    linux_hicolor = os.path.join(project_root, "linux", "hicolor")
+                    if os.path.isdir(linux_hicolor):
+                        for size_dir in Path(linux_hicolor).iterdir():
+                            if not size_dir.is_dir():
                                 continue
-                            for icon_file in apps_subdir.iterdir():
-                                if icon_file.is_file():
-                                    dest_dir = icons_base / size_dir.name / apps_subdir.name
-                                    dest_dir.mkdir(parents=True, exist_ok=True)
-                                    dest_file = dest_dir / f'{app_id}.png'
-                                    _shutil.copy2(str(icon_file), str(dest_file))
-                
-                # Silently update icon cache
-                try:
-                    import subprocess as _sp
-                    _sp.run(
-                        ['gtk-update-icon-cache', str(icons_base)],
-                        capture_output=True, timeout=5
-                    )
-                except Exception:
-                    pass
-                
+                            for apps_subdir in size_dir.iterdir():
+                                if not apps_subdir.is_dir():
+                                    continue
+                                for icon_file in apps_subdir.iterdir():
+                                    if icon_file.is_file():
+                                        dest_dir = (
+                                            icons_base
+                                            / size_dir.name
+                                            / apps_subdir.name
+                                        )
+                                        dest_dir.mkdir(parents=True, exist_ok=True)
+                                        dest_file = dest_dir / f"{app_id}.png"
+                                        _shutil.copy2(str(icon_file), str(dest_file))
+
+                    # Silently update icon cache
+                    try:
+                        import subprocess as _sp
+
+                        _sp.run(
+                            ["gtk-update-icon-cache", str(icons_base)],
+                            capture_output=True,
+                            timeout=5,
+                        )
+                    except Exception:
+                        pass
+
             except Exception:
                 pass  # Icon install is best-effort
-            
+
             # Tell Wayland which .desktop file to use
             app.setDesktopFileName(app_id)
-            
+
     except Exception:
         # Icon setup is best-effort — never block app startup
         pass
@@ -596,11 +605,11 @@ class Api(QObject):
 
     def register_callback(self, name, callback):
         self.callbacks[name] = callback
-        #print("Callbacks: ", self.callbacks)
+        # print("Callbacks: ", self.callbacks)
 
     def clear_callbacks(self):
         """Removes all registered callbacks."""
-        #print("API: Clearing all callbacks.")
+        # print("API: Clearing all callbacks.")
         debug_print("API: Clearing all callbacks.")
         self.callbacks.clear()
 
@@ -654,7 +663,7 @@ class Api(QObject):
             print(f"Warning: Input callback '{callback_name}' not found.")
             debug_print(f"Warning: Input callback '{callback_name}' not found.")
 
-     # --- ADD THIS NEW SLOT FOR THE SLIDER ---
+    # --- ADD THIS NEW SLOT FOR THE SLIDER ---
     @Slot(str, float, bool, result=None)
     def on_drag_update(self, callback_name, value, drag_ended):
         """
@@ -662,28 +671,28 @@ class Api(QObject):
         Executes the registered callback with the new float value.
         """
         callback = self.callbacks.get(callback_name)
-        #print("callback drag_ended: ", drag_ended)
+        # print("callback drag_ended: ", drag_ended)
         debug_print("callback drag_ended: ", drag_ended)
         if callback:
             try:
                 self._execute_callback(callback, value, drag_ended)
             except Exception as e:
-                #print(f"Error executing slider callback '{callback_name}': {e}")
+                # print(f"Error executing slider callback '{callback_name}': {e}")
                 debug_print(f"Error executing slider callback '{callback_name}': {e}")
         else:
-            #print(f"Warning: Slider callback '{callback_name}' not found.")
+            # print(f"Warning: Slider callback '{callback_name}' not found.")
             debug_print(f"Warning: Slider callback '{callback_name}' not found.")
     # --- END OF NEW SLOT ---
 
     @Slot(str, int)
     def send_message(self, message, *args):
-        #print(f"Frontend message: {message}, ", *args)
+        # print(f"Frontend message: {message}, ", *args)
         print(f"Frontend message: {message}, ", *args)
         return "Message received!"
 
     @Slot(str)
     def on_button_clicked(self, message):
-        #print(f"Message from JavaScript: {message}")
+        # print(f"Message from JavaScript: {message}")
         debug_print(f"Message from JavaScript: {message}")
 
     # --- THIS IS THE NEW SLOT ---
@@ -701,11 +710,11 @@ class Api(QObject):
                 # This call now returns a dict: {"html": "...", "css": "..."}
                 return callback(index)
             except Exception as e:
-                #print(f"Error executing item builder '{builder_name}' for index {index}: {e}")
+                # print(f"Error executing item builder '{builder_name}' for index {index}: {e}")
                 debug_print(f"Error executing item builder '{builder_name}' for index {index}: {e}")
                 return {"html": "<div>Error</div>", "css": ""}
         else:
-            #print(f"Warning: Item builder '{builder_name}' not found.")
+            # print(f"Warning: Item builder '{builder_name}' not found.")
             debug_print(f"Warning: Item builder '{builder_name}' not found.")
             return {"html": "<div>Builder not found</div>", "css": ""}
 
@@ -716,7 +725,7 @@ class Api(QObject):
         Generic slot to handle all events from the GestureDetector JS engine.
         """
         callback = self.callbacks.get(callback_name)
-        #print("Callback tap debug info: ",callback, " " ,details)
+        # print("Callback tap debug info: ",callback, " " ,details)
         # print("Callback tap debug info: ",callback, " " ,details)
         if callback:
             try:
@@ -730,10 +739,10 @@ class Api(QObject):
                     # For DoubleTap, LongPress, PanStart, PanEnd, no details are needed.
                     self._execute_callback(callback)
             except Exception as e:
-                #print(f"Error executing gesture callback '{callback_name}': {e}")
+                # print(f"Error executing gesture callback '{callback_name}': {e}")
                 debug_print(f"Error executing gesture callback '{callback_name}': {e}")
         else:
-            #print(f"Warning: Gesture callback '{callback_name}' not found.")
+            # print(f"Warning: Gesture callback '{callback_name}' not found.")
             debug_print(f"Warning: Gesture callback '{callback_name}' not found.")
 
     # --- Video Player rect update Slot ---
@@ -793,6 +802,52 @@ class Api(QObject):
         if window and window.windowHandle():
             window.windowHandle().startSystemResize(Qt.Edge(edge))
 
+    @Slot(result=None)
+    def hot_restart(self):
+        """Triggers framework-level hot restart by exiting with code 3 (which pythra run catches to restart)."""
+        try:
+            print("🔄 Hot Restart triggered from UI...")
+            # Shut down asset server and close window gracefully first
+            try:
+                from ..core import Framework
+
+                framework = Framework.instance()
+                if framework:
+                    framework.close()
+            except Exception:
+                pass
+
+            # Exit with our special exit code 3
+            import sys
+
+            sys.exit(3)
+        except Exception as e:
+            print(f"Error during hot restart: {e}")
+
+    @Slot(result=None)
+    def hot_reload_from_ui(self):
+        """Triggers framework-level hot reload from the UI debug banner."""
+        try:
+            from ..core import Framework
+            framework = Framework.instance()
+            if framework:
+                framework.hot_reload()
+        except Exception as e:
+            print(f"Error during hot reload from UI: {e}")
+
+    @Slot(result=None)
+    def close_app(self):
+        """Closes the application."""
+        try:
+            from ..core import Framework
+
+            framework = Framework.instance()
+            if framework:
+                print("❌ Close App triggered from UI...")
+                framework.close()
+        except Exception as e:
+            print(f"Error closing app: {e}")
+
 
 # Create a global instance of the WindowManager
 window_manager = WindowManager()
@@ -811,6 +866,19 @@ class DebugWindow(QWebEngineView):
         else: print(f"overlay is: {False}")
         
         self.resize(800, 600)
+
+
+
+# ── Custom WebEngine Page ─────────────────────────────────────────────
+class PythraWebEnginePage(QWebEnginePage):
+    """Custom QWebEnginePage subclass to capture and route browser console.log/error messages to python output."""
+    def javaScriptConsoleMessage(self, level, message, lineNumber, sourceID):
+        level_str = "INFO"
+        if level == QWebEnginePage.JavaScriptConsoleMessageLevel.WarningMessageLevel:
+            level_str = "WARNING"
+        elif level == QWebEnginePage.JavaScriptConsoleMessageLevel.ErrorMessageLevel:
+            level_str = "ERROR"
+        print(f"[JS {level_str}] ({sourceID}:{lineNumber}): {message}")
 
 
 class WebWindow(QWidget):
@@ -893,7 +961,7 @@ class WebWindow(QWidget):
         if self.video_overlay:
             # Match vid.py's transparency for overlay stacking
             # self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-            
+
             # 1. Create a native video_frame child (VLC attaches to its winId)
             self.video_frame = QWidget(self)
             self.video_frame.setAttribute(Qt.WidgetAttribute.WA_NativeWindow, True)
@@ -903,6 +971,7 @@ class WebWindow(QWidget):
 
             # 2. Create webview as child of self (same as vid.py)
             self.webview = QWebEngineView(self)
+            self.webview.setPage(PythraWebEnginePage(self.webview))
 
             # 3. Set Tool flags IMMEDIATELY — before any layout or HTML load
             self.webview.setWindowFlags(
@@ -915,6 +984,7 @@ class WebWindow(QWidget):
         else:
             # --- DEFAULT MODE (webview inside layout) ---
             self.webview = QWebEngineView(self)
+            self.webview.setPage(PythraWebEnginePage(self.webview))
 
             # Enable transparency for frameless windows
             if frameless:
@@ -1027,6 +1097,11 @@ class WebWindow(QWidget):
             self.webview.close()
         if self.debug_window:
             self.debug_window.close()
+
+    def reload(self):
+        """Reloads the webview content."""
+        if hasattr(self, "webview") and self.webview:
+            self.webview.reload()
 
     def evaluate_js(self, window_id, *scripts):
         # Define a dummy callback function to make the call non-blocking.
