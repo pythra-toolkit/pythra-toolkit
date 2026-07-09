@@ -9,6 +9,7 @@ import base64
 # --- END OF IMPORTS ---
 
 import os
+import ast
 from pathlib import Path
 import importlib
 import sys
@@ -303,6 +304,17 @@ class Framework:
         import atexit
         atexit.register(self._maybe_auto_run)
 
+    @staticmethod
+    def _is_runapp_decorator(node):
+        """Check if an AST decorator node represents @runApp (handles Name and Call nodes)."""
+        if isinstance(node, ast.Name) and node.id == 'runApp':
+            return True
+        if isinstance(node, ast.Attribute) and node.attr == 'runApp':
+            return True
+        if isinstance(node, ast.Call):
+            return Framework._is_runapp_decorator(node.func)
+        return False
+
     def hot_reload(self):
         """Perform a state-preserving hot reload of the application."""
         print("⚡ PyThra Framework | Performing Hot Reload...")
@@ -313,6 +325,8 @@ class Framework:
             import importlib
             import sys
             import inspect
+            import importlib.util
+            import types
             
             project_modules = {}
             for name, mod in list(sys.modules.items()):
@@ -326,10 +340,47 @@ class Framework:
             new_classes = {}
             for name, old_mod in project_modules.items():
                 try:
-                    new_mod = importlib.reload(old_mod)
+                    if name == '__main__':
+                        # __main__ can't be reloaded via importlib.reload (no spec).
+                        # exec_module would re-execute the entire script, triggering @runApp
+                        # which calls app.run() and restarts everything.
+                        # Instead, parse the AST, strip @runApp decorators, and exec in the
+                        # existing __main__ namespace to update just the class/function defs.
+                        try:
+                            with open(old_mod.__file__, 'r') as f:
+                                source = f.read()
+                            tree = ast.parse(source, filename=old_mod.__file__)
+                            # Strip @runApp decorators from all classes to prevent @runApp side effects
+                            for node in ast.walk(tree):
+                                if isinstance(node, ast.ClassDef):
+                                    node.decorator_list = [
+                                        d for d in node.decorator_list
+                                        if not Framework._is_runapp_decorator(d)
+                                    ]
+                            # Strip if __name__ == '__main__': blocks to prevent app.run() re-execution
+                            tree.body = [
+                                node for node in tree.body
+                                if not (isinstance(node, ast.If)
+                                        and isinstance(node.test, ast.Compare)
+                                        and any(isinstance(c, ast.Eq) for c in node.test.ops)
+                                        and isinstance(node.test.left, ast.Name)
+                                        and node.test.left.id == '__name__'
+                                        and any(isinstance(c, ast.Constant) and c.value == '__main__'
+                                                for c in node.test.comparators))
+                            ]
+                            ast.fix_missing_locations(tree)
+                            code = compile(tree, old_mod.__file__, 'exec')
+                            exec(code, old_mod.__dict__)
+                            new_mod = old_mod
+                            print(f"  🔄 Reloaded module: {name} (AST-based, @runApp stripped)")
+                        except Exception as e:
+                            print(f"  ❌ Error reloading __main__ via AST: {e}")
+                            continue
+                    else:
+                        new_mod = importlib.reload(old_mod)
                     print(f"  🔄 Reloaded module: {name}")
                     for attr_name, attr_val in inspect.getmembers(new_mod, inspect.isclass):
-                        if attr_val.__module__ == new_mod.__name__:
+                        if getattr(attr_val, '__module__', None) == new_mod.__name__:
                             new_classes[attr_name] = attr_val
                 except Exception as e:
                     print(f"  ❌ Error reloading module {name}: {e}")
@@ -363,6 +414,7 @@ class Framework:
             
             # 3. Re-bind the class definitions of all rescued state objects in the previous map
             # This ensures that when built_child = state.build() is called, it runs the new code.
+            rebound_count = 0
             for key, data in previous_map.items():
                 widget_inst = data.get("widget_instance")
                 if widget_inst and isinstance(widget_inst, StatefulWidget):
@@ -371,6 +423,9 @@ class Framework:
                         state_class_name = old_state.__class__.__name__
                         if state_class_name in new_classes:
                             old_state.__class__ = new_classes[state_class_name]
+                            rebound_count += 1
+            if rebound_count:
+                print(f"  🔄 Re-bound {rebound_count} state objects to new classes")
             
             # 4. Build the widget tree using the reloaded widget instances
             built_tree_root = self._build_widget_tree(new_root, context_map=previous_map, force_rebuild=True)
@@ -402,17 +457,21 @@ class Framework:
             css_rules = self._generate_css_from_details(full_css_details)
             css_update_script = self._generate_css_update_script(css_rules)
             self._last_css_keys = set(full_css_details.keys())
-            
+
             # 8. Generate DOM patches script
             dom_patch_script = self._generate_dom_patch_script(result.patches, js_initializers=result.js_initializers)
             
-            # Combine and evaluate
-            combined_script = (css_update_script + "\n" + dom_patch_script).strip()
+            # Combine and evaluate - DOM PATCHES FIRST so CSS errors don't block patches
+            combined_script = (dom_patch_script + "\n" + css_update_script).strip()
             
             if combined_script and self.window:
                 self.window.evaluate_js(self.id, combined_script)
                 print(f"⚡ Hot Reload applied: {len(result.patches)} DOM patches and updated stylesheet sent to browser.")
             else:
+                if not combined_script:
+                    print("  [DEBUG] combined_script is empty - no changes to send")
+                if not self.window:
+                    print("  [DEBUG] self.window is None - cannot evaluate JS")
                 print("⚡ Hot Reload applied: UI is already up to date.")
                 
         except Exception as e:
@@ -1441,11 +1500,15 @@ class Framework:
         """Generates JS to update the <style id="dynamic-styles"> tag."""
         escaped_css = _dumps(css_rules).replace("`", "\\`")
         return f"""
-            var styleSheet = document.getElementById('dynamic-styles');
-            var newCss = {escaped_css};
-            if (styleSheet.textContent !== newCss) {{
-                 styleSheet.textContent = newCss;
-            }}
+            try {{
+                var styleSheet = document.getElementById('dynamic-styles');
+                if (styleSheet) {{
+                    var newCss = {escaped_css};
+                    if (styleSheet.textContent !== newCss) {{
+                         styleSheet.textContent = newCss;
+                    }}
+                }}
+            }} catch(e) {{ console.error('CSS update failed:', e); }}
         """
 
     def _build_path_from_commands(self, commands_data: List[Dict]) -> str:
