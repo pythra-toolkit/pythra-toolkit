@@ -2357,7 +2357,7 @@ body {{
 #pythra-debug-banner:hover {
     top: 15px;
     right: 15px;
-    width: 90px;
+    width: 130px;
     height: 36px;
     transform: rotate(0deg);
     border-radius: 18px;
@@ -2396,6 +2396,9 @@ body {{
 .debug-btn.close-btn:hover {
     color: #ff4b2b;
 }
+.debug-btn.hotreload-btn:hover {
+    color: #ffd700;
+}
 """
             debug_banner_html = """
         <!-- Interactive Debug Banner -->
@@ -2406,6 +2409,13 @@ body {{
                     <button class="debug-btn restart-btn" title="Hot Restart" onclick="if(window.pywebview) { window.pywebview.hot_restart(); } else { window.location.reload(); }">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                        </svg>
+                    </button>
+                    <button class="debug-btn hotreload-btn" title="Hot Reload" onclick="if(window.pywebview) { window.pywebview.hot_reload_from_ui(); }">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                         </svg>
                     </button>
                     <button class="debug-btn close-btn" title="Close App" onclick="if(window.pywebview) { window.pywebview.close_app(); } else { window.close(); }">
