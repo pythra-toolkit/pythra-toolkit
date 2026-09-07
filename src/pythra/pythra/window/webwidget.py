@@ -623,7 +623,18 @@ class Api(QObject):
                 from ..debug_utils import debug_print
                 debug_print(f"Cannot run async callback - no running event loop (did you install qasync?): {e}")
         else:
-            cb(*args)
+            try:
+                cb(*args)
+            except TypeError as e:
+                # If callback was called without arguments but expects details (e.g. GestureDetector callback),
+                # pass a TapDetails instance gracefully instead of crashing the UI
+                if len(args) == 0:
+                    try:
+                        cb(TapDetails())
+                        return
+                    except Exception:
+                        pass
+                raise e
 
     @Slot(str, int, result=str)
     @Slot(str, str, result=str)

@@ -307,6 +307,12 @@ window.PythraBridge = {
                     el.removeAttribute('onclick');
                 }
             } else if (key === 'onTapName') {
+                // Do NOT attach onclick to GestureDetector elements.
+                // GestureDetector is managed by PythraGestureDetector pointer events.
+                if (props.init_gesture_detector || props.gesture_options) {
+                    el.removeAttribute('onclick');
+                    return;
+                }
                 if (value) {
                     const args = props.onTapArg && Array.isArray(props.onTapArg) && props.onTapArg.length > 0 ? JSON.stringify(props.onTapArg) : null;
                     if (args) {

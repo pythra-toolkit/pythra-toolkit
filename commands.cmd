@@ -23,3 +23,9 @@ grep -n "// ──" src/pythra/pythra/project_template/render/js/pythra_bridge.j
 grep -n "# ──" src/pythra/pythra/core.py src/pythra/pythra/reconciler.py
 diff -u src/pythra/pythra/project_template/render/js/pythra_bridge.js /home/red-x/projects/desktop/Note-app/render/js/pythra_bridge.js
 diff -u src/pythra/pythra/project_template/render/js/pythra_bridge.js new-app/render/js/pythra_bridge.js
+python3 -c "import Cython; print(Cython.__version__)"
+python3 setup.py build_ext --help
+cp src/pythra/pythra/project_template/render/js/pythra_bridge.js new-app/render/js/pythra_bridge.js && cp src/pythra/pythra/project_template/render/js/pythra_bridge.js /home/red-x/projects/desktop/Note-app/render/js/pythra_bridge.js
+python3 setup.py build_ext --inplace
+git status
+git status (in Note-app)

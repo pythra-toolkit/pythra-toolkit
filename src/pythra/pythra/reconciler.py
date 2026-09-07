@@ -350,39 +350,47 @@ class Reconciler:
 
         # If the type or key has changed, it's a replacement.
         if old_type != new_type or new_widget.key != old_data.get("key"):
-            target_html_id = old_data["html_id"]
-            new_props = new_widget.render_props()
-            self._collect_details(new_widget, new_props, result)
-
-            new_html_stub = self._generate_html_stub(
-                new_widget, target_html_id, new_props
-            )
-            # Strip {children} placeholder so incremental REPLACE patch does not leave literal token
-            if "{children}" in new_html_stub:
-                new_html_stub = new_html_stub.replace("{children}", "")
-
-            # Append the REPLACE patch FIRST so the parent element exists in the DOM
-            # before any child nodes are inserted into it.
-            result.patches.append(
-                Patch(
-                    action="REPLACE",
-                    html_id=target_html_id,
-                    data={"new_html": new_html_stub, "new_props": new_props},
-                )
-            )
-
-            # Insert the new node and its children into the map, reusing target_html_id
-            # so child parent_html_id references point to the correctly replaced DOM element.
-            self._insert_node_recursive(
-                new_widget,
-                parent_html_id,
-                parent_key,
-                result,
-                previous_map,
-                suppress_self_patch=True,
-                forced_html_id=target_html_id,
+            self._replace_node(
+                new_widget, old_data, parent_html_id, parent_key, result, previous_map
             )
             return
+
+    def _replace_node(
+        self, new_widget, old_data, parent_html_id, parent_key, result, previous_map
+    ):
+        """Handles replacing a widget and its subtree with proper patch ordering and ID preservation."""
+        target_html_id = old_data["html_id"]
+        new_props = new_widget.render_props()
+        self._collect_details(new_widget, new_props, result)
+
+        new_html_stub = self._generate_html_stub(
+            new_widget, target_html_id, new_props
+        )
+        # Strip {children} placeholder so incremental REPLACE patch does not leave literal token
+        if "{children}" in new_html_stub:
+            new_html_stub = new_html_stub.replace("{children}", "")
+
+        # Append the REPLACE patch FIRST so the parent element exists in the DOM
+        # before any child nodes are inserted into it.
+        result.patches.append(
+            Patch(
+                action="REPLACE",
+                html_id=target_html_id,
+                data={"new_html": new_html_stub, "new_props": new_props},
+            )
+        )
+
+        # Insert the new node and its children into the map, reusing target_html_id
+        # so child parent_html_id references point to the correctly replaced DOM element.
+        self._insert_node_recursive(
+            new_widget,
+            parent_html_id,
+            parent_key,
+            result,
+            previous_map,
+            suppress_self_patch=True,
+            forced_html_id=target_html_id,
+        )
 
         # --- UPDATE PATH ---
         html_id = old_data["html_id"]
@@ -996,13 +1004,13 @@ class Reconciler:
                 else:
                     attrs += f" onclick=\"handleClick('{html.escape(cb_name, quote=True)}')\""
         elif "onTapName" in props and props.get("enabled", True):
-            if cb_name := props.get("onTapName"):
-                if props["onTapArg"] != []:
-                    # [print("arg: ", x) for x in props["onPressedArgs"]]
-                    # print("ARGS: ",props["onPressedArgs"] if props["onPressedArgs"] else 'None') #["onPressedArgs"] if props["onPressedArgs"] else 'None'
-                    attrs += f" onclick=\"handleClickWithArgs('{html.escape(cb_name, quote=True)}', {props['onTapArg']})\""
-                else:
-                    attrs += f" onclick=\"handleClick('{html.escape(cb_name, quote=True)}')\""
+            # Do NOT attach onclick to GestureDetector elements (handled by PythraGestureDetector pointer events)
+            if not props.get("init_gesture_detector") and not props.get("gesture_options"):
+                if cb_name := props.get("onTapName"):
+                    if props.get("onTapArg") and props["onTapArg"] != []:
+                        attrs += f" onclick=\"handleClickWithArgs('{html.escape(cb_name, quote=True)}', {props['onTapArg']})\""
+                    else:
+                        attrs += f" onclick=\"handleClick('{html.escape(cb_name, quote=True)}')\""
         elif "onItemTapName" in props and props.get("enabled", True):
             if cb_name := props.get("onItemTapName"):
                 attrs += f' onclick="handleItemTap(\'{html.escape(cb_name, quote=True)}\', {props.get("item_index", -1)})"'

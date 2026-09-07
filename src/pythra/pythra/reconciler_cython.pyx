@@ -98,26 +98,9 @@ def cython_diff_node_recursive(
     new_props = new_widget.render_props()
     reconciler._collect_details(new_widget, new_props, result)
     
-    # If types differ, it's a replacement (delegate to Python for complex logic)
+    # If types differ, it's a replacement (delegate to Python for robust patch sequencing & ID preservation)
     if old_type != new_type or new_widget.key != old_data.get("key"):
-        # This is complex replacement logic; delegate to Python implementation
-        new_props = new_widget.render_props()
-        reconciler._collect_details(new_widget, new_props, result)
-        reconciler._insert_node_recursive(new_widget, parent_html_id, parent_key, result, previous_map, suppress_self_patch=True)
-        new_html_stub = reconciler._generate_html_stub(new_widget, old_data["html_id"], new_props)
-        # Ensure cython path also strips any `{children}` placeholder so
-        # the REPLACE patch doesn't contain the literal token.
-        try:
-            if "{children}" in new_html_stub:
-                new_html_stub = new_html_stub.replace("{children}", "")
-        except Exception:
-            pass
-        result.patches.append(
-            Patch(action="REPLACE", html_id=old_data["html_id"], data={
-                "new_html": new_html_stub,
-                "new_props": new_props
-            })
-        )
+        reconciler._replace_node(new_widget, old_data, parent_html_id, parent_key, result, previous_map)
         return
     
     # UPDATE path: types match, so check for prop changes
