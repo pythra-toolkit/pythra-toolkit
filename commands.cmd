@@ -46,4 +46,10 @@ git diff --stat dd600fd48f9f01ef16722d16dea117101f4134a2..HEAD -- . ':!new-app' 
 python3 -m py_compile src/pythra/pythra/__init__.py
 git add CHANGELOG.md pyproject.toml src/pythra/pythra/__init__.py src/pythra/pythra/__pycache__/__init__.cpython-312.pyc src/pythra/setup.py commands.cmd
 git commit -m "..." (pythra-toolkit bump to 0.2.0)
+ls -la /home/red-x/projects/desktop/Note-app/plugins
+ls -la /home/red-x/Documents/pythra-toolkit/new-app/plugins
+python3 -m py_compile src/pythra/pythra/config.py src/pythra/pythra/package_manager.py src/pythra/pythra/core.py
+git status
+git diff src/
+git add src/pythra/pythra/config.py src/pythra/pythra/package_manager.py src/pythra/pythra/core.py src/pythra/pythra/pythra_cli/config.yaml src/pythra/pythra/__pycache__/config.cpython-312.pyc src/pythra/pythra/__pycache__/core.cpython-312.pyc src/pythra/pythra/__pycache__/package_manager.cpython-312.pyc commands.cmd
 

@@ -11,3 +11,4 @@ Debug: true
 render_dir: render
 assets_dir: assets
 assets_server_port: 8008
+plugins: []

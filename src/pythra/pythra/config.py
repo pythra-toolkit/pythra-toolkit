@@ -67,6 +67,9 @@ DEFAULT_CONFIG = {
     
     # === NETWORK SETTINGS ===
     'assets_server_port': 8008,         # Port number for serving your app's files (8008 is usually free)
+
+    # === PLUGINS ===
+    'plugins': [],                      # List of enabled plugin names (e.g. ['markdown', 'pythra_video_player'])
 }
 
 # =============================================================================
@@ -167,3 +170,19 @@ class Config:
 
     def get(self, key: str, default: Any = None) -> Any:
         return self._config.get(key, default)
+
+    # ── Plugins Configuration ─────────────────────────────────────────
+    def get_enabled_plugins(self) -> List[str]:
+        """
+        Returns the list of enabled plugin names declared in config.yaml.
+        Supports both list format (['markdown', 'pythra_video_player'])
+        and dictionary/map format ({'markdown': ..., 'pythra_video_player': ...}).
+        """
+        plugins_entry = self.get("plugins")
+        if plugins_entry is None:
+            return []
+        if isinstance(plugins_entry, list):
+            return [str(p).strip() for p in plugins_entry if p and str(p).strip()]
+        if isinstance(plugins_entry, dict):
+            return [str(k).strip() for k in plugins_entry.keys() if k and str(k).strip()]
+        return []

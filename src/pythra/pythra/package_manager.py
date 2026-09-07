@@ -16,7 +16,7 @@ import site
 import importlib
 import importlib.util
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 import logging
 from collections import defaultdict, deque
 import weakref
@@ -45,9 +45,19 @@ class PackageSource:
 class LocalPackageSource(PackageSource):
     """Package source for local plugins directory"""
     
-    def __init__(self, plugins_dir: Path):
+    def __init__(self, plugins_dir: Path, enabled_plugins: Optional[Set[str]] = None):
         self.plugins_dir = plugins_dir
+        self.enabled_plugins = set(enabled_plugins) if enabled_plugins is not None else None
     
+    def _matches_enabled(self, name: str) -> bool:
+        if self.enabled_plugins is None:
+            return True
+        norm_name = name.lower().replace("-", "_")
+        for enabled in self.enabled_plugins:
+            if enabled.lower().replace("-", "_") == norm_name or enabled == name:
+                return True
+        return False
+
     def discover_packages(self) -> Dict[str, List[PackageInfo]]:
         """Discover packages from local plugins directory"""
         packages = defaultdict(list)
@@ -58,8 +68,10 @@ class LocalPackageSource(PackageSource):
         logger.info(f"Discovering packages in {self.plugins_dir}")
         
         for potential_package_dir in self.plugins_dir.iterdir():
-            if not potential_package_dir.is_dir():
+            if not potential_package_dir.is_dir() or potential_package_dir.name.startswith("__"):
                 continue
+            
+            dir_matches = self._matches_enabled(potential_package_dir.name)
                 
             # Try loading enhanced manifest first
             manifest = self._load_enhanced_manifest(potential_package_dir)
@@ -67,13 +79,20 @@ class LocalPackageSource(PackageSource):
                 # Fall back to legacy pythra_plugin.py format
                 manifest = self._load_legacy_manifest(potential_package_dir)
             
-            if manifest:
-                package_info = PackageInfo(
-                    manifest=manifest,
-                    path=potential_package_dir
-                )
-                packages[manifest.name].append(package_info)
-                logger.info(f"Found package: {manifest.name} v{manifest.version}")
+            if not manifest:
+                continue
+
+            # If folder name didn't match directly, check if manifest package name matches
+            if not dir_matches and not self._matches_enabled(manifest.name):
+                # Plugin is not declared in config.yaml; skip it completely
+                continue
+
+            package_info = PackageInfo(
+                manifest=manifest,
+                path=potential_package_dir
+            )
+            packages[manifest.name].append(package_info)
+            logger.info(f"Found package: {manifest.name} v{manifest.version}")
         
         return packages
     
@@ -133,6 +152,18 @@ class LocalPackageSource(PackageSource):
 class SitePackagesSource(PackageSource):
     """Package source for installed Python packages with PyThra plugins"""
     
+    def __init__(self, enabled_plugins: Optional[Set[str]] = None):
+        self.enabled_plugins = set(enabled_plugins) if enabled_plugins is not None else None
+
+    def _matches_enabled(self, name: str) -> bool:
+        if self.enabled_plugins is None:
+            return True
+        norm_name = name.lower().replace("-", "_")
+        for enabled in self.enabled_plugins:
+            if enabled.lower().replace("-", "_") == norm_name or enabled == name:
+                return True
+        return False
+
     def discover_packages(self) -> Dict[str, List[PackageInfo]]:
         """Discover PyThra packages installed via pip"""
         packages = defaultdict(list)
@@ -153,6 +184,8 @@ class SitePackagesSource(PackageSource):
                 ):
                     manifest = self._load_installed_manifest(package_dir)
                     if manifest:
+                        if not self._matches_enabled(package_dir.name) and not self._matches_enabled(manifest.name):
+                            continue
                         package_info = PackageInfo(
                             manifest=manifest,
                             path=package_dir
@@ -382,17 +415,56 @@ class DependencyResolver:
         return max(versions, key=lambda p: p.manifest.version, default=None)
 
 
+# ── Plugin Import Guard ───────────────────────────────────────────────
+
+class PluginImportGuard:
+    """
+    MetaPathFinder that intercepts imports from the 'plugins' namespace.
+    If a plugin directory exists in the project's plugins/ directory but is
+    not declared in config.yaml (when enabled_plugins is configured), an
+    informative ImportError is raised, preventing access to unlisted plugins.
+    """
+    def __init__(self, package_manager: 'PackageManager'):
+        self.package_manager = package_manager
+
+    def find_spec(self, fullname: str, path: Optional[List[str]] = None, target: Any = None):
+        if not fullname.startswith("plugins."):
+            return None
+
+        parts = fullname.split(".")
+        if len(parts) < 2:
+            return None
+
+        plugin_name = parts[1]
+
+        # If enabled_plugins is configured (not None)
+        if self.package_manager.enabled_plugins is not None:
+            if not self.package_manager.is_plugin_enabled(plugin_name):
+                plugin_dir = self.package_manager.plugins_dir / plugin_name
+                if plugin_dir.exists():
+                    raise ImportError(
+                        f"PyThra Plugin Error: Plugin '{plugin_name}' is located in plugins/ "
+                        f"but is not declared in 'plugins' in config.yaml. "
+                        f"Please add '{plugin_name}' to 'plugins:' in config.yaml to enable it."
+                    )
+
+        return None
+
+
+# ── Package Manager ───────────────────────────────────────────────────
+
 class PackageManager:
     """Main package manager for PyThra framework"""
     
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path, enabled_plugins: Optional[List[str]] = None):
         self.project_root = project_root
         self.plugins_dir = project_root / "plugins"
+        self.enabled_plugins: Optional[Set[str]] = set(enabled_plugins) if enabled_plugins is not None else None
         
         # Package sources
         self.sources = [
-            LocalPackageSource(self.plugins_dir),
-            SitePackagesSource()
+            LocalPackageSource(self.plugins_dir, enabled_plugins=self.enabled_plugins),
+            SitePackagesSource(enabled_plugins=self.enabled_plugins)
         ]
         
         # Cache
@@ -402,6 +474,57 @@ class PackageManager:
         
         # Framework reference (weak to avoid circular references)
         self._framework_ref = None
+
+        # Install import guard to prevent importing unlisted plugins
+        self._import_guard = self.install_import_guard()
+
+    def install_import_guard(self) -> PluginImportGuard:
+        """Install PluginImportGuard into sys.meta_path if not already present."""
+        for finder in sys.meta_path:
+            if isinstance(finder, PluginImportGuard):
+                finder.package_manager = self
+                return finder
+        guard = PluginImportGuard(self)
+        sys.meta_path.insert(0, guard)
+        return guard
+
+    def uninstall_import_guard(self) -> None:
+        """Remove PluginImportGuard from sys.meta_path."""
+        sys.meta_path = [f for f in sys.meta_path if not isinstance(f, PluginImportGuard)]
+
+    def set_enabled_plugins(self, enabled_plugins: Optional[List[str]]) -> None:
+        """Update the set of enabled plugins and clear discovery cache"""
+        self.enabled_plugins = set(enabled_plugins) if enabled_plugins is not None else None
+        for source in self.sources:
+            if hasattr(source, 'enabled_plugins'):
+                source.enabled_plugins = self.enabled_plugins
+        self._all_packages.clear()
+
+    def is_plugin_enabled(self, name_or_dir: str) -> bool:
+        """Check if a plugin name or directory is enabled"""
+        if self.enabled_plugins is None:
+            return True
+        norm = name_or_dir.lower().replace("-", "_")
+        for enabled in self.enabled_plugins:
+            if enabled == name_or_dir or enabled.lower().replace("-", "_") == norm:
+                return True
+        # Check manifest file if folder exists on disk
+        target_dir = self.plugins_dir / name_or_dir
+        if target_dir.is_dir():
+            manifest_file = target_dir / "package.json"
+            if manifest_file.exists():
+                try:
+                    with open(manifest_file, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        manifest_name = data.get("name", "")
+                        if manifest_name:
+                            manifest_norm = manifest_name.lower().replace("-", "_")
+                            for enabled in self.enabled_plugins:
+                                if enabled == manifest_name or enabled.lower().replace("-", "_") == manifest_norm:
+                                    return True
+                except Exception:
+                    pass
+        return False
     
     def set_framework(self, framework):
         """Set weak reference to framework instance"""

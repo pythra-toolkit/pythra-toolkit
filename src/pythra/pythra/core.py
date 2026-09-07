@@ -155,7 +155,10 @@ class Framework:
 
         # STEP 4: Initialize the Package/Plugin System
         # This handles loading plugins from your plugins/ folder
-        self.package_manager = PackageManager(self.project_root)
+        self.package_manager = PackageManager(
+            self.project_root,
+            enabled_plugins=self.config.get_enabled_plugins()
+        )
         self.package_manager.set_framework(self)
 
         # Keep these for backward compatibility with older plugins
@@ -166,6 +169,18 @@ class Framework:
         # This scans your project for any plugins you've added
         debug_print("🔍 PyThra Framework | Scanning for packages and plugins...")
         discovered_packages = self.package_manager.discover_all_packages()
+
+        # Check configured plugins against discovered packages/directories
+        configured_plugins = self.config.get_enabled_plugins()
+        if configured_plugins:
+            plugins_dir = self.project_root / "plugins"
+            local_dirs = {p.name for p in plugins_dir.iterdir() if p.is_dir()} if plugins_dir.exists() else set()
+            all_known = set(discovered_packages.keys()) | local_dirs
+            for cp in configured_plugins:
+                cp_norm = cp.lower().replace("-", "_")
+                found = any(k == cp or k.lower().replace("-", "_") == cp_norm for k in all_known)
+                if not found:
+                    print(f"⚠️  PyThra Framework | Configured plugin '{cp}' in config.yaml was not found in plugins/ or site-packages.")
 
         # Automatically load any plugins found in your plugins/ directory
         local_packages = [name for name, packages in discovered_packages.items() 
@@ -321,6 +336,11 @@ class Framework:
         debug_print("⚡ PyThra Framework | Performing Hot Reload...")
         
         try:
+            # 0. Reload configuration and update package manager enabled plugins
+            self.config.reload()
+            if hasattr(self, 'package_manager'):
+                self.package_manager.set_enabled_plugins(self.config.get_enabled_plugins())
+
             # 1. Reload project modules
             import importlib
             import sys
