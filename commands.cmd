@@ -28,4 +28,13 @@ python3 setup.py build_ext --help
 cp src/pythra/pythra/project_template/render/js/pythra_bridge.js new-app/render/js/pythra_bridge.js && cp src/pythra/pythra/project_template/render/js/pythra_bridge.js /home/red-x/projects/desktop/Note-app/render/js/pythra_bridge.js
 python3 setup.py build_ext --inplace
 git status
+git diff HEAD~3 src/pythra/pythra/reconciler.py
+git diff src/pythra/pythra/reconciler.py
+git diff
 git status (in Note-app)
+git diff lib/screens/note_editor_screen.py (in Note-app)
+python3 -m py_compile src/pythra/pythra/reconciler.py
+git add src/pythra/pythra/reconciler.py src/pythra/pythra/__pycache__/reconciler.cpython-312.pyc commands.cmd
+git commit -m "..." (pythra-toolkit)
+git add -A (in Note-app)
+git commit -m "..." (in Note-app)

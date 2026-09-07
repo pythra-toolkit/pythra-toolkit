@@ -355,43 +355,6 @@ class Reconciler:
             )
             return
 
-    def _replace_node(
-        self, new_widget, old_data, parent_html_id, parent_key, result, previous_map
-    ):
-        """Handles replacing a widget and its subtree with proper patch ordering and ID preservation."""
-        target_html_id = old_data["html_id"]
-        new_props = new_widget.render_props()
-        self._collect_details(new_widget, new_props, result)
-
-        new_html_stub = self._generate_html_stub(
-            new_widget, target_html_id, new_props
-        )
-        # Strip {children} placeholder so incremental REPLACE patch does not leave literal token
-        if "{children}" in new_html_stub:
-            new_html_stub = new_html_stub.replace("{children}", "")
-
-        # Append the REPLACE patch FIRST so the parent element exists in the DOM
-        # before any child nodes are inserted into it.
-        result.patches.append(
-            Patch(
-                action="REPLACE",
-                html_id=target_html_id,
-                data={"new_html": new_html_stub, "new_props": new_props},
-            )
-        )
-
-        # Insert the new node and its children into the map, reusing target_html_id
-        # so child parent_html_id references point to the correctly replaced DOM element.
-        self._insert_node_recursive(
-            new_widget,
-            parent_html_id,
-            parent_key,
-            result,
-            previous_map,
-            suppress_self_patch=True,
-            forced_html_id=target_html_id,
-        )
-
         # --- UPDATE PATH ---
         html_id = old_data["html_id"]
         new_props = new_widget.render_props()
@@ -442,6 +405,45 @@ class Reconciler:
             new_widget.get_unique_id(),
             result,
             previous_map,
+        )
+
+    def _replace_node(
+        self, new_widget, old_data, parent_html_id, parent_key, result, previous_map
+    ):
+        """Handles replacing a widget and its subtree with proper patch ordering and ID preservation."""
+        target_html_id = old_data["html_id"]
+        new_props = new_widget.render_props()
+        self._collect_details(new_widget, new_props, result)
+
+        widget_type_name = type(new_widget).__name__
+        if widget_type_name not in ["StatefulWidget", "StatelessWidget", "VirtualListView", "VirtualGridView"]:
+            new_html_stub = self._generate_html_stub(
+                new_widget, target_html_id, new_props
+            )
+            # Strip {children} placeholder so incremental REPLACE patch does not leave literal token
+            if "{children}" in new_html_stub:
+                new_html_stub = new_html_stub.replace("{children}", "")
+
+            # Append the REPLACE patch FIRST so the parent element exists in the DOM
+            # before any child nodes are inserted into it.
+            result.patches.append(
+                Patch(
+                    action="REPLACE",
+                    html_id=target_html_id,
+                    data={"new_html": new_html_stub, "new_props": new_props},
+                )
+            )
+
+        # Insert the new node and its children into the map, reusing target_html_id
+        # so child parent_html_id references point to the correctly replaced DOM element.
+        self._insert_node_recursive(
+            new_widget,
+            parent_html_id,
+            parent_key,
+            result,
+            previous_map,
+            suppress_self_patch=True,
+            forced_html_id=target_html_id,
         )
 
     def _insert_node_recursive(
