@@ -5,13 +5,15 @@ window.PythraBridge = {
             return;
         }
 
-        // ── FLIP Layout Animations: Measure (First) ──
+        // ── FLIP Layout Animations: Measure (First) ───────────────────────────
         const layoutElements = document.querySelectorAll('[data-layout="true"], [data-layout-id]');
         const firstBounds = new Map();
-        layoutElements.forEach(el => {
-            const key = el.getAttribute('data-layout-id') || el.id;
-            firstBounds.set(key, el.getBoundingClientRect());
-        });
+        if (layoutElements.length > 0) {
+            layoutElements.forEach(el => {
+                const key = el.getAttribute('data-layout-id') || el.id;
+                firstBounds.set(key, el.getBoundingClientRect());
+            });
+        }
 
         patches.forEach(patch => {
             try {
@@ -21,20 +23,20 @@ window.PythraBridge = {
             }
         });
 
-        // ── FLIP Layout Animations: Invert & Play (Last) ──
-        const newLayoutElements = document.querySelectorAll('[data-layout="true"], [data-layout-id]');
-        newLayoutElements.forEach(el => {
-            const key = el.getAttribute('data-layout-id') || el.id;
-            const firstRect = firstBounds.get(key);
-            if (firstRect) {
-                const lastRect = el.getBoundingClientRect();
-                const dx = firstRect.left - lastRect.left;
-                const dy = firstRect.top - lastRect.top;
-                const dw = lastRect.width > 0 ? firstRect.width / lastRect.width : 1;
-                const dh = lastRect.height > 0 ? firstRect.height / lastRect.height : 1;
+        // ── FLIP Layout Animations: Invert & Play (Last) ──────────────────────
+        if (firstBounds.size > 0 && window.Motion && typeof window.Motion.animate === 'function') {
+            const newLayoutElements = document.querySelectorAll('[data-layout="true"], [data-layout-id]');
+            newLayoutElements.forEach(el => {
+                const key = el.getAttribute('data-layout-id') || el.id;
+                const firstRect = firstBounds.get(key);
+                if (firstRect) {
+                    const lastRect = el.getBoundingClientRect();
+                    const dx = firstRect.left - lastRect.left;
+                    const dy = firstRect.top - lastRect.top;
+                    const dw = lastRect.width > 0 ? firstRect.width / lastRect.width : 1;
+                    const dh = lastRect.height > 0 ? firstRect.height / lastRect.height : 1;
 
-                if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5 || Math.abs(dw - 1) > 0.005 || Math.abs(dh - 1) > 0.005) {
-                    if (window.Motion && window.Motion.animate) {
+                    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5 || Math.abs(dw - 1) > 0.005 || Math.abs(dh - 1) > 0.005) {
                         el.style.transformOrigin = '0 0';
                         window.Motion.animate(
                             el,
@@ -51,8 +53,8 @@ window.PythraBridge = {
                         );
                     }
                 }
-            }
-        });
+            });
+        }
     },
 
     processPatch: function (patch) {
@@ -248,7 +250,24 @@ window.PythraBridge = {
             } else if (key === 'style') {
                 // Inject dynamic inline styling for Pythra elements
                 if (typeof value === 'object' && value !== null) {
+                    // Clean up removed styles from oldProps if applicable
+                    if (oldProps && typeof oldProps.style === 'object' && oldProps.style !== null) {
+                        for (const oldKey of Object.keys(oldProps.style)) {
+                            if (!(oldKey in value)) {
+                                if (el._motionListeners && el._motionListeners.has(oldKey)) {
+                                    const unsubscribe = el._motionListeners.get(oldKey);
+                                    if (typeof unsubscribe === 'function') unsubscribe();
+                                    el._motionListeners.delete(oldKey);
+                                }
+                                const kebabOld = oldKey.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
+                                el.style.removeProperty(kebabOld);
+                                try { el.style[oldKey] = ''; } catch (e) {}
+                            }
+                        }
+                    }
+
                     for (const [styleKey, styleValue] of Object.entries(value)) {
+                        const kebabKey = styleKey.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
                         if (typeof styleValue === 'string' && styleValue.startsWith('motion-val:')) {
                             if (el._motionListeners && el._motionListeners.has(styleKey)) {
                                 const unsubscribe = el._motionListeners.get(styleKey);
@@ -257,11 +276,13 @@ window.PythraBridge = {
                             const mv = this.resolveMotionValue(styleValue);
                             if (mv) {
                                 const unsubscribe = mv.on("change", (latest) => {
-                                    el.style.setProperty(styleKey, latest);
+                                    el.style.setProperty(kebabKey, latest);
+                                    try { el.style[styleKey] = latest; } catch (e) {}
                                 });
                                 el._motionListeners = el._motionListeners || new Map();
                                 el._motionListeners.set(styleKey, unsubscribe);
-                                el.style.setProperty(styleKey, mv.get());
+                                el.style.setProperty(kebabKey, mv.get());
+                                try { el.style[styleKey] = mv.get(); } catch (e) {}
                             }
                         } else {
                             if (el._motionListeners && el._motionListeners.has(styleKey)) {
@@ -269,9 +290,39 @@ window.PythraBridge = {
                                 if (typeof unsubscribe === 'function') unsubscribe();
                                 el._motionListeners.delete(styleKey);
                             }
-                            el.style.setProperty(styleKey, styleValue);
+                            el.style.setProperty(kebabKey, styleValue);
+                            try { el.style[styleKey] = styleValue; } catch (e) {}
                         }
                     }
+                }
+            } else if (key === 'onPressedName') {
+                if (value) {
+                    const args = props.onPressedArgs && Array.isArray(props.onPressedArgs) && props.onPressedArgs.length > 0 ? JSON.stringify(props.onPressedArgs) : null;
+                    if (args) {
+                        el.setAttribute('onclick', `handleClickWithArgs('${value}', ${args})`);
+                    } else {
+                        el.setAttribute('onclick', `handleClick('${value}')`);
+                    }
+                } else {
+                    el.removeAttribute('onclick');
+                }
+            } else if (key === 'onTapName') {
+                if (value) {
+                    const args = props.onTapArg && Array.isArray(props.onTapArg) && props.onTapArg.length > 0 ? JSON.stringify(props.onTapArg) : null;
+                    if (args) {
+                        el.setAttribute('onclick', `handleClickWithArgs('${value}', ${args})`);
+                    } else {
+                        el.setAttribute('onclick', `handleClick('${value}')`);
+                    }
+                } else {
+                    el.removeAttribute('onclick');
+                }
+            } else if (key === 'onItemTapName') {
+                if (value) {
+                    const idx = props.item_index !== undefined ? props.item_index : -1;
+                    el.setAttribute('onclick', `handleItemTap('${value}', ${idx})`);
+                } else {
+                    el.removeAttribute('onclick');
                 }
             } else if (key === 'attributes') {
                 // ── SVG Attributes ────────────────────────────────────────────────────
@@ -355,22 +406,32 @@ window.PythraBridge = {
     },
 
     bindReactiveValues: function (rootEl) {
-        console.log("PythraBridge: bindReactiveValues on", rootEl ? (rootEl.id || rootEl.tagName) : null);
         if (!rootEl) return;
 
-        if (!window.Motion || typeof window.Motion.motionValue !== 'function') {
-            console.log("PythraBridge: Motion.dev library not loaded yet, scheduling retry in 100ms...");
-            setTimeout(() => {
-                this.bindReactiveValues(rootEl);
-            }, 100);
+        // Check if rootEl or any descendant contains reactive motion-val attributes
+        const hasRootMotion = rootEl.getAttribute && rootEl.getAttribute('style') && rootEl.getAttribute('style').includes('motion-val:');
+        const selector = '[style*="motion-val:"]';
+        const elements = rootEl.querySelectorAll ? rootEl.querySelectorAll(selector) : [];
+
+        // If neither rootEl nor its descendants have motion-val:, return immediately
+        if (!hasRootMotion && elements.length === 0) {
             return;
         }
 
-        const selector = '[style*="motion-val:"]';
-        const elements = rootEl.querySelectorAll ? rootEl.querySelectorAll(selector) : [];
-        console.log("PythraBridge: querySelectorAll count:", elements.length);
-        
-        if (rootEl.getAttribute && rootEl.getAttribute('style') && rootEl.getAttribute('style').includes('motion-val:')) {
+        // If Motion library is needed but not ready yet, perform bounded retries
+        if (!window.Motion || typeof window.Motion.motionValue !== 'function') {
+            rootEl._motionRetries = (rootEl._motionRetries || 0) + 1;
+            if (rootEl._motionRetries <= 20) {
+                setTimeout(() => {
+                    this.bindReactiveValues(rootEl);
+                }, 100);
+            }
+            return;
+        }
+
+        delete rootEl._motionRetries;
+
+        if (hasRootMotion) {
             this.processElementReactiveStyles(rootEl);
         }
         elements.forEach(el => {
@@ -380,7 +441,6 @@ window.PythraBridge = {
 
     processElementReactiveStyles: function (el) {
         const rawStyle = el.getAttribute('style');
-        console.log("PythraBridge: processElementReactiveStyles rawStyle:", el.id, rawStyle);
         if (!rawStyle || !rawStyle.includes('motion-val:')) return;
 
         const declarations = rawStyle.split(';');
@@ -390,23 +450,22 @@ window.PythraBridge = {
             const styleKey = decl.substring(0, index).trim();
             const styleValue = decl.substring(index + 1).trim();
 
-            console.log("PythraBridge: styleKey:", styleKey, "styleValue:", styleValue);
-
             if (styleValue.startsWith('motion-val:')) {
                 if (el._motionListeners && el._motionListeners.has(styleKey)) {
                     const unsubscribe = el._motionListeners.get(styleKey);
                     if (typeof unsubscribe === 'function') unsubscribe();
                 }
                 const mv = this.resolveMotionValue(styleValue);
-                console.log("PythraBridge: resolved mv:", mv);
                 if (mv) {
+                    const kebabKey = styleKey.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
                     const unsubscribe = mv.on("change", (latest) => {
-                        console.log("PythraBridge: mv change listener triggered:", styleKey, latest);
-                        el.style.setProperty(styleKey, latest);
+                        el.style.setProperty(kebabKey, latest);
+                        try { el.style[styleKey] = latest; } catch (e) {}
                     });
                     el._motionListeners = el._motionListeners || new Map();
                     el._motionListeners.set(styleKey, unsubscribe);
-                    el.style.setProperty(styleKey, mv.get());
+                    el.style.setProperty(kebabKey, mv.get());
+                    try { el.style[styleKey] = mv.get(); } catch (e) {}
                 }
             }
         });

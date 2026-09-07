@@ -330,10 +330,22 @@ class Framework:
             
             project_modules = {}
             for name, mod in list(sys.modules.items()):
+                # Exclude Shiboken, PySide6, and built-in/bootstrap modules
+                if name.startswith(('PySide6', 'shibokensupport', '__feature__', 'signature_bootstrap')):
+                    continue
                 if hasattr(mod, '__file__') and mod.__file__:
-                    filepath = os.path.abspath(mod.__file__)
-                    # Only reload modules in the user project, excluding the pythra framework package itself
-                    if filepath.startswith(str(self.project_root)) and 'src/pythra/pythra' not in filepath:
+                    # Ensure mod.__file__ is an existing, absolute file path on disk
+                    if not os.path.isabs(mod.__file__) or not os.path.exists(mod.__file__):
+                        continue
+                    filepath = os.path.realpath(mod.__file__)
+                    # Only reload modules in the user project, excluding framework, venv, and site-packages
+                    if (
+                        filepath.startswith(str(self.project_root))
+                        and 'src/pythra/pythra' not in filepath
+                        and '/.venv/' not in filepath
+                        and '/venv/' not in filepath
+                        and '/site-packages/' not in filepath
+                    ):
                         project_modules[name] = mod
             
             # Re-bind reloaded classes to existing instances
@@ -378,7 +390,7 @@ class Framework:
                             continue
                     else:
                         new_mod = importlib.reload(old_mod)
-                    print(f"  🔄 Reloaded module: {name}")
+                        print(f"  🔄 Reloaded module: {name}")
                     for attr_name, attr_val in inspect.getmembers(new_mod, inspect.isclass):
                         if getattr(attr_val, '__module__', None) == new_mod.__name__:
                             new_classes[attr_name] = attr_val
@@ -399,7 +411,18 @@ class Framework:
             else:
                 root_class = type(self.root_widget)
                 
-            new_root = root_class()
+            # Preserve root key so reconciler does not trigger an accidental REPLACE on root
+            root_key = getattr(self.root_widget, 'key', None)
+            try:
+                if root_key is not None:
+                    new_root = root_class(key=root_key)
+                else:
+                    new_root = root_class()
+            except TypeError:
+                new_root = root_class()
+
+            if root_key is not None:
+                new_root.key = root_key
             
             # Find the root key from the previous map
             previous_map = self.reconciler.context_maps["main"]
@@ -409,8 +432,9 @@ class Framework:
                     old_root_key = key
                     break
             
-            if old_root_key and new_root.key is None:
-                new_root._internal_id = old_root_key
+            if old_root_key:
+                if new_root.key is None:
+                    new_root._internal_id = old_root_key
             
             # 3. Re-bind the class definitions of all rescued state objects in the previous map
             # This ensures that when built_child = state.build() is called, it runs the new code.
@@ -439,6 +463,7 @@ class Framework:
             )
             
             # 6. Update framework's context mapping
+            self.root_widget = built_tree_root
             self.reconciler.context_maps["main"] = result.new_rendered_map
             for cb_id, cb_func in result.registered_callbacks.items():
                 self.api.register_callback(cb_id, cb_func)

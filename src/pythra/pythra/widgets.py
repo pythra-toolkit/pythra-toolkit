@@ -2557,7 +2557,6 @@ class SingleChildScrollView(Widget):
             if shape_tuple and isinstance(shape_tuple, tuple):
                 shape_obj = BorderRadius(*shape_tuple)
                 styles.append(f'border-radius: {shape_obj.to_css_value()}')
-            else: print("Shape Error")
             # 3. Assemble and return the final CSS rule.
             # We also need to style the child to ensure it takes up the
             # necessary space to trigger scrolling.

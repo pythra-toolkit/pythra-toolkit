@@ -350,33 +350,37 @@ class Reconciler:
 
         # If the type or key has changed, it's a replacement.
         if old_type != new_type or new_widget.key != old_data.get("key"):
-            # The reconciler will treat this as a REMOVE and an INSERT
-            # during the child diffing phase. We generate a specific REPLACE patch
-            # to handle this more efficiently.
+            target_html_id = old_data["html_id"]
             new_props = new_widget.render_props()
             self._collect_details(new_widget, new_props, result)
 
-            # Insert the new node and its children into the map first.
-            # We suppress the self-patch because the REPLACE action will handle the root swap.
-            self._insert_node_recursive(
-                new_widget, parent_html_id, parent_key, result, previous_map, suppress_self_patch=True
-            )
-
-            # Then, create a REPLACE patch. The `html_id` is the old one to replace.
             new_html_stub = self._generate_html_stub(
-                new_widget, old_data["html_id"], new_props
+                new_widget, target_html_id, new_props
             )
-            # If the widget stub contains a `{children}` placeholder (used
-            # during initial render), strip it for incremental REPLACE patches
-            # so the client doesn't receive the literal token in the DOM.
+            # Strip {children} placeholder so incremental REPLACE patch does not leave literal token
             if "{children}" in new_html_stub:
                 new_html_stub = new_html_stub.replace("{children}", "")
+
+            # Append the REPLACE patch FIRST so the parent element exists in the DOM
+            # before any child nodes are inserted into it.
             result.patches.append(
                 Patch(
                     action="REPLACE",
-                    html_id=old_data["html_id"],
+                    html_id=target_html_id,
                     data={"new_html": new_html_stub, "new_props": new_props},
                 )
+            )
+
+            # Insert the new node and its children into the map, reusing target_html_id
+            # so child parent_html_id references point to the correctly replaced DOM element.
+            self._insert_node_recursive(
+                new_widget,
+                parent_html_id,
+                parent_key,
+                result,
+                previous_map,
+                suppress_self_patch=True,
+                forced_html_id=target_html_id,
             )
             return
 
@@ -441,12 +445,13 @@ class Reconciler:
         previous_map,
         before_id=None,
         suppress_self_patch=False,
+        forced_html_id=None,
     ):
         """Recursively handles the insertion of a new widget and its children."""
         if new_widget is None:
             return
 
-        html_id = self.id_generator.next_id()
+        html_id = forced_html_id or self.id_generator.next_id()
         new_props = new_widget.render_props()
         self._collect_details(new_widget, new_props, result)
         key = new_widget.get_unique_id()
