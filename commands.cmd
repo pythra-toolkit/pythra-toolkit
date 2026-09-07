@@ -51,5 +51,7 @@ ls -la /home/red-x/Documents/pythra-toolkit/new-app/plugins
 python3 -m py_compile src/pythra/pythra/config.py src/pythra/pythra/package_manager.py src/pythra/pythra/core.py
 git status
 git diff src/
-git add src/pythra/pythra/config.py src/pythra/pythra/package_manager.py src/pythra/pythra/core.py src/pythra/pythra/pythra_cli/config.yaml src/pythra/pythra/__pycache__/config.cpython-312.pyc src/pythra/pythra/__pycache__/core.cpython-312.pyc src/pythra/pythra/__pycache__/package_manager.cpython-312.pyc commands.cmd
+git add src/pythra/pythra/config.py src/pythra/pythra/package_manager.py src/pythra/pythra/core.py src/pythra/pythra/pythra_cli/config.yaml commands.cmd
+git commit -m "feat(plugins): enforce declarative plugin registration via config.yaml..."
+git add config.yaml && git commit -m "feat(config): declare enabled plugins in config.yaml..." (in Note-app)
 
