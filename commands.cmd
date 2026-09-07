@@ -38,3 +38,12 @@ git add src/pythra/pythra/reconciler.py src/pythra/pythra/__pycache__/reconciler
 git commit -m "..." (pythra-toolkit)
 git add -A (in Note-app)
 git commit -m "..." (in Note-app)
+git log dd600fd48f9f01ef16722d16dea117101f4134a2..HEAD --oneline
+git show --stat dd600fd48f9f01ef16722d16dea117101f4134a2
+git log dd600fd48f9f01ef16722d16dea117101f4134a2..HEAD --stat -- src/
+git log dd600fd48f9f01ef16722d16dea117101f4134a2..HEAD --oneline -- src/
+git diff --stat dd600fd48f9f01ef16722d16dea117101f4134a2..HEAD -- . ':!new-app' ':!plugins'
+python3 -m py_compile src/pythra/pythra/__init__.py
+git add CHANGELOG.md pyproject.toml src/pythra/pythra/__init__.py src/pythra/pythra/__pycache__/__init__.cpython-312.pyc src/pythra/setup.py commands.cmd
+git commit -m "..." (pythra-toolkit bump to 0.2.0)
+

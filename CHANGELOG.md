@@ -6,6 +6,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.2.0] - 2026-09-07
+
+State-Preserving Hot Reload system, hybrid frameless window engine, reconciler tree replacement re-architecture, gesture/click decoupling, and SVG widget suite.
+
+### ✨ New Features
+
+* **State-Preserving Hot Reload Engine:**
+  * Added topological module reloader (`core.py`) with support for dynamic `__main__` entry-point reload via `SourceFileLoader`.
+  * State identity preservation (`_transfer_state`, `_restore_state_hierarchy`) maintaining component state and text fields across code changes.
+  * Live CLI watcher with hotkey commands (`[h]` reload, `[r]` restart, `[q]` quit) and interactive UI debug banner button.
+  * Dynamic CSS stylesheet re-generation and instant injection on hot reload.
+
+* **Hybrid Frameless Window System:**
+  * Native borderless window mode with draggable titlebars and client-side titlebar controls (`webwidget.py`, `max.py`, `window_manager.py`).
+  * Integrated OS-level moving and smooth edge/corner resize handles via `startSystemMove()` and `startSystemResize()`.
+  * Window control operations: minimize, maximize/restore, close, and fullscreen toggle.
+
+* **SVG Widget Suite:**
+  * Added native `Svg`, `SvgPath`, `SvgCircle`, `SvgRect`, `SvgLine`, and `SvgGroup` widgets in `widgets.py`.
+
+* **Synchronous JS Utilities:**
+  * Added `evaluate_js_sync` in `async_utils.py` with automatic exception logging from the browser context.
+
+### 🐛 Bug Fixes
+
+* **GestureDetector & Native Click Race Condition:**
+  * Decoupled `onclick` DOM attributes from elements utilizing `init_gesture_detector` or `gesture_options`, eliminating rapid double-triggering and color picker flicker.
+  * Added graceful `TapDetails` fallback in `webwidget.py:_execute_callback` for parameter mismatch prevention.
+
+* **Reconciler Replacement Order & ID Preservation:**
+  * Reordered `REPLACE` patches to emit before child `INSERT`s and enforced `forced_html_id=target_html_id` on recursive insertion, preventing orphaned DOM nodes and disappearing subtrees on state changes.
+  * Cleanly isolated `_replace_node` and `_diff_node_recursive`, resolving `NameError: name 'new_type' is not defined` during tab navigation.
+
+* **Non-Motion App Freeze Prevention:**
+  * Added fast-path exit in `pythra_bridge.js:bindReactiveValues` when reactive motion tokens are absent, preventing IPC event loop hangs in standard desktop applications.
+
+### 🔧 Performance & Internal
+
+* **Cython Reconciler Sync:**
+  * Recompiled `pythra.reconciler_cython` and `pythra.key_cython` using Cython 3.2.4 on Python 3.12 with complete fallback feature parity.
+* **Bridge Event Rebinding:**
+  * Enhanced `pythra_bridge.js:updateProps` with support for camelCase/kebab-case styles, stale style eviction, and dynamic event re-binding.
+
+---
 ## [0.1.25] - 2026-06-26
 
 ContextMenu widget, Text maxLines support, state rescue fix, and spellcheck integration.
