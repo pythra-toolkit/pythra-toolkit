@@ -54,4 +54,6 @@ git diff src/
 git add src/pythra/pythra/config.py src/pythra/pythra/package_manager.py src/pythra/pythra/core.py src/pythra/pythra/pythra_cli/config.yaml commands.cmd
 git commit -m "feat(plugins): enforce declarative plugin registration via config.yaml..."
 git add config.yaml && git commit -m "feat(config): declare enabled plugins in config.yaml..." (in Note-app)
+git add docs/Creating-and-Using-Plugins.md docs/Plugin-and-Package-System.md commands.cmd
+git commit -m "docs: add in-depth plugin development guide based on motion and note-app plugins"
 

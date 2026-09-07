@@ -41,10 +41,10 @@ Sources: [PACKAGE_SYSTEM_README.md49-54](https://github.com/pythra-toolkit/pythr
 This section covers the technical implementation of `PackageManifest`, `PackageDependency`, and the `PackageType` enumeration. It details the semantic versioning (semver) resolution logic and how the `PackageManager` performs discovery using `importlib`. It also explains the multi-layer security validation, including AST parsing for Python and JavaScript.
 For details, see [Package System Architecture](#8.1).
 
-#### [Creating and Using Plugins](/pythra-toolkit/pythra-toolkit/8.2-creating-and-using-plugins)
+#### [Creating and Using Plugins](Creating-and-Using-Plugins.md)
 
-This guide provides a walkthrough for developers creating new plugins. It covers the structure of the `plugins/` directory, authoring the `package.json` manifest, and implementing the Python-to-JS bridge for interactive components. It uses the `markdown` editor plugin as a primary example, showcasing the `MarkdownToolbarItem` and `MarkdownEditingController` patterns.
-For details, see [Creating and Using Plugins](/pythra-toolkit/pythra-toolkit/8.2-creating-and-using-plugins).
+This guide provides an in-depth walkthrough for developers creating new plugins. It covers the structure of the `plugins/` directory, authoring the `package.json` manifest, declarative plugin whitelisting in `config.yaml`, and implementing the Python-to-JS bridge for interactive components based on real-world plugins (`pythra_motion`, `markdown_render`, and `pythra_video_player`).
+For details, see [Creating and Using Plugins](Creating-and-Using-Plugins.md).
 
 ### CLI Tooling
 
