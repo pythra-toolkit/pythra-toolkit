@@ -33,11 +33,11 @@ src/pythra/project_template/plugins/__init__.py
 src/pythra/project_template/render/nom.py
 src/pythra/pythra/__init__.py
 src/pythra/pythra/api.py
-src/pythra/pythra/async.py
 src/pythra/pythra/async_utils.py
 src/pythra/pythra/base.py
 src/pythra/pythra/class_list.py
 src/pythra/pythra/config.py
+src/pythra/pythra/context_menu.py
 src/pythra/pythra/controllers.py
 src/pythra/pythra/core.py
 src/pythra/pythra/debug_utils.py
@@ -121,6 +121,7 @@ src/pythra/pythra/project_template/render/qwebchannel.js
 src/pythra/pythra/project_template/render/styles.css
 src/pythra/pythra/project_template/render/js/aos.js.js
 src/pythra/pythra/project_template/render/js/clipPathUtils.js
+src/pythra/pythra/project_template/render/js/context_menu.js
 src/pythra/pythra/project_template/render/js/dropdown.js
 src/pythra/pythra/project_template/render/js/gesture_detector.js
 src/pythra/pythra/project_template/render/js/gradient_border.js
@@ -141,7 +142,6 @@ src/pythra/pythra/project_template/windows/appIcon.ico
 src/pythra/pythra/pythra_cli/__init__.py
 src/pythra/pythra/pythra_cli/main.py
 src/pythra/pythra/pythra_cli/package_commands.py
-src/pythra/pythra/render_template/nom.py
 src/pythra/pythra/tests/__init__.py
 src/pythra/pythra/tests/test_rust_adapter.py
 src/pythra/pythra/utils/__init__.py
@@ -151,7 +151,6 @@ src/pythra/pythra/window/max.py
 src/pythra/pythra/window/vid.py
 src/pythra/pythra/window/webwidget.py
 src/pythra/pythra/window/window_manager.py
-src/pythra/render/nom.py
 test/test.py
 test/test2.py
 test/test_diff_engine.py

@@ -3647,7 +3647,9 @@ class Switch(Widget):
                  onChanged: Callable[[bool], None],
                  activeColor: Optional[str] = None,
                  thumbColor: Optional[str] = None,
-                 theme: Optional[SwitchTheme] = None):
+                 theme: Optional[SwitchTheme] = None,
+                 disabled: bool = False,
+                 ):
 
         super().__init__(key=key)
 
@@ -3659,6 +3661,7 @@ class Switch(Widget):
         theme = theme or SwitchTheme()
         self.value = value
         self.onChanged = onChanged
+        self.disabled = disabled  # Store state
 
         # --- Style Precedence: Direct Prop > Theme Prop > M3 Default ---
         self.activeTrackColor = activeColor or theme.activeTrackColor or Colors.primary
@@ -3679,6 +3682,7 @@ class Switch(Widget):
             self.inactiveTrackColor,
             self.activeThumbColor,
             self.thumbColor,
+            self.disabled,
         )
 
         if self.style_key not in Switch.shared_styles:
@@ -3697,6 +3701,7 @@ class Switch(Widget):
             "css_class": self.css_class,
             "onPressedName": self.onPressedName,
             "onPressed": self.onPressed,
+            "disabled": self.disabled,
         }
 
     def get_required_css_classes(self) -> Set[str]:
@@ -3706,11 +3711,20 @@ class Switch(Widget):
     def _generate_html_stub(widget_instance: 'Switch', html_id: str, props: Dict) -> str:
         """Generates the HTML structure for the switch (track and thumb)."""
         css_class = props.get('css_class', '')
-        on_click_handler = f"handleClick('{props.get('onPressedName', '')}')"
-        on_keydown_handler = f"if(event.key === 'Enter' || event.key === ' ') {{ event.preventDefault(); this.click(); }}"
+        is_disabled = props.get('disabled', False)
+
+        # If disabled, remove interactive HTML handlers and update accessibility
+        if is_disabled:
+            click_handler = ""
+            key_handler = ""
+            tab_index = 'tabindex="-1" aria-disabled="true"'
+        else:
+            click_handler = f"onclick=\"handleClick('{props.get('onPressedName', '')}')\""
+            key_handler = "onkeydown=\"if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.click(); }\""
+            tab_index = 'tabindex="0"'
 
         return f"""
-        <div id="{html_id}" class="switch-container {css_class}" onclick="{on_click_handler}" onkeydown="{on_keydown_handler}" tabindex="0">
+        <div id="{html_id}" class="switch-container {css_class}" {click_handler} {key_handler} {tab_index}>
             <div class="switch-track"></div>
             <div class="switch-thumb"></div>
         </div>
@@ -3723,7 +3737,7 @@ class Switch(Widget):
         based on the boolean value included in the style_key.
         """
         (is_on, active_track_color, inactive_track_color,
-         active_thumb_color, inactive_thumb_color) = style_key
+         active_thumb_color, inactive_thumb_color, is_disabled) = style_key
 
         # --- Determine styles based on the is_on flag ---
         if is_on:
@@ -3735,6 +3749,11 @@ class Switch(Widget):
             thumb_color = inactive_thumb_color
             thumb_transform = "translateX(4px)"  # Position for 'off' state
 
+        # --- Disabled CSS rules ---
+        opacity = "0.38" if is_disabled else "1"
+        pointer_events = "none" if is_disabled else "auto"
+        cursor = "not-allowed" if is_disabled else "pointer"
+
         return f"""
         /* --- Style for {css_class} ('on' state: {is_on}) --- */
         .{css_class}.switch-container {{
@@ -3742,13 +3761,15 @@ class Switch(Widget):
             width: 52px;
             height: 32px;
             border-radius: 16px;
-            cursor: pointer;
+            cursor: {cursor};
             display: inline-flex;
             align-items: center;
             flex-shrink: 0;
             transition: background-color 0.2s ease-in-out;
             background-color: {track_color};
             outline: none;
+            opacity: {opacity};
+            pointer-events: {pointer_events};
         }}
         .{css_class}.switch-container:focus-visible {{
             outline: 2px solid {active_track_color};
