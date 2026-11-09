@@ -8,6 +8,8 @@
  * and asynchronously loaded content to ensure full interactivity.
  */
 export class PythraVirtualList {
+    static instances = new WeakMap();
+
     constructor(elementId, options) {
         this.container = document.getElementById(elementId);
         if (!this.container) {
@@ -15,10 +17,17 @@ export class PythraVirtualList {
             return;
         }
 
+        const existing = PythraVirtualList.instances.get(this.container);
+        if (existing) {
+            existing.options = options;
+            return existing;
+        }
+
         console.log(`✅ PythraVirtualList engine is initializing for #${elementId}`);
         
         this.options = options;
-        this.simplebar = new SimpleBar(this.container, this.options.simplebarOptions || {});
+        this.simplebar = SimpleBar.instances?.get(this.container)
+            || new SimpleBar(this.container, this.options.simplebarOptions || {});
         this.scrollEl = this.simplebar.getScrollElement();
         this.contentEl = this.simplebar.getContentElement();
         
@@ -58,6 +67,7 @@ export class PythraVirtualList {
 
         this.render = this.render.bind(this);
         this.scrollEl.addEventListener('scroll', this.render);
+        PythraVirtualList.instances.set(this.container, this);
         
         this.render();
     }
@@ -215,6 +225,9 @@ export class PythraVirtualList {
     // --- END OF NEW LOGIC ---
 
     destroy() {
+        if (PythraVirtualList.instances.get(this.container) === this) {
+            PythraVirtualList.instances.delete(this.container);
+        }
         if (this.simplebar && typeof this.simplebar.unMount === 'function') {
             this.simplebar.unMount();
         }

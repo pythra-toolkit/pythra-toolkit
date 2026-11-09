@@ -5,11 +5,19 @@
  * Assumes a fixed number of columns (crossAxisCount) and uniform item sizes.
  */
 export class PythraVirtualGrid {
+    static instances = new WeakMap();
+
     constructor(elementId, options) {
         this.container = document.getElementById(elementId);
         if (!this.container) {
             console.error(`VirtualGrid Error: Container element #${elementId} not found.`);
             return;
+        }
+
+        const existing = PythraVirtualGrid.instances.get(this.container);
+        if (existing) {
+            existing.options = options;
+            return existing;
         }
 
         console.log(`✅ PythraVirtualGrid engine is initializing for #${elementId}`);
@@ -23,7 +31,8 @@ export class PythraVirtualGrid {
         // options.itemBuilderName
         // options.initialItems
 
-        this.simplebar = new SimpleBar(this.container, this.options.simplebarOptions || {});
+        this.simplebar = SimpleBar.instances?.get(this.container)
+            || new SimpleBar(this.container, this.options.simplebarOptions || {});
         this.simplebar.getScrollElement().style.overflowX = 'hidden'; // Force no horiz scroll
         this.scrollEl = this.simplebar.getScrollElement();
         this.contentEl = this.simplebar.getContentElement();
@@ -73,13 +82,15 @@ export class PythraVirtualGrid {
 
         this.render = this.render.bind(this);
         this.scrollEl.addEventListener('scroll', this.render);
+        PythraVirtualGrid.instances.set(this.container, this);
 
         // Listen for window resize to recalculate grid layout
-        window.addEventListener('resize', () => {
+        this.handleResize = () => {
             this.updateLayoutMetrics();
             this.updateSizerHeight();
             this.render();
-        });
+        };
+        window.addEventListener('resize', this.handleResize);
 
         this.render();
     }
@@ -274,8 +285,12 @@ export class PythraVirtualGrid {
     }
 
     destroy() {
-        // Clean up listeners?
-        // window.removeEventListener('resize', this.render); // Actually needs bound reference
+        if (this.handleResize) {
+            window.removeEventListener('resize', this.handleResize);
+        }
+        if (PythraVirtualGrid.instances.get(this.container) === this) {
+            PythraVirtualGrid.instances.delete(this.container);
+        }
         if (this.simplebar && typeof this.simplebar.unMount === 'function') {
             this.simplebar.unMount();
         }
