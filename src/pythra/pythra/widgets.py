@@ -1036,6 +1036,7 @@ class TextButton(Widget):
         onPressedName: Optional[str] = None,  # Explicit name for the callback
         style: Optional[ButtonStyle] = None,
         onPressedArgs: Optional[List] = [],
+        tooltip: Optional[str] = None,
     ):
 
         # Pass key and child list to the base Widget constructor
@@ -1054,6 +1055,7 @@ class TextButton(Widget):
 
         self.style = style or ButtonStyle()  # Use default ButtonStyle if none provided
         self.onPressedArgs = onPressedArgs
+        self.tooltip = tooltip
 
         # --- CSS Class Management ---
         # Use make_hashable or ensure ButtonStyle itself is hashable
@@ -1084,6 +1086,7 @@ class TextButton(Widget):
             # Pass the identifier for the callback, not the function object
             "onPressedName": self.onPressed_id,
             "onPressedArgs": self.onPressedArgs,
+            "tooltip": self.tooltip,
             # Note: Child diffing handled separately
         }
         return {k: v for k, v in props.items() if v is not None}
@@ -4220,6 +4223,35 @@ class _VirtualListViewState(State):
             indices_json = json.dumps(indices)
             js_command = f"window._pythra_instances['{instance_name}']?.refreshItems({indices_json});"
 
+        self.framework.window.evaluate_js(self.framework.id, js_command)
+
+    def scroll_to_index(self, index: int, alignment: str = "start", behavior: str = "smooth"):
+        """Scroll the mounted virtual list to an item index."""
+        widget = self.get_widget()
+        if not (self.framework and self.framework.window and widget):
+            return
+        if widget.itemCount <= 0:
+            return
+
+        index = max(0, min(index, widget.itemCount - 1))
+        instance_name = json.dumps(f"{widget.key.value}_vlist")
+        alignment_json = json.dumps(alignment)
+        behavior_json = json.dumps(behavior)
+        js_command = f"""
+            (() => {{
+                const list = window._pythra_instances?.[{instance_name}];
+                if (!list?.scrollEl) return;
+                const extent = list.options.itemExtent;
+                const viewport = list.scrollEl.clientHeight;
+                let targetTop = {index} * extent;
+                if ({alignment_json} === "center") targetTop -= (viewport - extent) / 2;
+                if ({alignment_json} === "end") targetTop -= viewport - extent;
+                const maxTop = Math.max(0, list.options.itemCount * extent - viewport);
+                targetTop = Math.max(0, Math.min(targetTop, maxTop));
+                list.scrollEl.scrollTo({{ top: targetTop, behavior: {behavior_json} }});
+                list.render();
+            }})();
+        """
         self.framework.window.evaluate_js(self.framework.id, js_command)
 
     def build_item_for_js(self, index: int) -> Dict[str, Any]:

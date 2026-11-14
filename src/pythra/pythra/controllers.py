@@ -348,6 +348,26 @@ class VirtualListController:
         if self._state:
             self._state.refresh_js(indices=[index]) # Pass a specific index
 
+    def scrollToIndex(
+        self,
+        index: int,
+        alignment: str = "start",
+        behavior: str = "smooth",
+    ):
+        """Scroll to an item, aligning it at the start, center, or end of the viewport.
+
+        Out-of-range indices are clamped to the list's valid range. Calls made
+        before the VirtualListView is mounted are ignored.
+        """
+        if isinstance(index, bool) or not isinstance(index, int):
+            raise TypeError("index must be an integer")
+        if alignment not in {"start", "center", "end"}:
+            raise ValueError("alignment must be 'start', 'center', or 'end'")
+        if behavior not in {"auto", "smooth"}:
+            raise ValueError("behavior must be 'auto' or 'smooth'")
+        if self._state:
+            self._state.scroll_to_index(index, alignment=alignment, behavior=behavior)
+
 
 
 class VirtualGridController:
